@@ -1,0 +1,12 @@
+Problems to find:
+ * Unnecessary header files included
+   - Totally unused
+   - Used by could forward declare classes instead
+ * Unnecessary forward class declarations
+ * Sources that reference headers not included (relies on transitive include)
+ * Unused members (private, protected, and public) both methods and data
+
+Non-goals:
+ * Parsing all valid C++ source
+ * Parsing invalid C++ source
+ * Compiling to machine code (or anything beyond an AST)
