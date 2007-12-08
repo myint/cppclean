@@ -365,7 +365,7 @@ class AstBuilder(object):
                 if result is not None:
                     yield result
             except:
-                print 'Got exception @', token, self.token_queue
+                print >>sys.stderr, 'Got exception @', token, self.token_queue
                 raise
 
     def _GenerateOne(self, token):
