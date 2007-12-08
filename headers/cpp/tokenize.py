@@ -77,11 +77,12 @@ def GetTokens(source):
         elif c in ':+-<>&|*=':                    # : or :: (plus other chars).
             token_type = SYNTAX
             i += 1
-            if source[i] == c:
+            new_ch = source[i]
+            if new_ch == c:
                 i += 1
-            elif c == '-' and source[i] == '>':
+            elif c == '-' and new_ch == '>':
                 i += 1
-            elif source[i] == '=':
+            elif new_ch == '=':
                 i += 1
         elif c in '()[]{}~!?^%;/.,':              # Handle single char tokens.
             token_type = SYNTAX
