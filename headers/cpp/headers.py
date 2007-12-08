@@ -23,11 +23,11 @@ def ReadSource(relative_filename):
     return None, relative_filename
 
 
-def ProcessFile(filename):
+def GetHeaders(filename):
     source, actual_filename = ReadSource(filename)
     if source is None:
         print 'Unable to find', filename
-        return
+        return []
 
     included_files = []
 
@@ -37,17 +37,18 @@ def ProcessFile(filename):
         if isinstance(node, ast.Include):
             if not node.system:
                 print node.filename
-                if _TRANSITIVE:
-                    included_files.append(node.filename)
+                included_files.append(node.filename)
 
     # Transitively process all the files that were included.
-    for filename in included_files:
-        ProcessFile(filename)
+    if _TRANSITIVE:
+        for filename in included_files:
+            included_files.extend(GetHeaders(filename))
+    return included_files
 
     
 def main(argv):
     for filename in argv[1:]:
-        ProcessFile(filename)
+        GetHeaders(filename)
 
 
 if __name__ == '__main__':
