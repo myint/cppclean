@@ -58,12 +58,12 @@ def GetTokens(source):
             else:
                 while source[i].isdigit() or source[i] in 'eE+-.':
                     i += 1
-        elif c == '/' and source[i+1] in '/':     # Find // comments.
+        elif c == '/' and source[i+1] == '/':     # Find // comments.
             i = source.find('\n', i)
             if i == -1:  # Handle EOF.
                 i = end
             continue
-        elif c == '/' and source[i+1] in '*':     # Find /* comments. */
+        elif c == '/' and source[i+1] == '*':     # Find /* comments. */
             i = source.find('*/', i) + 2
             continue
         elif c == '#':                            # Find pre-processor command.
@@ -80,6 +80,8 @@ def GetTokens(source):
             if source[i] == c:
                 i += 1
             elif c == '-' and source[i] == '>':
+                i += 1
+            elif source[i] == '=':
                 i += 1
         elif c in '()[]{}~!?^%;/.,':              # Handle single char tokens.
             token_type = SYNTAX
