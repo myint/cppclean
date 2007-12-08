@@ -75,6 +75,16 @@ class Node(object):
         return str(self)
 
 
+class Define(Node):
+    def __init__(self, start, end, name, definition):
+        Node.__init__(self, start, end)
+        self.name = name
+        self.definition = definition
+    def __str__(self):
+        value = '%s %s' % (self.name, self.definition)
+        return self._StringHelper(self.__class__.__name__, value)
+
+
 class Include(Node):
     def __init__(self, start, end, filename, system):
         Node.__init__(self, start, end)
@@ -436,6 +446,17 @@ class AstBuilder(object):
                 system = name[0] == '<'
                 filename = name[1:-1]
                 return Include(token.start, token.end, filename, system)
+            if name.startswith('define'):
+                # Remove "define".
+                name = name[6:].strip()
+                assert name
+                value = ''
+                for i, c in enumerate(name):
+                    if c.isspace():
+                        value = name[i:].lstrip()
+                        name = name[:i]
+                        break
+                return Define(token.start, token.end, name, value)
         return None
 
     def _GetTokensUpTo(self, expected_token_type, expected_token):

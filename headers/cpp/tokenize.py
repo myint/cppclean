@@ -69,11 +69,17 @@ def GetTokens(source):
         elif c == '#':                            # Find pre-processor command.
             token_type = PREPROCESSOR
             # TODO(nnorwitz): handle preprocessor statements (\ continuations).
-            i1 = source.find('\n', i)
-            i2 = source.find('//', i)
-            i3 = source.find('/*', i)
-            # Get the first important symbol (newline, comment, EOF (end)).
-            i = min([x for x in (i1, i2, i3, end) if x != -1])
+            while 1:
+                i1 = source.find('\n', i)
+                i2 = source.find('//', i)
+                i3 = source.find('/*', i)
+                # NOTE(nnorwitz): doesn't handle comments in #define macros.
+                # Get the first important symbol (newline, comment, EOF/end).
+                i = min([x for x in (i1, i2, i3, end) if x != -1])
+                # Keep going if end of the line and the line ends with \.
+                if not (i == i1 and source[i-1] == '\\'):
+                    break
+                i += 1
         elif c in ':+-<>&|*=':                    # : or :: (plus other chars).
             token_type = SYNTAX
             i += 1

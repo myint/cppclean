@@ -2,11 +2,17 @@
 
 """Find warnings for C++ code."""
 
+import os
 import sys
 
 from cpp import ast
 from cpp import headers
 from cpp import utils
+
+
+class Module(object):
+    def __init__(self, ast_list):
+        self.ast_list = ast_list
 
 
 class WarningsHunter(object):
@@ -20,7 +26,7 @@ class WarningsHunter(object):
         self.ast_list = ast_list
         self.warnings = []
         if filename not in self._module_cache:
-            self._module_cache[filename] = ast_list
+            self._module_cache[filename] = Module(ast_list)
         else:
             print 'Warning', filename, 'already in cache'
 
@@ -37,7 +43,6 @@ class WarningsHunter(object):
             print '%s:%d: %s' % (self.filename, line_num, msg)
 
     def FindWarnings(self):
-        import os
         # print 'Searching for warnings in:', self.filename
         base, ext = os.path.splitext(self.filename)
         if ext.lower() in ('.h', '.hpp'):
@@ -51,18 +56,18 @@ class WarningsHunter(object):
         if filename in self._module_cache:
             return self._module_cache[filename]
 
-        ast_list = None
+        module = Module(None)
         source, actual_filename = headers.ReadSource(filename)
         if source is None:
             print 'Unable to find', filename
         else:
             builder = ast.BuilderFromSource(source)
             try:
-                ast_list = filter(None, builder.Generate())
+                module = Module(filter(None, builder.Generate()))
             except:
                 print 'Exception while processing', filename
-        self._module_cache[filename] = ast_list
-        return ast_list
+        self._module_cache[filename] = module
+        return module
 
     def _GetForwardDeclarations(self):
         # Map header-filename: (#include AST node, ast_list_for_file)
@@ -74,8 +79,8 @@ class WarningsHunter(object):
             if node.IsDeclaration():
                 forward_declared_classes[node.FullName()] = node
             if isinstance(node, ast.Include) and not node.system:
-                ast_list = self._GetHeaderFile(node.filename)
-                included_files[node.filename] = node, ast_list
+                module = self._GetHeaderFile(node.filename)
+                included_files[node.filename] = node, module
 
         return forward_declared_classes, included_files
 
@@ -140,9 +145,9 @@ class WarningsHunter(object):
         # NOTE(nnorwitz): this could be sped up by iterating over the
         # file's AST and finding which symbols are used.  Then iterate
         # over each header file and see if any of the symbols are used.
-        for node, header_nodes in included_files.values():
-            if (header_nodes is not None and
-                not self._IsAnyPublicSymbolUsed(header_nodes)):
+        for node, module in included_files.values():
+            if (module.ast_list is not None and
+                not self._IsAnyPublicSymbolUsed(module.ast_list)):
                 msg = '%s does not need to be #included' % node.filename
                 self._AddWarning(msg, node)
 
