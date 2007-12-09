@@ -14,6 +14,22 @@ class Module(object):
     def __init__(self, ast_list):
         self.ast_list = ast_list
 
+    def _GetExportedSymbols(self):
+        return [node for node in self.ast_list if node.IsDefinition()]
+
+    def _IsSymbolUsed(self, ast_list, symbol):
+        # TODO(nnorwitz): this doesn't handle namespaces properly.
+        for node in ast_list:
+            if node.Requires(symbol):
+                return True
+        return False
+
+    def IsAnyPublicSymbolUsed(self, ast_list):
+        for symbol in self._GetExportedSymbols():
+            if self._IsSymbolUsed(ast_list, symbol):
+                return True
+        return False
+
 
 class WarningsHunter(object):
 
@@ -111,22 +127,6 @@ class WarningsHunter(object):
                         classes_used[node.type_name] = True
         return classes_used
 
-    def _GetExportedSymbols(self, nodes):
-        return [node for node in nodes if node.IsDefinition()]
-
-    def _IsSymbolUsed(self, symbol):
-        # TODO(nnorwitz): this doesn't handle namespaces properly.
-        for node in self.ast_list:
-            if node.Requires(symbol):
-                return True
-        return False
-
-    def _IsAnyPublicSymbolUsed(self, nodes):
-        for symbol in self._GetExportedSymbols(nodes):
-            if self._IsSymbolUsed(symbol):
-                return True
-        return False
-
     def _FindHeaderWarnings(self):
         forward_declarations, included_files = self._GetForwardDeclarations()
         classes_used = self._GetClassesUsed()
@@ -139,19 +139,26 @@ class WarningsHunter(object):
 
         # TODO(nnorwitz): when a symbol is used, check if it is used
         # as a pointer and can be forward declared rather than
-        # #include the header file.
+        # #include'ing the header file.
 
         # Find all the header files that are not used.
         # NOTE(nnorwitz): this could be sped up by iterating over the
         # file's AST and finding which symbols are used.  Then iterate
         # over each header file and see if any of the symbols are used.
         for node, module in included_files.values():
-            if (module.ast_list is not None and
-                not self._IsAnyPublicSymbolUsed(module.ast_list)):
+            if not module.IsAnyPublicSymbolUsed(self.ast_list):
                 msg = '%s does not need to be #included' % node.filename
                 self._AddWarning(msg, node)
 
     def _FindSourceWarnings(self):
+        # Read all the #includes and store them in parsed form.
+        # Keep a dict of all public identifiers from each #include
+        # Iterate through the source AST/tokens.
+        # For each initial token (ignore ->tokens), find the header
+        # that referenced it and mark in that header.  If no header, bitch.
+
+        # Finally, iterate over all the headers.  For each one that
+        # has no markings of being used, bitch.
         pass
 
 
