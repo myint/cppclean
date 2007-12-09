@@ -13,20 +13,23 @@ from cpp import utils
 class Module(object):
     def __init__(self, ast_list):
         self.ast_list = ast_list
+        self.public_symbols = self._GetExportedSymbols()
 
     def _GetExportedSymbols(self):
+        if not self.ast_list:
+            return []
         return [node for node in self.ast_list if node.IsDefinition()]
 
-    def _IsSymbolUsed(self, ast_list, symbol):
-        # TODO(nnorwitz): this doesn't handle namespaces properly.
-        for node in ast_list:
-            if node.Requires(symbol):
-                return True
-        return False
-
     def IsAnyPublicSymbolUsed(self, ast_list):
-        for symbol in self._GetExportedSymbols():
-            if self._IsSymbolUsed(ast_list, symbol):
+        def _IsSymbolUsed(self, symbol):
+            # TODO(nnorwitz): this doesn't handle namespaces properly.
+            for node in ast_list:
+                if node.Requires(symbol):
+                    return True
+            return False
+
+        for symbol in self.public_symbols:
+            if _IsSymbolUsed(ast_list, symbol):
                 return True
         return False
 
