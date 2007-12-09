@@ -111,3 +111,13 @@ class def_var {
 };
 
 #include "not-used.h"
+
+namespace {
+class LaunchNameEquals {
+ public: 
+  bool operator()(void* launch) {
+    return true;
+  } 
+};
+}  // namespace
+
