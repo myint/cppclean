@@ -29,6 +29,10 @@ class Module(object):
                     return True
             return False
 
+        # Special case when we don't know the answer.  Assume it's ok.
+        if self.ast_list is None:
+            return True
+
         for symbol in self.public_symbols:
             if _IsSymbolUsed(symbol):
                 return True
