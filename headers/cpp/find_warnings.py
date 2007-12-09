@@ -34,7 +34,7 @@ class Module(object):
         return False
 
 
-class WarningsHunter(object):
+class WarningHunter(object):
 
     # Cache filename: ast_list
     _module_cache = {}
@@ -127,7 +127,21 @@ class WarningsHunter(object):
                         classes_used[node.type_name] = True
         return classes_used
 
-    def _FindHeaderWarnings(self):
+    def _FindUnusedWarnings(self):
+        # NOTE(nnorwitz): this could be sped up by iterating over the
+        # file's AST and finding which symbols are used.  Then iterate
+        # over each header file and see if any of the symbols are used.
+        #
+        # This is how this method should be implemented:
+        # Read all the #includes and store them in parsed form.
+        # Keep a dict of all public identifiers from each #include
+        # Iterate through the source AST/tokens.
+        # For each initial token (ignore ->tokens), find the header
+        # that referenced it and mark in that header.  If no header, bitch.
+
+        # Finally, iterate over all the headers.  For each one that
+        # has no markings of being used, bitch.
+
         forward_declarations, included_files = self._GetForwardDeclarations()
         classes_used = self._GetClassesUsed()
 
@@ -137,29 +151,27 @@ class WarningsHunter(object):
                 node = forward_declarations[cls]
                 self._AddWarning('%r not used' % cls, node)
 
-        # TODO(nnorwitz): when a symbol is used, check if it is used
-        # as a pointer and can be forward declared rather than
-        # #include'ing the header file.
-
         # Find all the header files that are not used.
-        # NOTE(nnorwitz): this could be sped up by iterating over the
-        # file's AST and finding which symbols are used.  Then iterate
-        # over each header file and see if any of the symbols are used.
         for node, module in included_files.values():
             if not module.IsAnyPublicSymbolUsed(self.ast_list):
                 msg = '%s does not need to be #included' % node.filename
                 self._AddWarning(msg, node)
 
-    def _FindSourceWarnings(self):
-        # Read all the #includes and store them in parsed form.
-        # Keep a dict of all public identifiers from each #include
-        # Iterate through the source AST/tokens.
-        # For each initial token (ignore ->tokens), find the header
-        # that referenced it and mark in that header.  If no header, bitch.
+    def _FindHeaderWarnings(self):
+        self._FindUnusedWarnings()
+        # TODO(nnorwitz): other warnings to add:
+        #   * when a symbol is used, check if it is used as a pointer
+        #     and can be forward declared rather than #include'ing the
+        #     header file.  This only applies to header files until we
+        #     track all variable accesses/derefs.
+        #   * too much non-template impl in header file
 
-        # Finally, iterate over all the headers.  For each one that
-        # has no markings of being used, bitch.
-        pass
+    def _FindSourceWarnings(self):
+        self._FindUnusedWarnings()
+        # TODO(nnorwitz): other warnings to add:
+        #   * unused forward decls for variables (globals)/classes
+        #   * Functions that are too large
+        #   * Variables declared far from first use
 
 
 def main(argv):
@@ -171,7 +183,7 @@ def main(argv):
         print 'Processing', filename
         builder = ast.BuilderFromSource(source)
         entire_ast = filter(None, builder.Generate())
-        hunter = WarningsHunter(filename, source, entire_ast)
+        hunter = WarningHunter(filename, source, entire_ast)
         hunter.FindWarnings()
         hunter.ShowWarnings()
 
