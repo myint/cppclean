@@ -104,28 +104,25 @@ class WarningsHunter(object):
         return forward_declared_classes, included_files
 
     def _GetClassesUsed(self):
+        def _ProcessFunction(function):
+            if function.return_type:
+                classes_used[function.return_type[0].name] = True
+            # TODO(nnorwitz): ignoring the body for now.
+            for p in ast._SequenceToParameters(function.parameters):
+                classes_used[p.type_name] = True
+
         # TODO(nnorwitz): this needs to be recursive.
         classes_used = {}
         for node in self.ast_list:
             if isinstance(node, ast.VariableDeclaration):
                 classes_used[node.type_name] = True
             if isinstance(node, ast.Function):
-                if node.return_type:
-                    classes_used[node.return_type[0].name] = True
-                # TODO(nnorwitz): ignoring the body for now.
-                for p in ast._SequenceToParameters(node.parameters):
-                    classes_used[p.type_name] = True
-            # TODO(nnorwitz): handle function bodies.
+                _ProcessFunction(node)
             if isinstance(node, ast.Class) and node.body:
                 for node in node.body:
                     if (isinstance(node, ast.Function) and
                         not (node.modifiers & ast.FUNCTION_DTOR)):
-                        # Constructors don't have a return type.
-                        if node.return_type:
-                            classes_used[node.return_type[0].name] = True
-                        # TODO(nnorwitz): ignoring the body for now.
-                        for p in ast._SequenceToParameters(node.parameters):
-                            classes_used[p.type_name] = True
+                        _ProcessFunction(node)
                     if isinstance(node, ast.VariableDeclaration):
                         classes_used[node.type_name] = True
         return classes_used
