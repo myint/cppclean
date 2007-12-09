@@ -116,9 +116,9 @@ class WarningsHunter(object):
         for node in self.ast_list:
             if isinstance(node, ast.VariableDeclaration):
                 classes_used[node.type_name] = True
-            if isinstance(node, ast.Function):
+            elif isinstance(node, ast.Function):
                 _ProcessFunction(node)
-            if isinstance(node, ast.Class) and node.body:
+            elif isinstance(node, ast.Class) and node.body:
                 for node in node.body:
                     if (isinstance(node, ast.Function) and
                         not (node.modifiers & ast.FUNCTION_DTOR)):
