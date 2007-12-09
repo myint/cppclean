@@ -21,7 +21,7 @@ class Module(object):
         return [node for node in self.ast_list if node.IsDefinition()]
 
     def IsAnyPublicSymbolUsed(self, ast_list):
-        def _IsSymbolUsed(self, symbol):
+        def _IsSymbolUsed(symbol):
             # TODO(nnorwitz): this doesn't handle namespaces properly.
             for node in ast_list:
                 if node.Requires(symbol):
@@ -29,7 +29,7 @@ class Module(object):
             return False
 
         for symbol in self.public_symbols:
-            if _IsSymbolUsed(ast_list, symbol):
+            if _IsSymbolUsed(symbol):
                 return True
         return False
 
