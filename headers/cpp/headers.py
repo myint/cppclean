@@ -8,9 +8,14 @@ import sys
 from cpp import ast
 from cpp import utils
 
-
-_TRANSITIVE = False
-_INCLUDE_DIRS = ['.']
+# Allow a site to override the defaults if they choose.
+# Just put a siteheaders.py somewhere in the PYTHONPATH.
+try:
+    import siteheaders
+except ImportError:
+    siteheaders = None
+_TRANSITIVE = getattr(siteheaders, 'TRANSITIVE', False)
+_INCLUDE_DIRS = getattr(siteheaders, 'INCLUDE_DIRS', ['.'])
 
 
 def ReadSource(relative_filename):
