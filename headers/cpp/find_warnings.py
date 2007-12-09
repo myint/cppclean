@@ -11,7 +11,8 @@ from cpp import utils
 
 
 class Module(object):
-    def __init__(self, ast_list):
+    def __init__(self, filename, ast_list):
+        self.filename = filename
         self.ast_list = ast_list
         self.public_symbols = self._GetExportedSymbols()
 
@@ -34,6 +35,16 @@ class Module(object):
         return False
 
 
+def _IsHeaderFile(filename):
+    base, ext = os.path.splitext(filename)
+    return ext.lower() in ('.h', '.hpp', '.h++')
+
+
+def _IsCppFile(filename):
+    base, ext = os.path.splitext(filename)
+    return ext.lower() in ('.c', '.cc', '.cpp', '.c++')
+
+
 class WarningHunter(object):
 
     # Cache filename: ast_list
@@ -45,7 +56,7 @@ class WarningHunter(object):
         self.ast_list = ast_list
         self.warnings = []
         if filename not in self._module_cache:
-            self._module_cache[filename] = Module(ast_list)
+            self._module_cache[filename] = Module(filename, ast_list)
         else:
             print 'Warning', filename, 'already in cache'
 
@@ -63,26 +74,25 @@ class WarningHunter(object):
 
     def FindWarnings(self):
         # print 'Searching for warnings in:', self.filename
-        base, ext = os.path.splitext(self.filename)
-        if ext.lower() in ('.h', '.hpp'):
+        if _IsHeaderFile(self.filename):
             self._FindHeaderWarnings()
-        elif ext.lower() in ('.c', '.cc', '.cpp', '.c++'):
+        elif _IsCppFile(self.filename):
             self._FindSourceWarnings()
         else:
-            print 'Unknown filetype (%s) for: %s' % (ext, self.filename)
+            print 'Unknown filetype for: %s' % self.filename
 
     def _GetHeaderFile(self, filename):
         if filename in self._module_cache:
             return self._module_cache[filename]
 
-        module = Module(None)
+        module = Module(filename, None)
         source, actual_filename = headers.ReadSource(filename)
         if source is None:
             print 'Unable to find', filename
         else:
             builder = ast.BuilderFromSource(source)
             try:
-                module = Module(filter(None, builder.Generate()))
+                module = Module(filename, filter(None, builder.Generate()))
             except:
                 print 'Exception while processing', filename
         self._module_cache[filename] = module
@@ -153,6 +163,10 @@ class WarningHunter(object):
 
         # Find all the header files that are not used.
         for node, module in included_files.values():
+            if _IsCppFile(module.filename):
+                msg = ('should not include C++ source files: %s' %
+                       module.filename)
+                self._AddWarning(msg, node)
             if not module.IsAnyPublicSymbolUsed(self.ast_list):
                 msg = '%s does not need to be #included' % node.filename
                 self._AddWarning(msg, node)
