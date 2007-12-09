@@ -2,7 +2,6 @@
 
 """Find and print the methods in a source file."""
 
-import os
 import sys
 
 from cpp import ast
@@ -24,7 +23,7 @@ def PrintMethods(filename):
             if isinstance(node, ast.Class) and node.body:
                 for node in node.body:
                     if (isinstance(node, ast.Function) and
-                        not (node.modifiers & special_function))::
+                        not (node.modifiers & special_function)):
                         print node.name
     except:
         pass

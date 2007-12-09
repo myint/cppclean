@@ -2,7 +2,6 @@
 
 """Find and print the functions in a source file."""
 
-import os
 import sys
 
 from cpp import ast
