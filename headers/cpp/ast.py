@@ -568,15 +568,11 @@ class AstBuilder(object):
             indices = return_type[0]
 
         # Handle operators.
-        if name.name == 'operator':
-            if token.name == '(':
-                assert not parameters
-                # Handle operator().
-                parameters = list(self._GetParameters())
-                token = self._GetNextToken()
-            else:
-                # TODO(nnorwitz): Get the operator 'name', ie +, -, *, etc.
-                print 'uh-oh, operator unhandled', token
+        if name.name == 'operator' and token.name == '(':
+            assert not parameters
+            # Handle operator().
+            parameters = list(self._GetParameters())
+            token = self._GetNextToken()
 
         # Handle pointer to functions that are really data but looked
         # like method declarations.
