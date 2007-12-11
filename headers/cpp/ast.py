@@ -13,6 +13,7 @@
 #  * exceptions
 
 import sys
+import traceback
 
 from cpp import keywords
 from cpp import tokenize
@@ -966,8 +967,8 @@ def main(argv):
         try:
             entire_ast = filter(None, builder.Generate())
         except:
-            # Already printed a warning, just continue.
-            pass
+            # Already printed a warning, print the traceback and continue.
+            traceback.print_exc()
         else:
             if DEBUG:
                 for ast in entire_ast:
