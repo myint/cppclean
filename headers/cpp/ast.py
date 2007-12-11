@@ -962,10 +962,15 @@ def main(argv):
 
         print 'Processing', filename
         builder = BuilderFromSource(source, filename)
-        entire_ast = filter(None, builder.Generate())
-        if DEBUG:
-            for ast in entire_ast:
-                print ast
+        try:
+            entire_ast = filter(None, builder.Generate())
+        except:
+            # Already printed a warning, just continue.
+            pass
+        else:
+            if DEBUG:
+                for ast in entire_ast:
+                    print ast
 
 
 if __name__ == '__main__':
