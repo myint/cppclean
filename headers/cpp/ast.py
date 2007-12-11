@@ -569,6 +569,7 @@ class AstBuilder(object):
 
         token = self._GetNextToken()
         if token.token_type == tokenize.NAME:
+            # TODO(nnorwitz): will eventually need to handle __attribute__.
             assert token.name == 'const', token
             modifiers += FUNCTION_CONST
             token = self._GetNextToken()
