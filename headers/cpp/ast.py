@@ -862,6 +862,11 @@ class AstBuilder(object):
             token = self._GetNextToken()
         self.namespace_stack.append(name)
         assert token.token_type == tokenize.SYNTAX, token
+        if token.name == '=':
+            # TODO(nnorwitz): handle aliasing namespaces.
+            name, next_token = self.GetName()
+            assert next_token.name == ';', next_token
+            return None
         assert token.name == '{', token
         tokens = list(self.GetScope())
         # Handle namespace with nothing in it.

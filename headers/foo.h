@@ -133,3 +133,5 @@ const char kBS[] = "~!@#$%^&*()-+{}|`[]\\:\";'<>?,./ =\t\r\n\v\f\177";
 class FooOnYou {
   void (sq_type::*field_)(string&);
 };
+
+namespace wtf = noname;
