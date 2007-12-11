@@ -581,19 +581,33 @@ class AstBuilder(object):
         # Handle pointer to functions that are really data but looked
         # like method declarations.
         if token.name == '(':
-            assert parameters[0].name == '*', parameters
-            # name contains the return type.
-            name = parameters.pop()
-            # parameters contains the name of the data.
-            modifiers = [p.name for p in parameters]
-            # Already at the ( to open the parameter list.
-            function_parameters = list(self._GetMatchingChar('(', ')'))
-            # TODO(nnorwitz): store the function_parameters.
-            token = self._GetNextToken()
-            assert token.token_type == tokenize.SYNTAX, token
-            assert token.name == ';', token
+            if parameters[0].name == '*':
+                # name contains the return type.
+                name = parameters.pop()
+                # parameters contains the name of the data.
+                modifiers = [p.name for p in parameters]
+                # Already at the ( to open the parameter list.
+                function_parameters = list(self._GetMatchingChar('(', ')'))
+                # TODO(nnorwitz): store the function_parameters.
+                token = self._GetNextToken()
+                assert token.token_type == tokenize.SYNTAX, token
+                assert token.name == ';', token
+                return VariableDeclaration(indices.start, indices.end,
+                                           name.name, indices.name, modifiers,
+                                           reference=False, pointer=False,
+                                           initial_value=None)
+            # At this point, we got something like:
+            #  return_type (type::*name_)(params);
+            # This is a data member called name_ that is a function pointer.
+            # With this code: void (sq_type::*field_)(string&);
+            # We get: name=void return_type=[] parameters=sq_type ... field_
+            # TODO(nnorwitz): is return_type always empty?
+            # TODO(nnorwitz): this isn't even close to being correct.
+            # Just put in something so we don't crash and can move on.
+            real_name = parameters[-1]
+            modifiers = [p.name for p in self._GetParameters()]
             return VariableDeclaration(indices.start, indices.end,
-                                       name.name, indices.name, modifiers,
+                                       real_name.name, indices.name, modifiers,
                                        reference=False, pointer=False,
                                        initial_value=None)
 
