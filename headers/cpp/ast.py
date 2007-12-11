@@ -830,7 +830,7 @@ class AstBuilder(object):
                     token = self._GetNextToken()
                     assert token.token_type == tokenize.NAME, token
                     # TODO(nnorwitz): handle private inheritance...maybe.
-                    assert token.name == 'public', token
+                    assert token.name in ('public', 'protected', 'private'), token
                     base, next_token = self.GetName()
                     bases.append(base)
                     assert next_token.token_type == tokenize.SYNTAX, next_token
