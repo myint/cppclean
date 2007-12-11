@@ -37,7 +37,7 @@ def GetHeaders(filename):
     included_files = []
 
     print 'Processing', actual_filename
-    builder = ast.BuilderFromSource(source)
+    builder = ast.BuilderFromSource(source, filename)
     for node in builder.Generate():
         if isinstance(node, ast.Include):
             if not node.system:

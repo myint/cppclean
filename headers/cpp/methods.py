@@ -15,7 +15,7 @@ def PrintMethods(filename):
         return
 
     #print 'Processing', actual_filename
-    builder = ast.BuilderFromSource(source)
+    builder = ast.BuilderFromSource(source, filename)
     try:
         # TODO(nnorwitz): also need to ignore friend methods.
         special_function = ast.FUNCTION_CTOR | ast.FUNCTION_DTOR

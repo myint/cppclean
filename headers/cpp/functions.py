@@ -15,7 +15,7 @@ def PrintFunctions(filename):
         return
 
     #print 'Processing', actual_filename
-    builder = ast.BuilderFromSource(source)
+    builder = ast.BuilderFromSource(source, filename)
     try:
         for node in builder.Generate():
             # TODO(nnorwitz): need to ignore friend method declarations.

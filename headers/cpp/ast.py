@@ -341,8 +341,9 @@ class Function(_GenericDeclaration):
 
 
 class AstBuilder(object):
-    def __init__(self, token_stream, in_class=''):
+    def __init__(self, token_stream, filename, in_class=''):
         self.tokens = token_stream
+        self.filename = filename
         self.token_queue = []
         self.namespace_stack = []
         self.in_class = in_class
@@ -375,7 +376,8 @@ class AstBuilder(object):
                 if result is not None:
                     yield result
             except:
-                print >>sys.stderr, 'Got exception @', token, self.token_queue
+                print >>sys.stderr, ('Got exception in ', self.filename,
+                                     '@', token, self.token_queue)
                 raise
 
     def _GenerateOne(self, token):
@@ -827,7 +829,7 @@ class AstBuilder(object):
         assert token.token_type == tokenize.SYNTAX, token
         assert token.name == '{', token
 
-        ast = AstBuilder(self.GetScope(), class_name)
+        ast = AstBuilder(self.GetScope(), self.filename, class_name)
         body = list(ast.Generate())
 
         token = self._GetNextToken()
@@ -929,8 +931,8 @@ class AstBuilder(object):
         self._IgnoreUpTo(tokenize.SYNTAX, ';')
 
 
-def BuilderFromSource(source):
-    return AstBuilder(tokenize.GetTokens(source))
+def BuilderFromSource(source, filename):
+    return AstBuilder(tokenize.GetTokens(source), filename)
 
 
 def main(argv):
@@ -940,7 +942,7 @@ def main(argv):
             continue
 
         print 'Processing', filename
-        builder = BuilderFromSource(source)
+        builder = BuilderFromSource(source, filename)
         entire_ast = filter(None, builder.Generate())
         if DEBUG:
             for ast in entire_ast:

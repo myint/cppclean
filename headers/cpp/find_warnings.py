@@ -94,7 +94,7 @@ class WarningHunter(object):
         if source is None:
             print 'Unable to find', filename
         else:
-            builder = ast.BuilderFromSource(source)
+            builder = ast.BuilderFromSource(source, filename)
             try:
                 module = Module(filename, filter(None, builder.Generate()))
             except:
@@ -199,7 +199,7 @@ def main(argv):
             continue
 
         print 'Processing', filename
-        builder = ast.BuilderFromSource(source)
+        builder = ast.BuilderFromSource(source, filename)
         entire_ast = filter(None, builder.Generate())
         hunter = WarningHunter(filename, source, entire_ast)
         hunter.FindWarnings()
