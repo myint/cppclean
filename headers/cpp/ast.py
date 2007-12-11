@@ -376,8 +376,9 @@ class AstBuilder(object):
                 if result is not None:
                     yield result
             except:
-                print >>sys.stderr, ('Got exception in ', self.filename,
-                                     '@', token, self.token_queue)
+                q = self.token_queue
+                print >>sys.stderr, \
+                          'Got exception in', self.filename, '@', token, q
                 raise
 
     def _GenerateOne(self, token):
