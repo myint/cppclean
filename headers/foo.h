@@ -122,3 +122,8 @@ class LaunchNameEquals {
 }  // namespace
 
 enum {boo};
+
+class Blashdfdf {
+ public: 
+  bool operator()(void* launch) const = 0;
+};

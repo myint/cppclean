@@ -548,7 +548,21 @@ class AstBuilder(object):
             token = self._GetNextToken()
             assert token.token_type == tokenize.SYNTAX, token
             assert token.name == '(', token
+
+        name = return_type_and_name.pop()
+        return_type = return_type_and_name
+        indices = name
+        if return_type:
+            indices = return_type[0]
+
         parameters = list(self._GetParameters())
+
+        # Handling operator() is especially weird.
+        if name.name == 'operator' and not parameters:
+            token = self._GetNextToken()
+            assert token.name == '(', token
+            parameters = list(self._GetParameters())
+
         token = self._GetNextToken()
         if token.token_type == tokenize.NAME:
             assert token.name == 'const', token
@@ -561,19 +575,6 @@ class AstBuilder(object):
             # TODO(nnorwitz): anything else to handle for initializer list?
             while token.name != ';' and token.name != '{':
                 token = self._GetNextToken()
-
-        name = return_type_and_name.pop()
-        return_type = return_type_and_name
-        indices = name
-        if return_type:
-            indices = return_type[0]
-
-        # Handle operators.
-        if name.name == 'operator' and token.name == '(':
-            assert not parameters
-            # Handle operator().
-            parameters = list(self._GetParameters())
-            token = self._GetNextToken()
 
         # Handle pointer to functions that are really data but looked
         # like method declarations.
