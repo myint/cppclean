@@ -127,3 +127,5 @@ class Blashdfdf {
  public: 
   bool operator()(void* launch) const = 0;
 };
+
+const char kBS[] = "~!@#$%^&*()-+{}|`[]\\:\";'<>?,./ =\t\r\n\v\f\177";

@@ -35,7 +35,7 @@ def GetTokens(source):
         elif c == '"':                            # Find string.
             token_type = CONSTANT
             i = source.find('"', i+1)
-            while source[i] == '\\':
+            while source[i-1] == '\\':
                 i = source.find('"', i+1)
             i += 1
         elif c == "'":                            # Find char.
