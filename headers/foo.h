@@ -121,3 +121,4 @@ class LaunchNameEquals {
 };
 }  // namespace
 
+enum {boo};

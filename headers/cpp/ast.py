@@ -515,13 +515,14 @@ class AstBuilder(object):
             self.token_queue.insert(0, token)
 
     def _AddBackTokens(self, tokens):
-        if tokens[0].whence == _WHENCE_STREAM:
-            for token in tokens:
-                token.whence = _WHENCE_QUEUE
-            self.token_queue.extend(tokens)
-        else:
-            assert tokens[0].whence == _WHENCE_QUEUE, tokens
-            self.token_queue[:0] = tokens
+        if tokens:
+            if tokens[0].whence == _WHENCE_STREAM:
+                for token in tokens:
+                    token.whence = _WHENCE_QUEUE
+                self.token_queue.extend(tokens)
+            else:
+                assert tokens[0].whence == _WHENCE_QUEUE, tokens
+                self.token_queue[:0] = tokens
 
     def GetName(self):
         """Returns ([tokens], next_token_info)."""
