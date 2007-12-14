@@ -16,14 +16,14 @@
 
 """C++ keywords"""
 
-TYPES = 'bool char int long short double float void wchar_t unsigned signed struct union enum'.split()
+TYPES = 'bool char int long short double float void wchar_t unsigned signed'.split()
 TYPE_MODIFIERS = 'auto register const inline extern static virtual volatile mutable'.split()
 ACCESS = 'public protected private friend'.split()
 
 CASTS = 'static_cast const_cast dynamic_cast reinterpret_cast'.split()
 
 OTHERS = 'true false asm class namespace using explicit this operator sizeof'.split()
-OTHER_TYPES = 'new delete typedef typeid typename template'.split()
+OTHER_TYPES = 'new delete typedef struct union enum typeid typename template'.split()
 
 CONTROL = 'case switch default if else return goto'.split()
 EXCEPTION = 'try catch throw'.split()
