@@ -972,6 +972,27 @@ def BuilderFromSource(source, filename):
     return AstBuilder(tokenize.GetTokens(source), filename)
 
 
+def PrintIndentifiers(filename, should_print):
+    source = utils.ReadFile(filename, False)
+    if source is None:
+        print 'Unable to find', filename
+        return
+
+    #print 'Processing', actual_filename
+    builder = BuilderFromSource(source, filename)
+    try:
+        for node in builder.Generate():
+            if should_print(node):
+                print node.name, node
+    except:
+        pass
+
+
+def PrintAllIndentifiers(filenames, should_print):
+    for path in filenames:
+        PrintIndentifiers(path, should_print)
+
+
 def main(argv):
     for filename in argv[1:]:
         source = utils.ReadFile(filename)

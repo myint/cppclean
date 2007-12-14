@@ -20,29 +20,12 @@
 import sys
 
 from cpp import ast
-from cpp import utils
 
 
-def PrintFunctions(filename):
-    source = utils.ReadFile(filename, False)
-    if source is None:
-        print 'Unable to find', filename
-        return
-
-    #print 'Processing', actual_filename
-    builder = ast.BuilderFromSource(source, filename)
-    try:
-        for node in builder.Generate():
-            # TODO(nnorwitz): need to ignore friend method declarations.
-            if isinstance(node, ast.Function):
-                print node.name
-    except:
-        pass
-
-    
 def main(argv):
-    for filename in argv[1:]:
-        PrintFunctions(filename)
+    # TODO(nnorwitz): need to ignore friend method declarations.
+    condition = lambda node: isinstance(node, ast.Function)
+    ast.PrintAllIndentifiers(argv[1:], condition)
 
 
 if __name__ == '__main__':
