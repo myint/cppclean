@@ -24,8 +24,8 @@ from cpp import ast
 
 def main(argv):
     # TODO(nnorwitz): need to ignore friend method declarations.
-    condition = lambda node: isinstance(node, ast.Function)
-    ast.PrintAllIndentifiers(argv[1:], condition)
+    IsFunction = lambda node: isinstance(node, ast.Function)
+    ast.PrintAllIndentifiers(argv[1:], IsFunction)
 
 
 if __name__ == '__main__':
