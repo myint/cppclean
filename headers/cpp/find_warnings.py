@@ -22,6 +22,7 @@ import sys
 
 from cpp import ast
 from cpp import headers
+from cpp import metrics
 from cpp import tokenize
 from cpp import utils
 
@@ -74,22 +75,16 @@ class WarningHunter(object):
         self.filename = filename
         self.source = source
         self.ast_list = ast_list
+
+        self.metrics = metrics.Metrics(source)
         self.warnings = []
         if filename not in self._module_cache:
             self._module_cache[filename] = Module(filename, ast_list)
         else:
             print 'Warning', filename, 'already in cache'
 
-    def _GetLineNumber(self, start):
-        return 1 + self.source.count('\n', 0, start)
-
-    def _GetLineCount(self, token_stream):
-        first_line = self._GetLineNumber(token_stream[0].start)
-        last_line = self._GetLineNumber(token_stream[-1].end)
-        return last_line - first_line
-
     def _AddWarning(self, msg, ast):
-        line_num = self._GetLineNumber(ast.start)
+        line_num = self.metrics.GetLineNumber(ast.start)
         self.warnings.append((line_num, msg))
 
     def ShowWarnings(self):
