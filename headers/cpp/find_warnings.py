@@ -22,6 +22,7 @@ import sys
 
 from cpp import ast
 from cpp import headers
+from cpp import tokenize
 from cpp import utils
 
 
@@ -140,6 +141,16 @@ class WarningHunter(object):
             for p in ast._SequenceToParameters(function.parameters):
                 classes_used[p.type_name] = True
 
+        def _ProcessTypedef(typedef):
+            for token in typedef.alias:
+                if (isinstance(token, ast.Token) and
+                    token.token_type == tokenize.NAME):
+                    classes_used[token.name] = True
+                elif isinstance(token, ast.Struct):
+                    pass                # TODO(nnorwitz): impl
+                elif isinstance(token, ast.Union):
+                    pass                # TODO(nnorwitz): impl
+
         # TODO(nnorwitz): this needs to be recursive.
         classes_used = {}
         for node in self.ast_list:
@@ -147,6 +158,8 @@ class WarningHunter(object):
                 classes_used[node.type_name] = True
             elif isinstance(node, ast.Function):
                 _ProcessFunction(node)
+            elif isinstance(node, ast.Typedef):
+                _ProcessTypedef(node)
             elif isinstance(node, ast.Class) and node.body:
                 for node in node.body:
                     if (isinstance(node, ast.Function) and
