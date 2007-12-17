@@ -83,6 +83,11 @@ class WarningHunter(object):
     def _GetLineNumber(self, start):
         return 1 + self.source.count('\n', 0, start)
 
+    def _GetLineCount(self, token_stream):
+        first_line = self._GetLineNumber(token_stream[0].start)
+        last_line = self._GetLineNumber(token_stream[-1].end)
+        return last_line - first_line
+
     def _AddWarning(self, msg, ast):
         line_num = self._GetLineNumber(ast.start)
         self.warnings.append((line_num, msg))
