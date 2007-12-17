@@ -282,7 +282,7 @@ class Typedef(_GenericDeclaration):
         # TODO(nnorwitz): handle namespaces, etc.
         name = node.name
         for token in self.alias:
-            if name == token.name:
+            if token is not None and name == token.name:
                 return True
         return False
     def __str__(self):
