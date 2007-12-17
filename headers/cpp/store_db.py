@@ -67,13 +67,14 @@ class FileInserter(object):
         identifiers = self._GetDbIdentifiers(dbc)
         paths = self._GetDbPaths(dbc)
         if self.filename not in paths:
-            dbc.execute('INSERT INTO path(name) VALUES (%s)', self.filename)
+            sql = 'INSERT INTO path(name) VALUES (%s)'
+            dbc.execute(sql, self.filename)
             paths[self.filename] = dbc.lastrowid
 
         new_names = list(set(ast_identifiers) - set(identifiers))
         if new_names:
             sql = 'INSERT INTO identifier(name) VALUES (%s)'
-            result = dbc.executemany(sql, new_names)
+            dbc.executemany(sql, new_names)
             identifiers = self._GetDbIdentifiers(dbc)
         
         dbc.close()
