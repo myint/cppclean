@@ -56,7 +56,7 @@ class FileInserter(object):
     def _GetAstIdentifiers(self):
         identifiers = {}
         for token_type, name, start, end in self.tokens:
-            if (token_type == tokenize.NAME and not keywords.IsKeyword(name)):
+            if token_type == tokenize.NAME and not keywords.IsKeyword(name):
                 identifiers[name] = 1
         return identifiers
 
@@ -71,10 +71,10 @@ class FileInserter(object):
             paths[self.filename] = dbc.lastrowid
 
         new_names = list(set(ast_identifiers) - set(identifiers))
-        print 'new', new_names
-        result = dbc.executemany('INSERT INTO identifier(name) VALUES (%s)',
-                                 new_names)
-        print result
+        if new_names:
+            sql = 'INSERT INTO identifier(name) VALUES (%s)'
+            result = dbc.executemany(sql, new_names)
+            identifiers = self._GetDbIdentifiers(dbc)
         
         dbc.close()
         print paths
