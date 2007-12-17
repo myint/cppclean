@@ -280,7 +280,11 @@ class Typedef(_GenericDeclaration):
         return True
     def Requires(self, node):
         # TODO(nnorwitz): handle namespaces, etc.
-        return self.alias == node.name
+        name = node.name
+        for token in self.alias:
+            if name == token.name:
+                return True
+        return False
     def __str__(self):
         suffix = '%s, %s' % (self.name, self.alias)
         return self._TypeStringHelper(suffix)
