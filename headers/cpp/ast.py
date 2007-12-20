@@ -987,7 +987,7 @@ def PrintIndentifiers(filename, should_print):
     try:
         for node in builder.Generate():
             if should_print(node):
-                print node.name, node
+                print node.name
     except:
         pass
 
