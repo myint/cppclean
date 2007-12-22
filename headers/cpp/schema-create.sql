@@ -38,7 +38,8 @@ CREATE TABLE IF NOT EXISTS typedef_decl(
         name INT NOT NULL REFERENCES identifier(id),
         namespace INT REFERENCES identifier(id),
         filename INT NOT NULL REFERENCES path(id),
-        line INT NOT NULL
+        line INT NOT NULL,
+        deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS typedef_uses(
@@ -54,7 +55,8 @@ CREATE TABLE IF NOT EXISTS enum_decl(
         name INT NOT NULL REFERENCES identifier(id),
         namespace INT REFERENCES identifier(id),
         filename INT NOT NULL REFERENCES path(id),
-        line INT NOT NULL
+        line INT NOT NULL,
+        deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS enum_uses(
@@ -69,7 +71,8 @@ CREATE TABLE IF NOT EXISTS global_variable_decl(
         name INT NOT NULL REFERENCES identifier(id),
         namespace INT REFERENCES identifier(id),
         filename INT NOT NULL REFERENCES path(id),
-        line INT NOT NULL
+        line INT NOT NULL,
+        deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 -- declaration must be NULLable here because it's possible to have
@@ -91,7 +94,8 @@ CREATE TABLE IF NOT EXISTS function_decl(
         modifiers INT NOT NULL,
         num_parameters INT NOT NULL,
         filename INT NOT NULL REFERENCES path(id),
-        line INT NOT NULL
+        line INT NOT NULL,
+        deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS function_definition(
@@ -116,7 +120,8 @@ CREATE TABLE IF NOT EXISTS class_decl(
         name INT NOT NULL REFERENCES identifier(id),
         namespace INT REFERENCES identifier(id),
         filename INT NOT NULL REFERENCES path(id),
-        line INT NOT NULL
+        line INT NOT NULL,
+        deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS class_uses(
@@ -133,7 +138,8 @@ CREATE TABLE IF NOT EXISTS field_decl(
         class INT NOT NULL REFERENCES class_decl(id),
         modifiers INT NOT NULL,
         filename INT NOT NULL REFERENCES path(id),
-        line INT NOT NULL
+        line INT NOT NULL,
+        deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS field_uses(
@@ -151,7 +157,8 @@ CREATE TABLE IF NOT EXISTS method_decl(
         modifiers INT NOT NULL,
         num_parameters INT NOT NULL,
         filename INT NOT NULL REFERENCES path(id),
-        line INT NOT NULL
+        line INT NOT NULL,
+        deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS method_definition(
