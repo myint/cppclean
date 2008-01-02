@@ -216,7 +216,7 @@ class WarningHunter(object):
         self._FindUnusedWarnings()
         # TODO(nnorwitz): other warnings to add:
         #   * unused forward decls for variables (globals)/classes
-        #   * Functions that are too large
+        #   * Functions that are too large/complex
         #   * Variables declared far from first use
 
 
