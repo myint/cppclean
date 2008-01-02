@@ -9,10 +9,15 @@ CREATE TABLE IF NOT EXISTS path(
         name VARCHAR(255) COLLATE latin1_bin NOT NULL UNIQUE
 );
 
+INSERT INTO path(id, name) VALUES (0, '<unknown>');
+
 CREATE TABLE IF NOT EXISTS identifier(
         id INT PRIMARY KEY AUTO_INCREMENT,
         name VARCHAR(100) COLLATE latin1_bin NOT NULL UNIQUE
 );
+
+INSERT INTO identifier(id, name) VALUES (0, '<unknown>');
+INSERT INTO identifier(id, name) VALUES (1, '<no-namespace>');
 
 -- There are two or three tables per type of identifier stored.
 -- There is always a decl(aration) table.  This table contains
@@ -24,7 +29,7 @@ CREATE TABLE IF NOT EXISTS identifier(
 -- Some identifier types are special and don't have a separate
 -- declaration and definition, e.g., typedefs, enums, and fields.
 
--- The third type of identifier table stores the uses of it.
+-- The third type of identifier table stores uses of the identifier.
 
 -- With this mechanism, it is fairly easy to find interesting properties.
 -- For example, unused identifiers, identifiers without a definition
@@ -41,6 +46,9 @@ CREATE TABLE IF NOT EXISTS typedef_decl(
         line INT NOT NULL,
         deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
+
+INSERT INTO typedef_decl(name, namespace, filename, line)
+VALUES (0, NULL, 0, 0);
 
 CREATE TABLE IF NOT EXISTS typedef_uses(
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -59,6 +67,9 @@ CREATE TABLE IF NOT EXISTS enum_decl(
         deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
+INSERT INTO enum_decl(name, namespace, filename, line)
+VALUES (0, NULL, 0, 0);
+
 CREATE TABLE IF NOT EXISTS enum_uses(
         id INT PRIMARY KEY AUTO_INCREMENT,
         declaration INT NOT NULL REFERENCES enum_decl(id),
@@ -74,6 +85,9 @@ CREATE TABLE IF NOT EXISTS global_variable_decl(
         line INT NOT NULL,
         deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
+
+INSERT INTO global_variable_decl(name, namespace, filename, line)
+VALUES (0, NULL, 0, 0);
 
 -- declaration must be NULLable here because it's possible to have
 -- extern int global_variable;  If global_variable is never used,
@@ -97,6 +111,10 @@ CREATE TABLE IF NOT EXISTS function_decl(
         line INT NOT NULL,
         deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
+
+INSERT INTO function_decl(name, namespace, modifiers, num_parameters,
+                          filename, line)
+VALUES (0, NULL, 0, 0, 0, 0);
 
 CREATE TABLE IF NOT EXISTS function_definition(
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -124,6 +142,9 @@ CREATE TABLE IF NOT EXISTS class_decl(
         deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
+INSERT INTO class_decl(id, name, namespace, filename, line)
+VALUES (0, 0, NULL, 0, 0);
+
 CREATE TABLE IF NOT EXISTS class_uses(
         id INT PRIMARY KEY AUTO_INCREMENT,
         declaration INT NOT NULL REFERENCES class_decl(id),
@@ -141,6 +162,9 @@ CREATE TABLE IF NOT EXISTS field_decl(
         line INT NOT NULL,
         deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
+
+INSERT INTO field_decl(name, class, modifiers, filename, line)
+VALUES (0, 0, 0, 0, 0, 0);
 
 CREATE TABLE IF NOT EXISTS field_uses(
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -160,6 +184,9 @@ CREATE TABLE IF NOT EXISTS method_decl(
         line INT NOT NULL,
         deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
+
+INSERT INTO method_decl(name, class, modifiers, num_parameters, filename, line)
+VALUES (0, 0, 0, 0, 0, 0);
 
 CREATE TABLE IF NOT EXISTS method_definition(
         id INT PRIMARY KEY AUTO_INCREMENT,
