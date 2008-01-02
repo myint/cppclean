@@ -34,6 +34,7 @@ _DB_PASSWD = ''
 _DB_NAME = 'cppclean'
 
 _NO_NAMESPACE = '<no-namespace>'
+_UNKNOWN = '<unknown>'
 
 
 class _Reference(object):
