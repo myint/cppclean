@@ -166,3 +166,5 @@ class MemoryCache {
   mutable Mutex index_mutex_;
   struct CacheEntry **index_;
 };
+
+struct lala : dense_hashmap<int> {};
