@@ -715,9 +715,8 @@ class AstBuilder(object):
         assert token.token_type == tokenize.NAME, token
         modifiers = []
         reference = pointer = False
-        return VariableDeclaration(token.start, token.end,
-                                   token.name, name, 
-                                   modifiers, reference=False, pointer=False,
+        return VariableDeclaration(token.start, token.end, token.name, name, 
+                                   modifiers, reference, pointer,
                                    initial_value=None)
 
     def handle_struct(self):
@@ -731,6 +730,16 @@ class AstBuilder(object):
                 self._AddBackToken(token2)
                 return Struct(token.start, token.end, token.name, None, None,
                               self.namespace_stack)
+            elif (token2.token_type == tokenize.SYNTAX and
+                  token2.name[0] in '*&'):
+                variable = self._GetNextToken()
+                modifiers = []
+                reference = '&' in token2.name
+                pointer = '*' in token2.name
+                return VariableDeclaration(token.start, token.end,
+                                           variable.name, token.name, 
+                                           modifiers, reference, pointer,
+                                           initial_value=None)
 
         if token2 is not None:
             self._AddBackToken(token2)

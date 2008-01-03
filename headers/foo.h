@@ -162,3 +162,7 @@ public:
    enum Operator op;
 };
 
+class MemoryCache {
+  mutable Mutex index_mutex_;
+  struct CacheEntry **index_;
+};
