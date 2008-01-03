@@ -145,3 +145,8 @@ class TestAttrs {
 };
 
 typedef struct _IplImage IplImage;
+
+namespace {
+struct AR;
+class BS { };
+}

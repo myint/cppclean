@@ -238,7 +238,7 @@ class _GenericDeclaration(Node):
         self.namespace = namespace[:]
     def FullName(self):
         prefix = ''
-        if self.namespace:
+        if self.namespace and self.namespace[-1]:
             prefix = '::'.join(self.namespace) + '::'
         return prefix + self.name
     def _TypeStringHelper(self, suffix):
@@ -722,9 +722,9 @@ class AstBuilder(object):
                 return Struct(token.start, token.end, token.name, None, None,
                               self.namespace_stack)
 
-        self._AddBackToken(token)
         if token2 is not None:
             self._AddBackToken(token2)
+        self._AddBackToken(token)
         return self._GetClass(Struct, VISIBILITY_PUBLIC, False)
 
     def handle_union(self):
