@@ -588,7 +588,7 @@ class AstBuilder(object):
             parameters = list(self._GetParameters())
 
         token = self._GetNextToken()
-        if token.token_type == tokenize.NAME:
+        while token.token_type == tokenize.NAME:
             modifier_token = token
             token = self._GetNextToken()
             if modifier_token.name == 'const':
