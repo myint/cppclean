@@ -397,9 +397,9 @@ class AstBuilder(object):
                 if result is not None:
                     yield result
             except:
-                q = self.token_queue
-                print >>sys.stderr, \
-                          'Got exception in', self.filename, '@', token, q
+                msg = ('Got exception in %s @ %s %s' %
+                       (self.filename, token, self.token_queue))
+                print >>sys.stderr, msg
                 raise
 
     def _GenerateOne(self, token):
@@ -605,8 +605,9 @@ class AstBuilder(object):
                 # are some macro we aren't expanding.
                 modifiers += FUNCTION_UNKNOWN_ANNOTATION
             else:
-                print >>sys.stderr, ('Got unexpected token after method: %s' %
-                                     modifier_token)
+                msg = ('Got unexpected token in %s @ %s %s' %
+                       (self.filename, modifier_token, self.token_queue))
+                print >>sys.stderr, msg
 
         assert token.token_type == tokenize.SYNTAX, token
         # Handle ctor initializers.
