@@ -301,8 +301,6 @@ class _NestedType(_GenericDeclaration):
         return self._TypeStringHelper(suffix)
 
 
-class Struct(_NestedType):
-    pass
 class Union(_NestedType):
     pass
 class Enum(_NestedType):
@@ -333,6 +331,10 @@ class Class(_GenericDeclaration):
         return self._TypeStringHelper(suffix)
 
 
+class Struct(Class):
+    pass
+
+
 class Function(_GenericDeclaration):
     def __init__(self, start, end, name, return_type, parameters,
                  modifiers, body, namespace):
@@ -361,15 +363,12 @@ class Function(_GenericDeclaration):
 
 
 class AstBuilder(object):
-    def __init__(self, token_stream, filename, in_class=''):
+    def __init__(self, token_stream, filename, in_class='', visibility=None):
         self.tokens = token_stream
         self.filename = filename
         self.token_queue = []
         self.namespace_stack = []
         self.in_class = in_class
-        visibility = None
-        if in_class:
-            visibility = VISIBILITY_PRIVATE
         self.visibility = visibility
         self.in_function = False
         self.current_start = None
@@ -696,7 +695,7 @@ class AstBuilder(object):
         return ctor(token.start, token.end, name, fields, self.namespace_stack)
 
     def handle_struct(self):
-        return self._GetNestedType(Struct)
+        return self._GetClass(Struct, VISIBILITY_PUBLIC, False)
 
     def handle_union(self):
         return self._GetNestedType(Union)
@@ -829,22 +828,30 @@ class AstBuilder(object):
         pass  # Not needed yet.
 
     def handle_class(self):
+        return self._GetClass(Class, VISIBILITY_PRIVATE, True)
+
+    def _GetClass(self, class_type, visibility, get_last_token):
+        class_name = None
         class_token = self._GetNextToken()
-        class_name = class_token.name
-        assert class_token.token_type == tokenize.NAME, class_token
-        token = self._GetNextToken()
-        # Handle class names like:  Foo::Bar
-        while token.token_type == tokenize.SYNTAX and token.name == '::':
+        if class_token.token_type != tokenize.NAME:
+            assert class_token.token_type == tokenize.SYNTAX, class_token
+            token = class_token
+        else:
+            class_name = class_token.name
             token = self._GetNextToken()
-            assert token.token_type == tokenize.NAME, token
-            class_name += '::' + token.name
-            token = self._GetNextToken()
+            # Handle class names like:  Foo::Bar
+            while token.token_type == tokenize.SYNTAX and token.name == '::':
+                token = self._GetNextToken()
+                assert token.token_type == tokenize.NAME, token
+                class_name += '::' + token.name
+                token = self._GetNextToken()
         bases = None
         if token.token_type == tokenize.SYNTAX:
             if token.name == ';':
                 # Forward declaration.
-                return Class(class_token.start, class_token.end,
-                             class_name, None, None, self.namespace_stack)
+                return class_type(class_token.start, class_token.end,
+                                  class_name, None, None,
+                                  self.namespace_stack)
             if token.name == ':':
                 # Get base classes.
                 bases = []
@@ -865,15 +872,17 @@ class AstBuilder(object):
         assert token.token_type == tokenize.SYNTAX, token
         assert token.name == '{', token
 
-        ast = AstBuilder(self.GetScope(), self.filename, class_name)
+        ast = AstBuilder(self.GetScope(), self.filename, class_name,
+                         visibility)
         body = list(ast.Generate())
 
-        token = self._GetNextToken()
-        assert token.token_type == tokenize.SYNTAX, token
-        assert token.name == ';', token
+        if get_last_token:
+            token = self._GetNextToken()
+            assert token.token_type == tokenize.SYNTAX, token
+            assert token.name == ';', token
 
-        return Class(class_token.start, class_token.end, class_name,
-                     bases, body, self.namespace_stack)
+        return class_type(class_token.start, class_token.end, class_name,
+                          bases, body, self.namespace_stack)
 
     def handle_namespace(self):
         token = self._GetNextToken()
