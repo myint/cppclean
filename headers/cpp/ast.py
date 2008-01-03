@@ -46,6 +46,8 @@ FUNCTION_VIRTUAL = 0x02
 FUNCTION_PURE_VIRTUAL = 0x04
 FUNCTION_CTOR = 0x08
 FUNCTION_DTOR = 0x10
+FUNCTION_ATTRIBUTE = 0x20
+FUNCTION_UNKNOWN_ANNOTATION = 0x40
 
 _INTERNAL_TOKEN = 'internal'
 _NAMESPACE_POP = 'ns-pop'
@@ -587,10 +589,24 @@ class AstBuilder(object):
 
         token = self._GetNextToken()
         if token.token_type == tokenize.NAME:
-            # TODO(nnorwitz): will eventually need to handle __attribute__.
-            assert token.name == 'const', token
-            modifiers += FUNCTION_CONST
+            modifier_token = token
             token = self._GetNextToken()
+            if modifier_token.name == 'const':
+                modifiers += FUNCTION_CONST
+            elif modifier_token.name == '__attribute__':
+                # TODO(nnorwitz): handle more __attribute__ details.
+                modifiers += FUNCTION_ATTRIBUTE
+                assert token.name == '(', token
+                # Consume everything between the (parens).
+                unused_tokens = list(self._GetMatchingChar('(', ')'))
+                token = self._GetNextToken()
+            elif modifier_token.name == modifier_token.name.upper():
+                # HACK(nnorwitz):  assume that all upper-case names
+                # are some macro we aren't expanding.
+                modifiers += FUNCTION_UNKNOWN_ANNOTATION
+            else:
+                print >>sys.stderr, ('Got unexpected token after method: %s' %
+                                     modifier_token)
 
         assert token.token_type == tokenize.SYNTAX, token
         # Handle ctor initializers.
@@ -897,12 +913,12 @@ class AstBuilder(object):
             # TODO(nnorwitz): handle aliasing namespaces.
             name, next_token = self.GetName()
             assert next_token.name == ';', next_token
-            return None
-        assert token.name == '{', token
-        tokens = list(self.GetScope())
-        # Handle namespace with nothing in it.
-        if tokens:
-            self._AddBackTokens(tokens)
+        else:
+            assert token.name == '{', token
+            tokens = list(self.GetScope())
+            # Handle namespace with nothing in it.
+            if tokens:
+                self._AddBackTokens(tokens)
         self._AddBackToken(Token(_INTERNAL_TOKEN, _NAMESPACE_POP, None, None))
         return None
 

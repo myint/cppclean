@@ -135,3 +135,12 @@ class FooOnYou {
 };
 
 namespace wtf = noname;
+
+void AnnotatedFunction() HOPEFULLY_THIS_IS_AN_ATTR;
+void RealAnnotatedFunction() __attribute__((weakref));
+
+class TestAttrs {
+  void AnnotatedMethod() HOPEFULLY_THIS_IS_AN_ATTR;
+  void RealAnnotatedMethod() __attribute__((weakref));
+};
+
