@@ -705,10 +705,19 @@ class AstBuilder(object):
             name = token.name
             token = self._GetNextToken()
 
-        assert token.token_type == tokenize.SYNTAX, token
-        assert token.name == '{', token
         fields = list(self._GetMatchingChar('{', '}'))
-        return ctor(token.start, token.end, name, fields, self.namespace_stack)
+        if token.token_type == tokenize.SYNTAX and token.name == '{':
+            return ctor(token.start, token.end, name, fields,
+                        self.namespace_stack)
+
+        # Must be variable declaration using the type prefixed with keyword.
+        assert token.token_type == tokenize.NAME, token
+        modifiers = []
+        reference = pointer = False
+        return VariableDeclaration(token.start, token.end,
+                                   token.name, name, 
+                                   modifiers, reference=False, pointer=False,
+                                   initial_value=None)
 
     def handle_struct(self):
         # Special case the handling typedef/aliasing of structs here.

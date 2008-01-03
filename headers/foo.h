@@ -150,3 +150,15 @@ namespace {
 struct AR;
 class BS { };
 }
+
+class OpCode {
+public:
+   enum Operator {
+    ID = 0,
+    CASE = 1,
+    DEL = 2,
+    INS = 3,
+   };
+   enum Operator op;
+};
+
