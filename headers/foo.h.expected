@@ -41,3 +41,4 @@ Class(2018, 2026, FooOnYou, None, [VariableDeclaration(2031, 2035, string & void
 Function(2094, 2098, [Token('void', 2094, 2098)] AnnotatedFunction([]), 0x40, None)
 Function(2146, 2150, [Token('void', 2146, 2150)] RealAnnotatedFunction([]), 0x20, None)
 Class(2208, 2217, TestAttrs, None, [Function(2222, 2226, [Token('void', 2222, 2226)] AnnotatedMethod([]), 0x40, None), Function(2274, 2278, [Token('void', 2274, 2278)] RealAnnotatedMethod([]), 0x20, None)])
+Typedef(2346, 2355, IplImage, [Struct(2346, 2355, _IplImage, None, None)])

@@ -144,3 +144,4 @@ class TestAttrs {
   void RealAnnotatedMethod() __attribute__((weakref));
 };
 
+typedef struct _IplImage IplImage;
