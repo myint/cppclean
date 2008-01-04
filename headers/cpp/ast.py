@@ -572,9 +572,15 @@ class AstBuilder(object):
         """Returns ([tokens], next_token_info)."""
         next_token = self._GetNextToken()
         tokens = []
+        last_token_was_name = False
         while (next_token.token_type == tokenize.NAME or
                (next_token.token_type == tokenize.SYNTAX and
                 next_token.name in ('::', '<'))):
+            # Two NAMEs in a row means the identifier should terminate.
+            # It's probably some sort of variable declaration.
+            if last_token_was_name and next_token.token_type == tokenize.NAME:
+                break
+            last_token_was_name = next_token.token_type == tokenize.NAME
             tokens.append(next_token)
             # Handle templated names.
             if next_token.name == '<':
@@ -727,10 +733,9 @@ class AstBuilder(object):
 
     def _GetNestedType(self, ctor):
         name = None
-        token = self._GetNextToken()
-        if token.token_type == tokenize.NAME:
-            name = token.name
-            token = self._GetNextToken()
+        name_tokens, token = self.GetName()
+        if name_tokens:
+            name = ''.join(t.name for t in name_tokens)
 
         # Handle forward declarations.
         if token.token_type == tokenize.SYNTAX and token.name == ';':
@@ -773,9 +778,10 @@ class AstBuilder(object):
                                            modifiers, reference, pointer,
                                            initial_value=None)
 
+        tokens = [token]
         if token2 is not None:
-            self._AddBackToken(token2)
-        self._AddBackToken(token)
+            tokens.append(token2)
+        self._AddBackTokens(tokens)
         return self._GetClass(Struct, VISIBILITY_PUBLIC, False)
 
     def handle_union(self):

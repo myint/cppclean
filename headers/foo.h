@@ -180,3 +180,4 @@ something else
 void Atmak() throw(std::bull);
 
 enum Status;
+enum RPC::Status2;
