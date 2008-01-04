@@ -48,6 +48,7 @@ FUNCTION_CTOR = 0x08
 FUNCTION_DTOR = 0x10
 FUNCTION_ATTRIBUTE = 0x20
 FUNCTION_UNKNOWN_ANNOTATION = 0x40
+FUNCTION_THROW = 0x80
 
 _INTERNAL_TOKEN = 'internal'
 _NAMESPACE_POP = 'ns-pop'
@@ -615,6 +616,12 @@ class AstBuilder(object):
             elif modifier_token.name == '__attribute__':
                 # TODO(nnorwitz): handle more __attribute__ details.
                 modifiers += FUNCTION_ATTRIBUTE
+                assert token.name == '(', token
+                # Consume everything between the (parens).
+                unused_tokens = list(self._GetMatchingChar('(', ')'))
+                token = self._GetNextToken()
+            elif modifier_token.name == 'throw':
+                modifiers += FUNCTION_THROW
                 assert token.name == '(', token
                 # Consume everything between the (parens).
                 unused_tokens = list(self._GetMatchingChar('(', ')'))

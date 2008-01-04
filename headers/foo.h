@@ -176,3 +176,5 @@ ignore more stuff a second apostrophe here does not work
 something else
 #endif
 #endif
+
+void Atmak() throw(std::bull);
