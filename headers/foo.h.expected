@@ -48,3 +48,4 @@ Class(2413, 2419, OpCode, None, [Enum(2447, 2448, Operator, {[Token('ID', 2453, 
 Class(2538, 2549, MemoryCache, None, [VariableDeclaration(2554, 2561, mutable Mutex index_mutex_), VariableDeclaration(2591, 2601,  CacheEntry* index_)])
 Struct(2628, 2629, None, [[Token('lala', 2623, 2627), Token('dense_hashmap', 2630, 2643), Token('<', 2643, 2644), Token('int', 2644, 2647)]], [])
 Function(2759, 2763, [Token('void', 2759, 2763)] Atmak([]), 0x80, None)
+Enum(2802, 2803, Status, {None})

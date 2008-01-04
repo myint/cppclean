@@ -178,3 +178,5 @@ something else
 #endif
 
 void Atmak() throw(std::bull);
+
+enum Status;

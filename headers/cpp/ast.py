@@ -732,6 +732,12 @@ class AstBuilder(object):
             name = token.name
             token = self._GetNextToken()
 
+        # Handle forward declarations.
+        if token.token_type == tokenize.SYNTAX and token.name == ';':
+            return ctor(token.start, token.end, name, None,
+                        self.namespace_stack)
+
+        # Must be the type declaration.
         fields = list(self._GetMatchingChar('{', '}'))
         if token.token_type == tokenize.SYNTAX and token.name == '{':
             return ctor(token.start, token.end, name, fields,
