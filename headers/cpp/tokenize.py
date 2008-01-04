@@ -56,6 +56,7 @@ def GetTokens(source):
         elif c == "'":                            # Find char.
             token_type = CONSTANT
             # NOTE(nnorwitz): may not be quite correct, should be good enough.
+            original = i
             i = source.find("'", i+1)
             while source[i-1] == '\\':
                 # Need to special case '\\'.
@@ -63,6 +64,9 @@ def GetTokens(source):
                     break
                 i = source.find("'", i+1)
             i += 1
+            # Try to handle unterminated single quotes (in a #if 0 block).
+            if i <= 0:
+                i = original + 1
         elif c.isdigit():                         # Find integer.
             token_type = CONSTANT
             if c == '0' and source[i+1] in 'xX':

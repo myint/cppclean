@@ -168,3 +168,11 @@ class MemoryCache {
 };
 
 struct lala : dense_hashmap<int> {};
+
+#if 0
+#if 1
+ignore more stuff a second apostrophe here does not work
+#else
+something else
+#endif
+#endif

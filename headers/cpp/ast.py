@@ -481,6 +481,10 @@ class AstBuilder(object):
                         name = name[:i]
                         break
                 return Define(token.start, token.end, name, value)
+            if name.startswith('if') and name[2:3].isspace():
+                condition = name[3:].strip()
+                if condition.startswith('0') or condition.startswith('(0)'):
+                    self._SkipIf0Blocks()
         return None
 
     def _GetTokensUpTo(self, expected_token_type, expected_token):
@@ -498,6 +502,21 @@ class AstBuilder(object):
     # TODO(nnorwitz): remove _IgnoreUpTo() it shouldn't be necesary.
     def _IgnoreUpTo(self, token_type, token):
         unused_tokens = self._GetTokensUpTo(token_type, token)
+
+    def _SkipIf0Blocks(self):
+        count = 1
+        while 1:
+            token = self._GetNextToken()
+            if token.token_type != tokenize.PREPROCESSOR:
+                continue
+
+            name = token.name[1:].lstrip()
+            if name.startswith('endif'):
+                count -= 1
+                if count == 0:
+                    break
+            elif name.startswith('if'):
+                count += 1
 
     def _GetMatchingChar(self, open_paren, close_paren):
         # Assumes the current token is open_paren and we will consume
