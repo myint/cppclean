@@ -184,17 +184,21 @@ def _DeclarationToParts(parts):
     modifiers = []
     type_name = []
     for p in parts:
-        if keywords.IsKeyword(p):
-            modifiers.append(p)
-        elif p == '<':
+        if keywords.IsKeyword(p.name):
+            modifiers.append(p.name)
+        elif p.name == '<':
             # Ignore the template portion, we know that must be used.
             # TODO(nnorwitz): we really need to keep the templated name
             # separately so we know to keep the header that included it.
             type_name.pop()
-        elif p not in ('*', '&', '>'):
+        elif p.name not in ('*', '&', '>'):
+            # Ensure that names have a space between them.
+            if (type_name and type_name[-1].token_type == tokenize.NAME and
+                p.token_type == tokenize.NAME):
+                type_name.append(Token(tokenize.SYNTAX, ' ', 0, 0))
             type_name.append(p)
-    type_name = ''.join(type_name)
-    return name, type_name, modifiers
+    type_name = ''.join(t.name for t in type_name)
+    return name.name, type_name, modifiers
 
 
 def _SequenceToParameters(seq):
@@ -224,7 +228,7 @@ def _SequenceToParameters(seq):
         elif s.name == '&':
             reference = True
         else:
-            type_modifiers.append(s.name)
+            type_modifiers.append(s)
     name, type_name, modifiers = _DeclarationToParts(type_modifiers)
     p = Parameter(first_token.start, first_token.end, name, type_name,
                   modifiers, reference, pointer, default)
@@ -443,7 +447,7 @@ class AstBuilder(object):
                     # Handle data, this isn't a method.
                     names = [t.name for t in temp_tokens]
                     name, type_name, modifiers = \
-                          _DeclarationToParts(names)
+                          _DeclarationToParts(temp_tokens)
                     t0 = temp_tokens[0]
                     reference = '&' in names
                     pointer = '*' in names
