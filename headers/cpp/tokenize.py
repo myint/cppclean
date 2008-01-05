@@ -122,8 +122,16 @@ def GetTokens(source):
             i += 1
             continue
         else:
-            print 'Unknown: %d:%s: %r' % (i, c, source[i-10:i+10])
-            raise RuntimeError, 'unexpected token'
+            print >>sys.stderr, \
+                  'Unknown token: %d:%s: %r' % (i, c, source[i-10:i+10])
+            i += 1
+            # The tokenizer seems to be in pretty good shape.  This
+            # raise is disabled so that bogus code in an #if 0 block
+            # can be handled.  Since we will ignore it anyways, this
+            # is probably fine.  So disable the exception.  Just
+            # return the bogus char.
+            
+            #raise RuntimeError, 'unexpected token'
 
         yield token_type, source[start:i], start, i
         if i <= 0:
