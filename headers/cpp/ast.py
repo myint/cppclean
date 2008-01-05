@@ -903,8 +903,11 @@ class AstBuilder(object):
         template_params = list(self._GetMatchingChar('<', '>'))
         # TODO(nnorwitz): for now, just ignore the template params.
         token = self._GetNextToken()
-        if token.token_type == tokenize.NAME and token.name == 'class':
-            return self.handle_class()
+        if token.token_type == tokenize.NAME:
+            if token.name == 'class':
+                return self._GetClass(Class, VISIBILITY_PRIVATE)
+            elif token.name == 'struct':
+                return self._GetClass(Struct, VISIBILITY_PUBLIC)
         self._AddBackToken(token)
         return self.GetMethod()
 

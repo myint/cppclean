@@ -185,3 +185,11 @@ enum RPC::Status2;
 typedef class ABC XYZ123;
 typedef class CB<Ev*, const AEv&> LP;
 typedef class OhMy {} JeeziePeezy;
+
+template <typename KeyType>
+struct HashIndexSpec {
+  HashIndexSpec() {}
+ private:
+};
+
+
