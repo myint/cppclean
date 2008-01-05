@@ -781,21 +781,22 @@ class AstBuilder(object):
         token2 = None
         if token.token_type == tokenize.NAME:
             token2 = self._GetNextToken()
-            if token2.token_type == tokenize.NAME:
-                self._AddBackToken(token2)
-                return Struct(token.start, token.end, token.name, None, None,
-                              self.namespace_stack)
-            elif (token2.token_type == tokenize.SYNTAX and
-                  token2.name[0] in '*&'):
-                variable = self._GetNextToken()
-                modifiers = []
+            token3 = self._GetNextToken()
+            is_syntax = (token2.token_type == tokenize.SYNTAX and
+                         token2.name[0] in '*&')
+            is_variable = (token2.token_type == tokenize.NAME and
+                           token3.name == ';')
+            # TODO(nnorwitz): handle methods declared to return a struct.
+            if is_syntax or (is_variable and not self._handling_typedef):
+                variable = token3
+                modifiers = ['struct']
                 reference = '&' in token2.name
                 pointer = '*' in token2.name
                 return VariableDeclaration(token.start, token.end,
                                            variable.name, token.name, 
                                            modifiers, reference, pointer,
                                            initial_value=None)
-            self._AddBackTokens((token, token2))
+            self._AddBackTokens((token, token2, token3))
         else:
             self._AddBackToken(token)
         return self._GetClass(Struct, VISIBILITY_PUBLIC)

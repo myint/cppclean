@@ -200,3 +200,7 @@ class ThreadShared<RES>::Accessor {
 class FooStr {
   char mystr[sizeof(mystr)];
 };
+
+class FooStruct {
+  struct in_addr addr_;
+};
