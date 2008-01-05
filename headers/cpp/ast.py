@@ -18,7 +18,7 @@
 """Generate an AST for C++."""
 
 # TODO:
-#  * Handle data/generic function/method declaration & definition (mostly done)
+#  * Handle static class data for templatized classes
 #  * Handle #include somewhere.
 #  * Handle casts (both C++ and C-style)
 #  * Handle conditions and loops (if/else, switch, for, while/do)
@@ -405,7 +405,7 @@ class AstBuilder(object):
                     yield result
             except:
                 msg = ('Got exception in %s @ %s %s' %
-                       (self.filename, token, self.token_queue))
+                       (self.filename, token, self.token_queue[:20]))
                 print >>sys.stderr, msg
                 raise
 
@@ -655,7 +655,7 @@ class AstBuilder(object):
                 modifiers += FUNCTION_UNKNOWN_ANNOTATION
             else:
                 msg = ('Got unexpected token in %s @ %s %s' %
-                       (self.filename, modifier_token, self.token_queue))
+                       (self.filename, modifier_token, self.token_queue[:20]))
                 print >>sys.stderr, msg
 
         assert token.token_type == tokenize.SYNTAX, token
@@ -765,6 +765,8 @@ class AstBuilder(object):
             next = self._GetNextToken()
             new_type = ctor(token.start, token.end, name, fields,
                             self.namespace_stack)
+            # A name means this is an anonymous type and the name
+            # is the variable declaration.
             if next.token_type != tokenize.NAME:
                 return new_type
             name = new_type
