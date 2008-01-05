@@ -416,8 +416,9 @@ class AstBuilder(object):
                 return self._GetMethod(token, FUNCTION_CTOR)
             else:
                 # Handle data or function declaration/definition.
+                syntax = tokenize.SYNTAX
                 temp_tokens, last_token = \
-                    self._GetVarTokensUpTo(tokenize.SYNTAX, '(', ';', '{')
+                    self._GetVarTokensUpTo(syntax, '(', ';', '{', '[')
                 temp_tokens.insert(0, token)
                 if last_token.name == '(':
                     # If there is an assignment before a paren, this is an
@@ -428,6 +429,15 @@ class AstBuilder(object):
                         temp_tokens.append(last_token)
                         temp_tokens.extend(new_temp)
                         last_token = Token(tokenize.SYNTAX, ';', 0, 0)
+
+                if last_token.name == '[':
+                    # Handle array, this isn't a method.
+                    # TODO(nnorwitz): keep the size somewhere.
+                    # unused_size = self._GetTokensUpTo(tokenize.SYNTAX, ']')
+                    temp_tokens.append(last_token)
+                    temp_tokens2, last_token = \
+                        self._GetVarTokensUpTo(tokenize.SYNTAX, ';')
+                    temp_tokens.extend(temp_tokens2)
 
                 if last_token.name == ';':
                     # Handle data, this isn't a method.

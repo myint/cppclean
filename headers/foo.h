@@ -196,3 +196,7 @@ template <class RES>
 class ThreadShared<RES>::Accessor {
  public:
 };
+
+class FooStr {
+  char mystr[sizeof(mystr)];
+};
