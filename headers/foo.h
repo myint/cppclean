@@ -204,3 +204,5 @@ class FooStr {
 class FooStruct {
   struct in_addr addr_;
 };
+
+enum {UNKNOWN = 0, GARBAGE_COLLECTING, NOT_GARBAGE_COLLECTING} garbage_state;

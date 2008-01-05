@@ -762,8 +762,13 @@ class AstBuilder(object):
         # Must be the type declaration.
         fields = list(self._GetMatchingChar('{', '}'))
         if token.token_type == tokenize.SYNTAX and token.name == '{':
-            return ctor(token.start, token.end, name, fields,
-                        self.namespace_stack)
+            next = self._GetNextToken()
+            new_type = ctor(token.start, token.end, name, fields,
+                            self.namespace_stack)
+            if next.token_type != tokenize.NAME:
+                return new_type
+            name = new_type
+            token = next
 
         # Must be variable declaration using the type prefixed with keyword.
         assert token.token_type == tokenize.NAME, token
