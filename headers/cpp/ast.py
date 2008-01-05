@@ -587,6 +587,7 @@ class AstBuilder(object):
             # Handle templated names.
             if next_token.name == '<':
                 tokens.extend(self._GetMatchingChar('<', '>'))
+                last_token_was_name = True
             next_token = self._GetNextToken()
         return tokens, next_token
 
@@ -930,14 +931,9 @@ class AstBuilder(object):
             assert class_token.token_type == tokenize.SYNTAX, class_token
             token = class_token
         else:
-            class_name = class_token.name
-            token = self._GetNextToken()
-            # Handle class names like:  Foo::Bar
-            while token.token_type == tokenize.SYNTAX and token.name == '::':
-                token = self._GetNextToken()
-                assert token.token_type == tokenize.NAME, token
-                class_name += '::' + token.name
-                token = self._GetNextToken()
+            self._AddBackToken(class_token)
+            name_tokens, token = self.GetName()
+            class_name = ''.join(t.name for t in name_tokens)
         bases = None
         if token.token_type == tokenize.SYNTAX:
             if token.name == ';':

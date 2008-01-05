@@ -192,4 +192,7 @@ struct HashIndexSpec {
  private:
 };
 
-
+template <class RES>
+class ThreadShared<RES>::Accessor {
+ public:
+};
