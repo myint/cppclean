@@ -776,7 +776,7 @@ class AstBuilder(object):
         assert token.token_type == tokenize.NAME, token
         modifiers = []
         reference = pointer = False
-        return VariableDeclaration(token.start, token.end, token.name, name, 
+        return VariableDeclaration(token.start, token.end, token.name, name,
                                    modifiers, reference, pointer,
                                    initial_value=None)
 
@@ -963,6 +963,25 @@ class AstBuilder(object):
                 return class_type(class_token.start, class_token.end,
                                   class_name, None, None,
                                   self.namespace_stack)
+            if token.name in '*&':
+                # Inline forward declaration.  Could be method or data.
+                name_token = self._GetNextToken()
+                next_token = self._GetNextToken()
+                if next_token.name == ';':
+                    # Handle data
+                    modifiers = ['class']
+                    reference = '&' in token.name
+                    pointer = '*' in token.name
+                    return VariableDeclaration(class_token.start,
+                                               class_token.end,
+                                               name_token.name, class_name, 
+                                               modifiers, reference, pointer,
+                                               initial_value=None)
+                else:
+                    # Assume this is a method.
+                    tokens = (class_token, token, name_token, next_token)
+                    self._AddBackTokens(tokens)
+                    return self.GetMethod()
             if token.name == ':':
                 # Get base classes.
                 bases = []

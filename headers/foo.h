@@ -206,3 +206,9 @@ class FooStruct {
 };
 
 enum {UNKNOWN = 0, GARBAGE_COLLECTING, NOT_GARBAGE_COLLECTING} garbage_state;
+
+class InlineClass {
+  class File* file_;
+  class File* Method1();
+  File* Method2();
+};
