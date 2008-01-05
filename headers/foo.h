@@ -212,3 +212,5 @@ class InlineClass {
   class File* Method1();
   File* Method2();
 };
+
+typedef enum A::D FT;

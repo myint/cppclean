@@ -759,6 +759,11 @@ class AstBuilder(object):
             return ctor(token.start, token.end, name, None,
                         self.namespace_stack)
 
+        if token.token_type == tokenize.NAME and self._handling_typedef:
+            self._AddBackToken(token)
+            return ctor(token.start, token.end, name, None,
+                        self.namespace_stack)
+
         # Must be the type declaration.
         fields = list(self._GetMatchingChar('{', '}'))
         if token.token_type == tokenize.SYNTAX and token.name == '{':
