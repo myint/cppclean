@@ -777,11 +777,10 @@ class AstBuilder(object):
                                            variable.name, token.name, 
                                            modifiers, reference, pointer,
                                            initial_value=None)
+            self._AddBackTokens((token, token2))
+        else:
+            self._AddBackToken(token)
 
-        tokens = [token]
-        if token2 is not None:
-            tokens.append(token2)
-        self._AddBackTokens(tokens)
         return self._GetClass(Struct, VISIBILITY_PUBLIC, False)
 
     def handle_union(self):
