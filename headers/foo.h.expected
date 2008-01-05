@@ -50,3 +50,6 @@ Struct(2623, 2627, lala, [[Token('dense_hashmap', 2630, 2643), Token('<', 2643, 
 Function(2759, 2763, [Token('void', 2759, 2763)] Atmak([]), 0x80, None)
 Enum(2802, 2803, Status, {None})
 Enum(2821, 2822, RPC::Status2, {None})
+Typedef(2838, 2841, XYZ123, [Class(2838, 2841, ABC, None, None)])
+Typedef(2864, 2866, LP, [Class(2864, 2866, CB, None, None), Token('<', 2866, 2867), Token('Ev', 2867, 2869), Token('*', 2869, 2870), Token(',', 2870, 2871), Token('const', 2872, 2877), Token('AEv', 2878, 2881), Token('&', 2881, 2882), Token('>', 2882, 2883)])
+Typedef(2902, 2906, JeeziePeezy, [Class(2902, 2906, OhMy, None, [])])

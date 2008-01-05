@@ -376,6 +376,8 @@ class AstBuilder(object):
         self.in_function = False
         self.current_start = None
         self.current_end = None
+        # Keep the state whether we are currently handling a typedef or not.
+        self._handling_typedef = False
 
     def Generate(self):
         while 1:
@@ -759,6 +761,7 @@ class AstBuilder(object):
     def handle_struct(self):
         # Special case the handling typedef/aliasing of structs here.
         # It would be a pain to handle in the class code.
+        # TODO(nnorwitz): need to use self.GetName() for::names.
         token = self._GetNextToken()
         token2 = None
         if token.token_type == tokenize.NAME:
@@ -780,7 +783,7 @@ class AstBuilder(object):
             self._AddBackTokens((token, token2))
         else:
             self._AddBackToken(token)
-        return self._GetClass(Struct, VISIBILITY_PUBLIC, False)
+        return self._GetClass(Struct, VISIBILITY_PUBLIC)
 
     def handle_union(self):
         return self._GetNestedType(Union)
@@ -865,9 +868,11 @@ class AstBuilder(object):
         token = self._GetNextToken()
         if (token.token_type == tokenize.NAME and
             keywords.IsKeyword(token.name)):
-            # Token must be struct/enum/union.
+            # Token must be struct/enum/union/class.
             method = getattr(self, 'handle_' + token.name)
+            self._handling_typedef = True
             tokens = [method()]
+            self._handling_typedef = False
         else:
             tokens = [token]
 
@@ -913,9 +918,9 @@ class AstBuilder(object):
         pass  # Not needed yet.
 
     def handle_class(self):
-        return self._GetClass(Class, VISIBILITY_PRIVATE, True)
+        return self._GetClass(Class, VISIBILITY_PRIVATE)
 
-    def _GetClass(self, class_type, visibility, get_last_token):
+    def _GetClass(self, class_type, visibility):
         class_name = None
         class_token = self._GetNextToken()
         if class_token.token_type != tokenize.NAME:
@@ -958,17 +963,25 @@ class AstBuilder(object):
                     # Support multiple inheritance.
                     assert next_token.name == ',', next_token
 
-        assert token.token_type == tokenize.SYNTAX, token
-        assert token.name == '{', token
-
-        ast = AstBuilder(self.GetScope(), self.filename, class_name,
-                         visibility)
-        body = list(ast.Generate())
-
-        if get_last_token:
-            token = self._GetNextToken()
+        body = None
+        if token.token_type == tokenize.SYNTAX and token.name == '{':
             assert token.token_type == tokenize.SYNTAX, token
-            assert token.name == ';', token
+            assert token.name == '{', token
+
+            ast = AstBuilder(self.GetScope(), self.filename, class_name,
+                             visibility)
+            body = list(ast.Generate())
+
+            if not self._handling_typedef:
+                token = self._GetNextToken()
+                assert token.token_type == tokenize.SYNTAX, token
+                assert token.name == ';', token
+        else:
+            if not self._handling_typedef:
+                msg = ('Got non-typedef token in %s @ %s %s' %
+                       (self.filename, token, self.token_queue))
+                print >>sys.stderr, msg
+            self._AddBackToken(token)
 
         return class_type(class_token.start, class_token.end, class_name,
                           bases, body, self.namespace_stack)

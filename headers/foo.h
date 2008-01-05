@@ -181,3 +181,7 @@ void Atmak() throw(std::bull);
 
 enum Status;
 enum RPC::Status2;
+
+typedef class ABC XYZ123;
+typedef class CB<Ev*, const AEv&> LP;
+typedef class OhMy {} JeeziePeezy;
