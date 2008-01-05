@@ -780,7 +780,6 @@ class AstBuilder(object):
             self._AddBackTokens((token, token2))
         else:
             self._AddBackToken(token)
-
         return self._GetClass(Struct, VISIBILITY_PUBLIC, False)
 
     def handle_union(self):
