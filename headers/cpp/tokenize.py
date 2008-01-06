@@ -132,7 +132,6 @@ def GetTokens(source):
         elif c == "'":                           # Find char.
             token_type = CONSTANT
             # NOTE(nnorwitz): may not be quite correct, should be good enough.
-            original = i
             i = source.find("'", i+1)
             while source[i-1] == '\\':
                 # Need to special case '\\'.
@@ -142,7 +141,7 @@ def GetTokens(source):
             i += 1
             # Try to handle unterminated single quotes (in a #if 0 block).
             if i <= 0:
-                i = original + 1
+                i = start + 1
         elif c == '#':                           # Find pre-processor command.
             token_type = PREPROCESSOR
             got_if = source[i:i+3] == '#if' and source[i+3:i+4].isspace()
