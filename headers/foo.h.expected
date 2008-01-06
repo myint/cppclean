@@ -62,3 +62,4 @@ Class(3259, 3270, InlineClass, None, [VariableDeclaration(3281, 3285, class File
 Typedef(3360, 3362, FT, [Enum(3360, 3362, A::D, {None})])
 Include(3380, 3401, "dir//bar.h")
 Function(3403, 3408, [Token('const', 3403, 3408), Token('string', 3409, 3415)] single_backslash([Token('"\\\\"', 3433, 3437)]), 0x00, None)
+VariableDeclaration(3448, 3457,  Struct(3448, 3457, BitFields, None, [VariableDeclaration(3464, 3467, int  done)]) flags_)

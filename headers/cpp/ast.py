@@ -1018,8 +1018,22 @@ class AstBuilder(object):
 
             if not self._handling_typedef:
                 token = self._GetNextToken()
-                assert token.token_type == tokenize.SYNTAX, token
-                assert token.name == ';', token
+                if token.token_type != tokenize.NAME:
+                    assert token.token_type == tokenize.SYNTAX, token
+                    assert token.name == ';', token
+                else:
+                    new_class = class_type(class_token.start, class_token.end,
+                                           class_name,
+                                           bases, body, self.namespace_stack)
+
+                    modifiers = []
+                    reference = '&' in token.name
+                    pointer = '*' in token.name
+                    return VariableDeclaration(class_token.start,
+                                               class_token.end,
+                                               token.name, new_class, 
+                                               modifiers, reference, pointer,
+                                               initial_value=None)
         else:
             if not self._handling_typedef:
                 msg = ('Got non-typedef token in %s @ %s %s' %

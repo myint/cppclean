@@ -221,3 +221,7 @@ typedef enum A::D FT;
 #include "dir//bar.h"
 
 const string single_backslash("\\");
+
+struct BitFields {
+    int done;
+} flags_;
