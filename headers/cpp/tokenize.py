@@ -31,6 +31,10 @@ PREPROCESSOR = 'PREPROCESSOR'
 
 
 def GetTokens(source):
+    # Only ignore errors while in a #if 0 block.
+    ignore_errors = False
+    count_ifs = 0
+
     i = 0
     end = len(source)
     while i < end:
@@ -87,6 +91,14 @@ def GetTokens(source):
             continue
         elif c == '#':                            # Find pre-processor command.
             token_type = PREPROCESSOR
+            got_if = source[i:i+2] == 'if' and source[i+2:i+3].isspace()
+            if got_if:
+                count_ifs += 1
+            elif source[i:i+5] == 'endif':
+                count_ifs -= 1
+                if count_ifs == 0:
+                    ignore_errors = False
+
             # TODO(nnorwitz): handle preprocessor statements (\ continuations).
             while 1:
                 i1 = source.find('\n', i)
@@ -97,6 +109,11 @@ def GetTokens(source):
                 i = min([x for x in (i1, i2, i3, end) if x != -1])
                 # Keep going if end of the line and the line ends with \.
                 if not (i == i1 and source[i-1] == '\\'):
+                    if got_if:
+                        condition = source[start+3:i].lstrip()
+                        if (condition.startswith('0') or
+                            condition.startswith('(0)')):
+                            ignore_errors = True
                     break
                 i += 1
         elif c in ':+-<>&|*=':                    # : or :: (plus other chars).
@@ -123,15 +140,16 @@ def GetTokens(source):
             continue
         else:
             print >>sys.stderr, \
-                  'Unknown token: %d:%s: %r' % (i, c, source[i-10:i+10])
+                  ('Got invalid token in %s @ %d token:%s: %r' %
+                   ('?', i, c, source[i-10:i+10]))
             i += 1
             # The tokenizer seems to be in pretty good shape.  This
-            # raise is disabled so that bogus code in an #if 0 block
-            # can be handled.  Since we will ignore it anyways, this
-            # is probably fine.  So disable the exception.  Just
-            # return the bogus char.
-            
-            #raise RuntimeError, 'unexpected token'
+            # raise is conditionally disabled so that bogus code
+            # in an #if 0 block can be handled.  Since we will ignore
+            # it anyways, this is probably fine.  So disable the
+            # exception and  return the bogus char.
+            if not ignore_errors:
+                raise RuntimeError, 'unexpected token'
 
         yield token_type, source[start:i], start, i
         if i <= 0:
