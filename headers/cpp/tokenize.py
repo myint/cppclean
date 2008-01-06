@@ -74,19 +74,19 @@ def GetTokens(source):
         token_type = UNKNOWN
         start = i
         c = source[i]
-        if c.isalpha() or c == '_':               # Find a string token.
+        if c.isalpha() or c == '_':              # Find a string token.
             token_type = NAME
             while source[i] in valid_identifier_chars:
                 i += 1
-        elif c == '/' and source[i+1] == '/':     # Find // comments.
+        elif c == '/' and source[i+1] == '/':    # Find // comments.
             i = source.find('\n', i)
             if i == -1:  # Handle EOF.
                 i = end
             continue
-        elif c == '/' and source[i+1] == '*':     # Find /* comments. */
+        elif c == '/' and source[i+1] == '*':    # Find /* comments. */
             i = source.find('*/', i) + 2
             continue
-        elif c in ':+-<>&|*=':                    # : or :: (plus other chars).
+        elif c in ':+-<>&|*=':                   # : or :: (plus other chars).
             token_type = SYNTAX
             i += 1
             new_ch = source[i]
@@ -96,7 +96,7 @@ def GetTokens(source):
                 i += 1
             elif new_ch == '=':
                 i += 1
-        elif c in '()[]{}~!?^%;/.,':              # Handle single char tokens.
+        elif c in '()[]{}~!?^%;/.,':             # Handle single char tokens.
             token_type = SYNTAX
             i += 1
             if c == '.' and source[i].isdigit():
@@ -104,7 +104,7 @@ def GetTokens(source):
                 i += 1
                 while source[i] in int_or_float_digits:
                     i += 1
-        elif c.isdigit():                         # Find integer.
+        elif c.isdigit():                        # Find integer.
             token_type = CONSTANT
             if c == '0' and source[i+1] in 'xX':
                 # Handle hex digits.
@@ -114,7 +114,7 @@ def GetTokens(source):
             else:
                 while source[i] in int_or_float_digits2:
                     i += 1
-        elif c == '"':                            # Find string.
+        elif c == '"':                           # Find string.
             token_type = CONSTANT
             i = source.find('"', i+1)
             while source[i-1] == '\\':
@@ -129,7 +129,7 @@ def GetTokens(source):
                     break
                 i = source.find('"', i+1)
             i += 1
-        elif c == "'":                            # Find char.
+        elif c == "'":                           # Find char.
             token_type = CONSTANT
             # NOTE(nnorwitz): may not be quite correct, should be good enough.
             original = i
@@ -143,7 +143,7 @@ def GetTokens(source):
             # Try to handle unterminated single quotes (in a #if 0 block).
             if i <= 0:
                 i = original + 1
-        elif c == '#':                            # Find pre-processor command.
+        elif c == '#':                           # Find pre-processor command.
             token_type = PREPROCESSOR
             got_if = source[i:i+3] == '#if' and source[i+3:i+4].isspace()
             if got_if:
@@ -177,7 +177,7 @@ def GetTokens(source):
                             ignore_errors = True
                     break
                 i += 1
-        elif c == '\\':                           # Handle \ in code.
+        elif c == '\\':                          # Handle \ in code.
             # This is different from the pre-processor \ handling.
             i += 1
             continue
