@@ -365,7 +365,7 @@ class AstBuilder(object):
         self._handling_typedef = False
 
     def HandleError(self, msg, token):
-        printable_queue = self.token_queue[:20]
+        printable_queue = list(reversed(self.token_queue[-20:]))
         print >>sys.stderr, ('Got %s in %s @ %s %s' %
                              (msg, self.filename, token, printable_queue))
 
@@ -544,26 +544,26 @@ class AstBuilder(object):
     def _GetNextToken(self):
         if self.token_queue:
             # TODO(nnorwitz): use a better data structure for the queue.
-            return self.token_queue.pop(0)
+            return self.token_queue.pop()
         return self.tokens.next()
 
     def _AddBackToken(self, token):
         if token.whence == tokenize.WHENCE_STREAM:
             token.whence = tokenize.WHENCE_QUEUE
-            self.token_queue.append(token)
+            self.token_queue.insert(0, token)
         else:
             assert token.whence == tokenize.WHENCE_QUEUE, token
-            self.token_queue.insert(0, token)
+            self.token_queue.append(token)
 
     def _AddBackTokens(self, tokens):
         if tokens:
-            if tokens[0].whence == tokenize.WHENCE_STREAM:
+            if tokens[-1].whence == tokenize.WHENCE_STREAM:
                 for token in tokens:
                     token.whence = tokenize.WHENCE_QUEUE
-                self.token_queue.extend(tokens)
+                self.token_queue[:0] = reversed(tokens)
             else:
-                assert tokens[0].whence == tokenize.WHENCE_QUEUE, tokens
-                self.token_queue[:0] = tokens
+                assert tokens[-1].whence == tokenize.WHENCE_QUEUE, tokens
+                self.token_queue.extend(reversed(tokens))
 
     def GetName(self):
         """Returns ([tokens], next_token_info)."""
