@@ -385,6 +385,11 @@ class AstBuilder(object):
         # Keep the state whether we are currently handling a typedef or not.
         self._handling_typedef = False
 
+    def HandleError(self, msg, token):
+        printable_queue = self.token_queue[:20]
+        print >>sys.stderr, ('Got %s in %s @ %s %s' %
+                             (msg, self.filename, token, printable_queue))
+
     def Generate(self):
         while 1:
             token = self._GetNextToken()
@@ -406,9 +411,7 @@ class AstBuilder(object):
                 if result is not None:
                     yield result
             except:
-                msg = ('Got exception in %s @ %s %s' %
-                       (self.filename, token, self.token_queue[:20]))
-                print >>sys.stderr, msg
+                self.HandleError('exception', token)
                 raise
 
     def _GenerateOne(self, token):
@@ -656,9 +659,7 @@ class AstBuilder(object):
                 # are some macro we aren't expanding.
                 modifiers += FUNCTION_UNKNOWN_ANNOTATION
             else:
-                msg = ('Got unexpected token in %s @ %s %s' %
-                       (self.filename, modifier_token, self.token_queue[:20]))
-                print >>sys.stderr, msg
+                self.HandleError('unexpected token', modifier_token)
 
         assert token.token_type == tokenize.SYNTAX, token
         # Handle ctor initializers.
@@ -1038,9 +1039,7 @@ class AstBuilder(object):
                                                initial_value=None)
         else:
             if not self._handling_typedef:
-                msg = ('Got non-typedef token in %s @ %s %s' %
-                       (self.filename, token, self.token_queue[:20]))
-                print >>sys.stderr, msg
+                self.HandleError('non-typedef token', token)
             self._AddBackToken(token)
 
         return class_type(class_token.start, class_token.end, class_name,
