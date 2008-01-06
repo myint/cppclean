@@ -1038,8 +1038,7 @@ class AstBuilder(object):
             assert token.name == '{', token
             tokens = list(self.GetScope())
             # Handle namespace with nothing in it.
-            if tokens:
-                self._AddBackTokens(tokens)
+            self._AddBackTokens(tokens)
         token = tokenize.Token(_INTERNAL_TOKEN, _NAMESPACE_POP, None, None)
         self._AddBackToken(token)
         return None
