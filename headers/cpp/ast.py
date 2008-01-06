@@ -354,6 +354,9 @@ class AstBuilder(object):
     def __init__(self, token_stream, filename, in_class='', visibility=None):
         self.tokens = token_stream
         self.filename = filename
+        # TODO(nnorwitz): use a better data structure (deque) for the queue.
+        # Switching directions of the "queue" improved perf by about 25%.
+        # Using a deque should be even better since we access from both sides.
         self.token_queue = []
         self.namespace_stack = []
         self.in_class = in_class
@@ -543,7 +546,6 @@ class AstBuilder(object):
 
     def _GetNextToken(self):
         if self.token_queue:
-            # TODO(nnorwitz): use a better data structure for the queue.
             return self.token_queue.pop()
         return self.tokens.next()
 
