@@ -25,6 +25,7 @@ from cpp import utils
 _letters = 'abcdefghijklmnopqrstuvwxyz'
 VALID_IDENTIFIER_CHARS = set(_letters + _letters.upper() + '_0123456789')
 HEX_DIGITS = set('0123456789abcdefABCDEF')
+INT_OR_FLOAT_DIGITS = set('01234567890eE-+')
 
 # Token types.
 UNKNOWN = 'UNKNOWN'
@@ -54,6 +55,8 @@ def GetTokens(source):
     # Cache valid identifier characters for speed.
     valid_identifier_chars = VALID_IDENTIFIER_CHARS
     hex_digits = HEX_DIGITS
+    int_or_float_digits = INT_OR_FLOAT_DIGITS
+    int_or_float_digits2 = int_or_float_digits | set('.')
 
     # Only ignore errors while in a #if 0 block.
     ignore_errors = False
@@ -99,7 +102,7 @@ def GetTokens(source):
             if c == '.' and source[i].isdigit():
                 token_type = CONSTANT
                 i += 1
-                while source[i].isdigit() or source[i] in 'eE+-':
+                while source[i] in int_or_float_digits:
                     i += 1
         elif c.isdigit():                         # Find integer.
             token_type = CONSTANT
@@ -109,7 +112,7 @@ def GetTokens(source):
                 while source[i] in hex_digits:
                     i += 1
             else:
-                while source[i].isdigit() or source[i] in 'eE+-.':
+                while source[i] in int_or_float_digits2:
                     i += 1
         elif c == '"':                            # Find string.
             token_type = CONSTANT
