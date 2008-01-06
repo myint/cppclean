@@ -1023,7 +1023,7 @@ class AstBuilder(object):
         else:
             if not self._handling_typedef:
                 msg = ('Got non-typedef token in %s @ %s %s' %
-                       (self.filename, token, self.token_queue))
+                       (self.filename, token, self.token_queue[:20]))
                 print >>sys.stderr, msg
             self._AddBackToken(token)
 
