@@ -138,8 +138,10 @@ class Expr(Node):
 class Return(Expr):
     pass
 
+
 class Delete(Expr):
     pass
+
 
 class Friend(Expr):
     pass
@@ -1157,6 +1159,8 @@ def PrintIndentifiers(filename, should_print):
         for node in builder.Generate():
             if should_print(node):
                 print node.name
+    except KeyboardInterrupt:
+      return
     except:
         pass
 
@@ -1176,6 +1180,8 @@ def main(argv):
         builder = BuilderFromSource(source, filename)
         try:
             entire_ast = filter(None, builder.Generate())
+        except KeyboardInterrupt:
+            return
         except:
             # Already printed a warning, print the traceback and continue.
             traceback.print_exc()

@@ -52,6 +52,8 @@ def main(argv):
     try:
       entire_ast = filter(None, builder.Generate())
       _FindWarnings(filename, source, entire_ast)
+    except KeyboardInterrupt:
+      return
     except:
       # An error message was already printed since we couldn't parse.
       pass

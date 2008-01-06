@@ -113,6 +113,8 @@ class WarningHunter(object):
             builder = ast.BuilderFromSource(source, filename)
             try:
                 module = Module(filename, filter(None, builder.Generate()))
+            except KeyboardInterrupt:
+                sys.exit(1)
             except:
                 print 'Exception while processing', filename
         self._module_cache[filename] = module
