@@ -839,11 +839,9 @@ class AstBuilder(object):
     def handle_virtual(self):
         # What follows must be a method.
         token = self._GetNextToken()
-        if token.token_type == tokenize.SYNTAX:
-            # Better be a virtual dtor
-            assert token.name == '~', token
+        if token.token_type == tokenize.SYNTAX and token.name == '~':
             return self.GetMethod(FUNCTION_VIRTUAL + FUNCTION_DTOR)
-        assert token.token_type == tokenize.NAME, token
+        assert token.token_type == tokenize.NAME or token.name == '::', token
         return_type_and_name = self._GetTokensUpTo(tokenize.SYNTAX, '(')
         return_type_and_name.insert(0, token)
         return self._GetMethod(return_type_and_name, FUNCTION_VIRTUAL, False)

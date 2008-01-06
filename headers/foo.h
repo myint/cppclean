@@ -230,3 +230,8 @@ class MyF {
   template <typename U>
   friend class shared_ptr;
 };
+
+class Colon {
+  virtual ::Foo GetFoo();
+  ::Foo GetFoo2();
+};
