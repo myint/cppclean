@@ -225,3 +225,8 @@ const string single_backslash("\\");
 struct BitFields {
     int done;
 } flags_;
+
+class MyF {
+  template <typename U>
+  friend class shared_ptr;
+};

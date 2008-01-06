@@ -935,6 +935,8 @@ class AstBuilder(object):
                 return self._GetClass(Class, VISIBILITY_PRIVATE)
             elif token.name == 'struct':
                 return self._GetClass(Struct, VISIBILITY_PUBLIC)
+            elif token.name == 'friend':
+                return self.handle_friend()
         self._AddBackToken(token)
         return self.GetMethod()
 
