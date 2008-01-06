@@ -104,9 +104,16 @@ def GetTokens(source):
                 i1 = source.find('\n', i)
                 i2 = source.find('//', i)
                 i3 = source.find('/*', i)
+                i4 = source.find('"', i)
                 # NOTE(nnorwitz): doesn't handle comments in #define macros.
                 # Get the first important symbol (newline, comment, EOF/end).
-                i = min([x for x in (i1, i2, i3, end) if x != -1])
+                i = min([x for x in (i1, i2, i3, i4, end) if x != -1])
+
+                # Handle #include "dir//foo.h" properly.
+                if source[i] == '"':
+                    i = source.find('"', i+1) + 1
+                    assert i > 0
+                    continue
                 # Keep going if end of the line and the line ends with \.
                 if not (i == i1 and source[i-1] == '\\'):
                     if got_if:
@@ -155,7 +162,7 @@ def GetTokens(source):
         if i <= 0:
             print 'Invalid index, exiting now.'
             return
-            
+
 
 def main(argv):
     for filename in argv[1:]:

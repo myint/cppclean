@@ -218,3 +218,4 @@ typedef enum A::D FT;
 #if 0
 @
 #endif
+#include "dir//bar.h"
