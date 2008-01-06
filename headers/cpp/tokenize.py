@@ -70,7 +70,6 @@ def GetTokens(source):
         elif c == "'":                            # Find char.
             token_type = CONSTANT
             # NOTE(nnorwitz): may not be quite correct, should be good enough.
-            # Steal the even/odd backslash handling from string above.
             original = i
             i = source.find("'", i+1)
             while source[i-1] == '\\':
