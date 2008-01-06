@@ -769,28 +769,33 @@ class AstBuilder(object):
     def handle_struct(self):
         # Special case the handling typedef/aliasing of structs here.
         # It would be a pain to handle in the class code.
-        # TODO(nnorwitz): need to use self.GetName() for::names.
-        token = self._GetNextToken()
-        if token.token_type == tokenize.NAME:
-            token2 = self._GetNextToken()
-            token3 = self._GetNextToken()
-            is_syntax = (token2.token_type == tokenize.SYNTAX and
-                         token2.name[0] in '*&')
-            is_variable = (token2.token_type == tokenize.NAME and
-                           token3.name == ';')
+        name_tokens, var_token = self.GetName()
+        if name_tokens:
+            next_token = self._GetNextToken()
+            is_syntax = (var_token.token_type == tokenize.SYNTAX and
+                         var_token.name[0] in '*&')
+            is_variable = (var_token.token_type == tokenize.NAME and
+                           next_token.name == ';')
             # TODO(nnorwitz): handle methods declared to return a struct.
+            variable = var_token
+            if is_syntax and not is_variable:
+                variable = next_token
+                temp = self._GetNextToken()
+                assert temp.name == ';', (temp, name_tokens, var_token)
             if is_syntax or (is_variable and not self._handling_typedef):
-                variable = token3
                 modifiers = ['struct']
-                reference = '&' in token2.name
-                pointer = '*' in token2.name
-                return VariableDeclaration(token.start, token.end,
-                                           variable.name, token.name, 
+                reference = '&' in var_token.name
+                pointer = '*' in var_token.name
+                type_name = ''.join(t.name for t in name_tokens)
+                first_token = name_tokens[0]
+                return VariableDeclaration(first_token.start, first_token.end,
+                                           variable.name, type_name, 
                                            modifiers, reference, pointer,
                                            initial_value=None)
-            self._AddBackTokens((token, token2, token3))
+            name_tokens.extend((var_token, next_token))
+            self._AddBackTokens(name_tokens)
         else:
-            self._AddBackToken(token)
+            self._AddBackToken(var_token)
         return self._GetClass(Struct, VISIBILITY_PUBLIC)
 
     def handle_union(self):
