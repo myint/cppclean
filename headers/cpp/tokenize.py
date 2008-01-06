@@ -193,10 +193,10 @@ def GetTokens(source):
                    ('?', i, c, source[i-10:i+10]))
             raise RuntimeError, 'unexpected token'
 
-        yield Token(token_type, source[start:i], start, i)
         if i <= 0:
             print 'Invalid index, exiting now.'
             return
+        yield Token(token_type, source[start:i], start, i)
 
 
 def main(argv):
