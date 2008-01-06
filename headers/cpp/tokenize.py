@@ -91,10 +91,10 @@ def GetTokens(source):
             continue
         elif c == '#':                            # Find pre-processor command.
             token_type = PREPROCESSOR
-            got_if = source[i:i+2] == 'if' and source[i+2:i+3].isspace()
+            got_if = source[i:i+3] == '#if' and source[i+3:i+4].isspace()
             if got_if:
                 count_ifs += 1
-            elif source[i:i+5] == 'endif':
+            elif source[i:i+6] == '#endif':
                 count_ifs -= 1
                 if count_ifs == 0:
                     ignore_errors = False
@@ -110,7 +110,7 @@ def GetTokens(source):
                 # Keep going if end of the line and the line ends with \.
                 if not (i == i1 and source[i-1] == '\\'):
                     if got_if:
-                        condition = source[start+3:i].lstrip()
+                        condition = source[start+4:i].lstrip()
                         if (condition.startswith('0') or
                             condition.startswith('(0)')):
                             ignore_errors = True
@@ -138,18 +138,18 @@ def GetTokens(source):
             # This is different from the pre-processor \ handling.
             i += 1
             continue
-        else:
-            print >>sys.stderr, \
-                  ('Got invalid token in %s @ %d token:%s: %r' %
-                   ('?', i, c, source[i-10:i+10]))
-            i += 1
+        elif ignore_errors:
             # The tokenizer seems to be in pretty good shape.  This
             # raise is conditionally disabled so that bogus code
             # in an #if 0 block can be handled.  Since we will ignore
             # it anyways, this is probably fine.  So disable the
             # exception and  return the bogus char.
-            if not ignore_errors:
-                raise RuntimeError, 'unexpected token'
+            i += 1
+        else:
+            print >>sys.stderr, \
+                  ('Got invalid token in %s @ %d token:%s: %r' %
+                   ('?', i, c, source[i-10:i+10]))
+            raise RuntimeError, 'unexpected token'
 
         yield token_type, source[start:i], start, i
         if i <= 0:

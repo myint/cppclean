@@ -214,3 +214,7 @@ class InlineClass {
 };
 
 typedef enum A::D FT;
+
+#if 0
+@
+#endif
