@@ -219,3 +219,5 @@ typedef enum A::D FT;
 @
 #endif
 #include "dir//bar.h"
+
+const string single_backslash("\\");

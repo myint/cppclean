@@ -61,3 +61,4 @@ VariableDeclaration(3237, 3250,  Enum(3179, 3180, None, {[Token('UNKNOWN', 3180,
 Class(3259, 3270, InlineClass, None, [VariableDeclaration(3281, 3285, class File* file_), Function(3302, 3306, [Token('File', 3302, 3306), Token('*', 3306, 3307)] Method1([]), 0x00, None), Function(3321, 3325, [Token('File', 3321, 3325), Token('*', 3325, 3326)] Method2([]), 0x00, None)])
 Typedef(3360, 3362, FT, [Enum(3360, 3362, A::D, {None})])
 Include(3380, 3401, "dir//bar.h")
+Function(3403, 3408, [Token('const', 3403, 3408), Token('string', 3409, 3415)] single_backslash([Token('"\\\\"', 3433, 3437)]), 0x00, None)

@@ -54,12 +54,16 @@ def GetTokens(source):
         elif c == '"':                            # Find string.
             token_type = CONSTANT
             i = source.find('"', i+1)
-            while source[i-1] == '\\':
+            backslash_count = source.count('\\', start, i)
+            while source[i-1] == '\\' and (backslash_count % 2) == 1:
+                last_start = i
                 i = source.find('"', i+1)
+                backslash_count = source.count('\\', last_start, i)
             i += 1
         elif c == "'":                            # Find char.
             token_type = CONSTANT
             # NOTE(nnorwitz): may not be quite correct, should be good enough.
+            # Steal the even/odd backslash handling from string above.
             original = i
             i = source.find("'", i+1)
             while source[i-1] == '\\':
