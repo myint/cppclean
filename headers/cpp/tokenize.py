@@ -21,6 +21,10 @@ import sys
 
 from cpp import utils
 
+# TODO(nnorwitz): consider adding $ as a valid identifier char.
+_letters = 'abcdefghijklmnopqrstuvwxyz'
+VALID_IDENTIFIER_CHARS = set(_letters + _letters.upper() + '_0123456789')
+HEX_DIGITS = set('0123456789abcdefABCDEF')
 
 # Token types.
 UNKNOWN = 'UNKNOWN'
@@ -47,6 +51,10 @@ class Token(object):
 
 
 def GetTokens(source):
+    # Cache valid identifier characters for speed.
+    valid_identifier_chars = VALID_IDENTIFIER_CHARS
+    hex_digits = HEX_DIGITS
+
     # Only ignore errors while in a #if 0 block.
     ignore_errors = False
     count_ifs = 0
@@ -65,9 +73,44 @@ def GetTokens(source):
         c = source[i]
         if c.isalpha() or c == '_':               # Find a string token.
             token_type = NAME
-            # TODO(nnorwitz): consider adding $ as a valid identifier char.
-            while source[i].isalpha() or source[i].isdigit() or source[i] == '_':
+            while source[i] in valid_identifier_chars:
                 i += 1
+        elif c == '/' and source[i+1] == '/':     # Find // comments.
+            i = source.find('\n', i)
+            if i == -1:  # Handle EOF.
+                i = end
+            continue
+        elif c == '/' and source[i+1] == '*':     # Find /* comments. */
+            i = source.find('*/', i) + 2
+            continue
+        elif c in ':+-<>&|*=':                    # : or :: (plus other chars).
+            token_type = SYNTAX
+            i += 1
+            new_ch = source[i]
+            if new_ch == c:
+                i += 1
+            elif c == '-' and new_ch == '>':
+                i += 1
+            elif new_ch == '=':
+                i += 1
+        elif c in '()[]{}~!?^%;/.,':              # Handle single char tokens.
+            token_type = SYNTAX
+            i += 1
+            if c == '.' and source[i].isdigit():
+                token_type = CONSTANT
+                i += 1
+                while source[i].isdigit() or source[i] in 'eE+-':
+                    i += 1
+        elif c.isdigit():                         # Find integer.
+            token_type = CONSTANT
+            if c == '0' and source[i+1] in 'xX':
+                # Handle hex digits.
+                i += 2
+                while source[i] in hex_digits:
+                    i += 1
+            else:
+                while source[i].isdigit() or source[i] in 'eE+-.':
+                    i += 1
         elif c == '"':                            # Find string.
             token_type = CONSTANT
             i = source.find('"', i+1)
@@ -97,24 +140,6 @@ def GetTokens(source):
             # Try to handle unterminated single quotes (in a #if 0 block).
             if i <= 0:
                 i = original + 1
-        elif c.isdigit():                         # Find integer.
-            token_type = CONSTANT
-            if c == '0' and source[i+1] in 'xX':
-                # Handle hex digits.
-                i += 2
-                while source[i].isdigit() or source[i].lower() in 'abcdef':
-                    i += 1
-            else:
-                while source[i].isdigit() or source[i] in 'eE+-.':
-                    i += 1
-        elif c == '/' and source[i+1] == '/':     # Find // comments.
-            i = source.find('\n', i)
-            if i == -1:  # Handle EOF.
-                i = end
-            continue
-        elif c == '/' and source[i+1] == '*':     # Find /* comments. */
-            i = source.find('*/', i) + 2
-            continue
         elif c == '#':                            # Find pre-processor command.
             token_type = PREPROCESSOR
             got_if = source[i:i+3] == '#if' and source[i+3:i+4].isspace()
@@ -149,24 +174,6 @@ def GetTokens(source):
                             ignore_errors = True
                     break
                 i += 1
-        elif c in ':+-<>&|*=':                    # : or :: (plus other chars).
-            token_type = SYNTAX
-            i += 1
-            new_ch = source[i]
-            if new_ch == c:
-                i += 1
-            elif c == '-' and new_ch == '>':
-                i += 1
-            elif new_ch == '=':
-                i += 1
-        elif c in '()[]{}~!?^%;/.,':              # Handle single char tokens.
-            token_type = SYNTAX
-            i += 1
-            if c == '.' and source[i].isdigit():
-                token_type = CONSTANT
-                i += 1
-                while source[i].isdigit() or source[i] in 'eE+-':
-                    i += 1
         elif c == '\\':                           # Handle \ in code.
             # This is different from the pre-processor \ handling.
             i += 1
