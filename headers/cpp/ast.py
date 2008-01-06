@@ -790,7 +790,6 @@ class AstBuilder(object):
         # It would be a pain to handle in the class code.
         # TODO(nnorwitz): need to use self.GetName() for::names.
         token = self._GetNextToken()
-        token2 = None
         if token.token_type == tokenize.NAME:
             token2 = self._GetNextToken()
             token3 = self._GetNextToken()
