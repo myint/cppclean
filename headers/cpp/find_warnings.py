@@ -145,7 +145,7 @@ class WarningHunter(object):
 
         def _ProcessTypedef(typedef):
             for token in typedef.alias:
-                if (isinstance(token, ast.Token) and
+                if (isinstance(token, tokenize.Token) and
                     token.token_type == tokenize.NAME):
                     classes_used[token.name] = True
                 elif isinstance(token, ast.Struct):

@@ -29,6 +29,22 @@ CONSTANT = 'CONSTANT'
 NAME = 'NAME'
 PREPROCESSOR = 'PREPROCESSOR'
 
+WHENCE_STREAM, WHENCE_QUEUE = range(2)
+
+
+class Token(object):
+    def __init__(self, token_type, name, start, end):
+        self.token_type = token_type
+        self.name = name
+        self.start = start
+        self.end = end
+        self.whence = WHENCE_STREAM
+    def __str__(self):
+        if not utils.DEBUG:
+            return 'Token(%r)' % self.name
+        return 'Token(%r, %s, %s)' % (self.name, self.start, self.end)
+    __repr__ = __str__
+
 
 def GetTokens(source):
     # Only ignore errors while in a #if 0 block.
@@ -168,7 +184,7 @@ def GetTokens(source):
                    ('?', i, c, source[i-10:i+10]))
             raise RuntimeError, 'unexpected token'
 
-        yield token_type, source[start:i], start, i
+        yield Token(token_type, source[start:i], start, i)
         if i <= 0:
             print 'Invalid index, exiting now.'
             return

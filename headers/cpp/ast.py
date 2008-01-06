@@ -35,10 +35,6 @@ from cpp import tokenize
 from cpp import utils
 
 
-# Set to True to see the start/end token indices.
-DEBUG = True
-
-
 VISIBILITY_PUBLIC, VISIBILITY_PROTECTED, VISIBILITY_PRIVATE = range(3)
 
 FUNCTION_CONST = 0x01
@@ -52,23 +48,6 @@ FUNCTION_THROW = 0x80
 
 _INTERNAL_TOKEN = 'internal'
 _NAMESPACE_POP = 'ns-pop'
-
-_WHENCE_STREAM, _WHENCE_QUEUE = range(2)
-
-
-# TODO(nnorwitz): Move Token into the tokenize module.
-class Token(object):
-    def __init__(self, token_type, name, start, end):
-        self.token_type = token_type
-        self.name = name
-        self.start = start
-        self.end = end
-        self.whence = _WHENCE_STREAM
-    def __str__(self):
-        if not DEBUG:
-            return 'Token(%r)' % self.name
-        return 'Token(%r, %s, %s)' % (self.name, self.start, self.end)
-    __repr__ = __str__
 
 
 # TODO(nnorwitz): move AST nodes into a separate module.
@@ -87,7 +66,7 @@ class Node(object):
     def XXX__str__(self):
         return self._StringHelper(self.__class__.__name__, '')
     def _StringHelper(self, name, suffix):
-        if not DEBUG:
+        if not utils.DEBUG:
             return '%s(%s)' % (name, suffix)
         return '%s(%d, %d, %s)' % (name, self.start, self.end, suffix)
     def __repr__(self):
@@ -197,7 +176,7 @@ def _DeclarationToParts(parts):
             # Ensure that names have a space between them.
             if (type_name and type_name[-1].token_type == tokenize.NAME and
                 p.token_type == tokenize.NAME):
-                type_name.append(Token(tokenize.SYNTAX, ' ', 0, 0))
+                type_name.append(tokenize.Token(tokenize.SYNTAX, ' ', 0, 0))
             type_name.append(p)
     type_name = ''.join(t.name for t in type_name)
     return name.name, type_name, modifiers
@@ -437,7 +416,7 @@ class AstBuilder(object):
                         new_temp = self._GetTokensUpTo(tokenize.SYNTAX, ';')
                         temp_tokens.append(last_token)
                         temp_tokens.extend(new_temp)
-                        last_token = Token(tokenize.SYNTAX, ';', 0, 0)
+                        last_token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
 
                 if last_token.name == '[':
                     # Handle array, this isn't a method.
@@ -566,27 +545,24 @@ class AstBuilder(object):
         if self.token_queue:
             # TODO(nnorwitz): use a better data structure for the queue.
             return self.token_queue.pop(0)
-        next = self.tokens.next()
-        if isinstance(next, Token):
-            return next
-        return Token(*next)
+        return self.tokens.next()
 
     def _AddBackToken(self, token):
-        if token.whence == _WHENCE_STREAM:
-            token.whence = _WHENCE_QUEUE
+        if token.whence == tokenize.WHENCE_STREAM:
+            token.whence = tokenize.WHENCE_QUEUE
             self.token_queue.append(token)
         else:
-            assert token.whence == _WHENCE_QUEUE, token
+            assert token.whence == tokenize.WHENCE_QUEUE, token
             self.token_queue.insert(0, token)
 
     def _AddBackTokens(self, tokens):
         if tokens:
-            if tokens[0].whence == _WHENCE_STREAM:
+            if tokens[0].whence == tokenize.WHENCE_STREAM:
                 for token in tokens:
-                    token.whence = _WHENCE_QUEUE
+                    token.whence = tokenize.WHENCE_QUEUE
                 self.token_queue.extend(tokens)
             else:
-                assert tokens[0].whence == _WHENCE_QUEUE, tokens
+                assert tokens[0].whence == tokenize.WHENCE_QUEUE, tokens
                 self.token_queue[:0] = tokens
 
     def GetName(self):
@@ -1064,7 +1040,8 @@ class AstBuilder(object):
             # Handle namespace with nothing in it.
             if tokens:
                 self._AddBackTokens(tokens)
-        self._AddBackToken(Token(_INTERNAL_TOKEN, _NAMESPACE_POP, None, None))
+        token = tokenize.Token(_INTERNAL_TOKEN, _NAMESPACE_POP, None, None)
+        self._AddBackToken(token)
         return None
 
     def handle_using(self):
@@ -1185,7 +1162,7 @@ def main(argv):
             # Already printed a warning, print the traceback and continue.
             traceback.print_exc()
         else:
-            if DEBUG:
+            if utils.DEBUG:
                 for ast in entire_ast:
                     print ast
 

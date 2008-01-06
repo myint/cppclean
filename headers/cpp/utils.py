@@ -17,6 +17,10 @@
 
 """Generic utilities."""
 
+# Set to True to see the start/end token indices.
+DEBUG = True
+
+
 def ReadFile(filename, print_error=True):
     try:
         fp = open(filename)
