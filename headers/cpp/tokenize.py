@@ -206,9 +206,9 @@ def main(argv):
             continue
 
         tokens = GetTokens(source)
-        for token_type, token, start, end in tokens:
-            print '%-12s: %s' % (token_type, token)
-            # print '\r%6.2f%%' % (100.0 * index / end),
+        for token in tokens:
+            print '%-12s: %s' % (token.token_type, token.name)
+            # print '\r%6.2f%%' % (100.0 * index / token.end),
         print
 
 
