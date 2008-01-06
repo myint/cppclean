@@ -235,3 +235,5 @@ class Colon {
   virtual ::Foo GetFoo();
   ::Foo GetFoo2();
 };
+
+string foo = "\nX=\"/*\"";

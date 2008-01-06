@@ -49,16 +49,23 @@ def GetTokens(source):
         c = source[i]
         if c.isalpha() or c == '_':               # Find a string token.
             token_type = NAME
+            # TODO(nnorwitz): consider adding $ as a valid identifier char.
             while source[i].isalpha() or source[i].isdigit() or source[i] == '_':
                 i += 1
         elif c == '"':                            # Find string.
             token_type = CONSTANT
             i = source.find('"', i+1)
-            backslash_count = source.count('\\', start, i)
-            while source[i-1] == '\\' and (backslash_count % 2) == 1:
-                last_start = i
+            while source[i-1] == '\\':
+                # Count the trailing backslashes.
+                backslash_count = 1
+                j = i - 2
+                while source[j] == '\\':
+                    backslash_count += 1
+                    j -= 1
+                # When trailing backslashes are even, they escape each other.
+                if (backslash_count % 2) == 0:
+                    break
                 i = source.find('"', i+1)
-                backslash_count = source.count('\\', last_start, i)
             i += 1
         elif c == "'":                            # Find char.
             token_type = CONSTANT
