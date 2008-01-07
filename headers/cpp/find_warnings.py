@@ -31,6 +31,8 @@ from cpp import utils
 
 
 class Module(object):
+    """Data container represting a single source file."""
+
     def __init__(self, filename, ast_list):
         self.filename = filename
         self.ast_list = ast_list
@@ -42,6 +44,7 @@ class Module(object):
         return [node for node in self.ast_list if node.IsDefinition()]
 
     def IsAnyPublicSymbolUsed(self, ast_list):
+        """Returns a bool whether any token in ast_list uses this module."""
         def _IsSymbolUsed(symbol):
             # TODO(nnorwitz): this doesn't handle namespaces properly.
             for node in ast_list:
