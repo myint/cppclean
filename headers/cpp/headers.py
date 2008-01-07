@@ -17,6 +17,9 @@
 
 """Find and print the headers #include'd in a source file."""
 
+__author__ = 'nnorwitz@google.com (Neal Norwitz)'
+
+
 import os
 import sys
 

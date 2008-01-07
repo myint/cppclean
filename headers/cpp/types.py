@@ -20,6 +20,9 @@
 The types are:  structs, unions, enums, typedefs
 """
 
+__author__ = 'nnorwitz@google.com (Neal Norwitz)'
+
+
 import sys
 
 from cpp import ast

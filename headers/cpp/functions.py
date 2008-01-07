@@ -17,6 +17,9 @@
 
 """Find and print the functions in a source file."""
 
+__author__ = 'nnorwitz@google.com (Neal Norwitz)'
+
+
 import sys
 
 from cpp import ast

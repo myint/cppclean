@@ -17,6 +17,9 @@
 
 """Tokenize C++ source code"""
 
+__author__ = 'nnorwitz@google.com (Neal Norwitz)'
+
+
 import sys
 
 from cpp import utils

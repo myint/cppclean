@@ -17,6 +17,9 @@
 
 """Find warnings for C++ code."""
 
+__author__ = 'nnorwitz@google.com (Neal Norwitz)'
+
+
 import os
 import sys
 

@@ -16,6 +16,9 @@
 
 """Print classes which have a virtual method and non-virtual destructor."""
 
+__author__ = 'nnorwitz@google.com (Neal Norwitz)'
+
+
 import sys
 
 from cpp import ast

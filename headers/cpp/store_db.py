@@ -17,6 +17,9 @@
 
 """Store the parse tree (AST) from C++ source in MySQL."""
 
+__author__ = 'nnorwitz@google.com (Neal Norwitz)'
+
+
 import os
 import sys
 

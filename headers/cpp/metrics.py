@@ -17,6 +17,9 @@
 
 """Calculate metrics for C++ code."""
 
+__author__ = 'nnorwitz@google.com (Neal Norwitz)'
+
+
 from cpp import keywords
 
 
@@ -26,6 +29,8 @@ _COMPLEXITY_KEYWORDS = \
 
 
 class Metrics(object):
+    """Calculate various metrics on C++ source code."""
+
     def __init__(self, source):
         self.source = source
 

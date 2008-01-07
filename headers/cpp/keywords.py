@@ -14,7 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""C++ keywords"""
+"""C++ keywords and helper utilities for determining keywords."""
+
+__author__ = 'nnorwitz@google.com (Neal Norwitz)'
+
 
 TYPES = 'bool char int long short double float void wchar_t unsigned signed'.split()
 TYPE_MODIFIERS = 'auto register const inline extern static virtual volatile mutable'.split()

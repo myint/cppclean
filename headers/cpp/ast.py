@@ -15,17 +15,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Generate an AST for C++."""
+"""Generate an Abstract Syntax Tree (AST) for C++."""
+
+__author__ = 'nnorwitz@google.com (Neal Norwitz)'
+
 
 # TODO:
 #  * Handle static class data for templatized classes
-#  * Handle #include somewhere.
 #  * Handle casts (both C++ and C-style)
 #  * Handle conditions and loops (if/else, switch, for, while/do)
 #
 # TODO much, much later:
 #  * Handle #define
 #  * exceptions
+
 
 import sys
 import traceback
