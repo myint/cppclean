@@ -68,7 +68,7 @@ def GetHeaders(filename):
             included_files.extend(GetHeaders(filename))
     return included_files
 
-    
+
 def main(argv):
     for filename in argv[1:]:
         GetHeaders(filename)

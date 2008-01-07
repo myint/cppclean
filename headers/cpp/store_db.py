@@ -80,7 +80,7 @@ class GlobalVariableDeclaration(_Declaration):
 
 
 class FunctionDeclaration(_Declaration):
-    def __init__(self, name, namespace, modifiers, num_parameters, 
+    def __init__(self, name, namespace, modifiers, num_parameters,
                  filename, line):
         _Declaration.__init__(self, name, namespace, filename, line)
         self.modifiers = modifiers
@@ -372,7 +372,7 @@ class SourceRevision(object):
             sql = 'INSERT INTO identifier(name) VALUES (%s)'
             dbc.executemany(sql, new_names)
             self.identifiers = self._GetAllNames(dbc, 'identifier')
-        
+
         dbc.close()
         print self.paths
         print self.identifiers

@@ -792,7 +792,7 @@ class AstBuilder(object):
                 type_name = ''.join(t.name for t in name_tokens)
                 first_token = name_tokens[0]
                 return VariableDeclaration(first_token.start, first_token.end,
-                                           variable.name, type_name, 
+                                           variable.name, type_name,
                                            modifiers, reference, pointer,
                                            initial_value=None)
             name_tokens.extend((var_token, next_token))
@@ -967,7 +967,7 @@ class AstBuilder(object):
                     pointer = '*' in token.name
                     return VariableDeclaration(class_token.start,
                                                class_token.end,
-                                               name_token.name, class_name, 
+                                               name_token.name, class_name,
                                                modifiers, reference, pointer,
                                                initial_value=None)
                 else:
@@ -1020,7 +1020,7 @@ class AstBuilder(object):
                     pointer = '*' in token.name
                     return VariableDeclaration(class_token.start,
                                                class_token.end,
-                                               token.name, new_class, 
+                                               token.name, new_class,
                                                modifiers, reference, pointer,
                                                initial_value=None)
         else:
