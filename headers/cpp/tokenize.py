@@ -21,6 +21,7 @@ import sys
 
 from cpp import utils
 
+
 # TODO(nnorwitz): consider adding $ as a valid identifier char.
 _letters = 'abcdefghijklmnopqrstuvwxyz'
 VALID_IDENTIFIER_CHARS = set(_letters + _letters.upper() + '_0123456789')
@@ -34,10 +35,21 @@ CONSTANT = 'CONSTANT'
 NAME = 'NAME'
 PREPROCESSOR = 'PREPROCESSOR'
 
+# Where the token originated from.  This can be used for backtracking.
+# It is always set to WHENCE_STREAM in this code.
 WHENCE_STREAM, WHENCE_QUEUE = range(2)
 
 
 class Token(object):
+    """Data container to represent a C++ token.
+
+    Tokens can be identifiers, syntax char(s), constants, or
+    pre-processor directives.
+
+    start contains the index of the first char of the token in the source
+    end contais the index of the last char of the token in the source
+    """
+
     def __init__(self, token_type, name, start, end):
         self.token_type = token_type
         self.name = name
@@ -52,7 +64,15 @@ class Token(object):
 
 
 def GetTokens(source):
-    # Cache valid identifier characters for speed.
+    """Returns a sequence of Tokens.
+
+    Args:
+      source: string of C++ source code.
+
+    Yields:
+      Token that represents the next token in the source.
+    """
+    # Cache various valid character sets for speed.
     valid_identifier_chars = VALID_IDENTIFIER_CHARS
     hex_digits = HEX_DIGITS
     int_or_float_digits = INT_OR_FLOAT_DIGITS
@@ -199,18 +219,18 @@ def GetTokens(source):
         yield Token(token_type, source[start:i], start, i)
 
 
-def main(argv):
-    for filename in argv[1:]:
-        source = utils.ReadFile(filename)
-        if source is None:
-            continue
-
-        tokens = GetTokens(source)
-        for token in tokens:
-            print '%-12s: %s' % (token.token_type, token.name)
-            # print '\r%6.2f%%' % (100.0 * index / token.end),
-        print
-
-
 if __name__ == '__main__':
+    def main(argv):
+        """Driver mostly for testing purposes."""
+        for filename in argv[1:]:
+            source = utils.ReadFile(filename)
+            if source is None:
+                continue
+
+            for token in GetTokens(source):
+                print '%-12s: %s' % (token.token_type, token.name)
+                # print '\r%6.2f%%' % (100.0 * index / token.end),
+            print
+
+
     main(sys.argv)
