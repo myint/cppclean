@@ -56,22 +56,29 @@ _NAMESPACE_POP = 'ns-pop'
 # TODO(nnorwitz): move AST nodes into a separate module.
 class Node(object):
     """Base AST node."""
+
     def __init__(self, start, end):
         self.start = start
         self.end = end
+
     def IsDeclaration(self):
         return False
+
     def IsDefinition(self):
         return False
+
     def Requires(self, node):
         """Does this AST node require the definition of the node passed in?"""
         return False
+
     def XXX__str__(self):
         return self._StringHelper(self.__class__.__name__, '')
+
     def _StringHelper(self, name, suffix):
         if not utils.DEBUG:
             return '%s(%s)' % (name, suffix)
         return '%s(%d, %d, %s)' % (name, self.start, self.end, suffix)
+
     def __repr__(self):
         return str(self)
 
@@ -81,6 +88,7 @@ class Define(Node):
         Node.__init__(self, start, end)
         self.name = name
         self.definition = definition
+
     def __str__(self):
         value = '%s %s' % (self.name, self.definition)
         return self._StringHelper(self.__class__.__name__, value)
@@ -91,6 +99,7 @@ class Include(Node):
         Node.__init__(self, start, end)
         self.filename = filename
         self.system = system
+
     def __str__(self):
         fmt = '"%s"'
         if self.system:
@@ -102,6 +111,7 @@ class Goto(Node):
     def __init__(self, start, end, label):
         Node.__init__(self, start, end)
         self.label = label
+
     def __str__(self):
         return self._StringHelper(self.__class__.__name__, str(self.label))
 
@@ -110,9 +120,11 @@ class Expr(Node):
     def __init__(self, start, end, expr):
         Node.__init__(self, start, end)
         self.expr = expr
+
     def Requires(self, node):
         # TODO(nnorwitz): impl.
         return False
+
     def __str__(self):
         return self._StringHelper(self.__class__.__name__, str(self.expr))
 
@@ -133,6 +145,7 @@ class Using(Node):
     def __init__(self, start, end, names):
         Node.__init__(self, start, end)
         self.names = names
+
     def __str__(self):
         return self._StringHelper(self.__class__.__name__, str(self.names))
 
@@ -147,9 +160,11 @@ class Parameter(Node):
         self.reference = reference
         self.pointer = pointer
         self.default = default
+
     def Requires(self, node):
         # TODO(nnorwitz): handle namespaces, etc.
         return self.type_name == node.name
+
     def __str__(self):
         modifiers = ' '.join(self.type_modifiers)
         syntax = ''
@@ -225,11 +240,13 @@ class _GenericDeclaration(Node):
         Node.__init__(self, start, end)
         self.name = name
         self.namespace = namespace[:]
+
     def FullName(self):
         prefix = ''
         if self.namespace and self.namespace[-1]:
             prefix = '::'.join(self.namespace) + '::'
         return prefix + self.name
+
     def _TypeStringHelper(self, suffix):
         if self.namespace:
             names = [n or '<anonymous>' for n in self.namespace]
@@ -247,9 +264,11 @@ class VariableDeclaration(_GenericDeclaration):
         self.reference = reference
         self.pointer = pointer
         self.initial_value = initial_value
+
     def Requires(self, node):
         # TODO(nnorwitz): handle namespaces, etc.
         return self.type_name == node.name
+
     def __str__(self):
         modifiers = ' '.join(self.type_modifiers)
         syntax = ''
@@ -267,8 +286,10 @@ class Typedef(_GenericDeclaration):
     def __init__(self, start, end, name, alias, namespace):
         _GenericDeclaration.__init__(self, start, end, name, namespace)
         self.alias = alias
+
     def IsDefinition(self):
         return True
+
     def Requires(self, node):
         # TODO(nnorwitz): handle namespaces, etc.
         name = node.name
@@ -276,6 +297,7 @@ class Typedef(_GenericDeclaration):
             if token is not None and name == token.name:
                 return True
         return False
+
     def __str__(self):
         suffix = '%s, %s' % (self.name, self.alias)
         return self._TypeStringHelper(suffix)
@@ -285,8 +307,10 @@ class _NestedType(_GenericDeclaration):
     def __init__(self, start, end, name, fields, namespace):
         _GenericDeclaration.__init__(self, start, end, name, namespace)
         self.fields = fields
+
     def IsDefinition(self):
         return True
+
     def __str__(self):
         suffix = '%s, {%s}' % (self.name, self.fields)
         return self._TypeStringHelper(suffix)
@@ -294,6 +318,8 @@ class _NestedType(_GenericDeclaration):
 
 class Union(_NestedType):
     pass
+
+
 class Enum(_NestedType):
     pass
 
@@ -303,10 +329,13 @@ class Class(_GenericDeclaration):
         _GenericDeclaration.__init__(self, start, end, name, namespace)
         self.bases = bases
         self.body = body
+
     def IsDeclaration(self):
         return self.bases is None and self.body is None
+
     def IsDefinition(self):
         return not self.IsDeclaration()
+
     def Requires(self, node):
         # TODO(nnorwitz): handle namespaces, etc.
         if self.bases:
@@ -317,6 +346,7 @@ class Class(_GenericDeclaration):
                         return True
         # TODO(nnorwitz): search in body too.
         return False
+
     def __str__(self):
         suffix = '%s, %s, %s' % (self.name, self.bases, self.body)
         return self._TypeStringHelper(suffix)
@@ -336,16 +366,19 @@ class Function(_GenericDeclaration):
         self.parameters = parameters
         self.modifiers = modifiers
         self.body = body
+
     def IsDefinition(self):
         return True
+
     def Requires(self, node):
         if self.parameters:
-            # TODO(nnorwitz) parameters are tokens, do name comparision.
+            # TODO(nnorwitz): parameters are tokens, do name comparision.
             for p in self.parameters:
                 if p.name == node.name:
                     return True
         # TODO(nnorwitz): search in body too.
         return False
+
     def __str__(self):
         suffix = ('%s %s(%s), 0x%02x, %s' %
                   (self.return_type, self.name, self.parameters,
@@ -463,7 +496,7 @@ class AstBuilder(object):
                 if (token.token_type == tokenize.NAME and
                     token.name == self.in_class):
                     return self._GetMethod([token], FUNCTION_DTOR)
-            # TODO(nnorwitz); handle a lot more syntax.
+            # TODO(nnorwitz): handle a lot more syntax.
         elif token.token_type == tokenize.PREPROCESSOR:
             # TODO(nnorwitz): handle more preprocessor directives.
             # token starts with a #, so remove it and strip whitespace.
@@ -1129,10 +1162,22 @@ class AstBuilder(object):
 
 
 def BuilderFromSource(source, filename):
+    """Utility method that returns an AstBuilder from source code.
+
+    Args:
+      source: 'C++ source code'
+      filename: 'file1'
+    """
     return AstBuilder(tokenize.GetTokens(source), filename)
 
 
 def PrintIndentifiers(filename, should_print):
+    """Prints all identifiers for a C++ source file.
+
+    Args:
+      filename: 'file1'
+      should_print: predicate with signature: bool Function(token)
+    """
     source = utils.ReadFile(filename, False)
     if source is None:
         print 'Unable to find', filename
@@ -1151,6 +1196,12 @@ def PrintIndentifiers(filename, should_print):
 
 
 def PrintAllIndentifiers(filenames, should_print):
+    """Prints all identifiers for each C++ source file in filenames.
+
+    Args:
+      filenames: ['file1', 'file2', ...]
+      should_print: predicate with signature: bool Function(token)
+    """
     for path in filenames:
         PrintIndentifiers(path, should_print)
 

@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tokenize C++ source code"""
+"""Tokenize C++ source code."""
 
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
@@ -59,10 +59,12 @@ class Token(object):
         self.start = start
         self.end = end
         self.whence = WHENCE_STREAM
+
     def __str__(self):
         if not utils.DEBUG:
             return 'Token(%r)' % self.name
         return 'Token(%r, %s, %s)' % (self.name, self.start, self.end)
+
     __repr__ = __str__
 
 
@@ -214,7 +216,7 @@ def GetTokens(source):
             print >>sys.stderr, \
                   ('Got invalid token in %s @ %d token:%s: %r' %
                    ('?', i, c, source[i-10:i+10]))
-            raise RuntimeError, 'unexpected token'
+            raise RuntimeError('unexpected token')
 
         if i <= 0:
             print 'Invalid index, exiting now.'
