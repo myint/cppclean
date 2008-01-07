@@ -42,6 +42,7 @@ _UNKNOWN = '<unknown>'
 
 class _Reference(object):
     """Data container for all columns in each DB table.
+
     i.e., any Declaration, Definition, or Use table.
     """
 
@@ -150,7 +151,14 @@ class MethodDefinition(_Definition):
 
 def AsTuples(seq):
     """Convert a sequence of References to a sequence of tuples.
+
     The sequence of tuples can be used to insert many into the DB.
+
+    Args:
+      seq - sequence of _References
+
+    Yields:
+      each item in the sequence as a tuple
     """
     for item in seq:
         yield item.AsTuple()
@@ -235,7 +243,7 @@ class ParsedSource(object):
                 self.class_declarations.append(decl)
 
     def Write(self, db, paths, identifiers):
-        file_index = self.paths[self.filename]
+        file_index = paths[self.filename]
         self._UpdateReferences(file_index, identifiers)
 
         dbc = db.cursor()
