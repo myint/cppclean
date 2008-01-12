@@ -41,7 +41,7 @@ def ReadSource(relative_filename):
     for path in _INCLUDE_DIRS:
         filename = os.path.join(path, relative_filename)
         source = utils.ReadFile(filename, False)
-        if source:
+        if source is not None:
             return source, filename
     return None, relative_filename
 
