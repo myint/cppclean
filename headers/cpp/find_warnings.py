@@ -138,6 +138,9 @@ class WarningHunter(object):
             if isinstance(node, ast.Include) and not node.system:
                 module = self._GetHeaderFile(node.filename)
                 included_files[node.filename] = node, module
+                if node.filename == self.filename:
+                    msg = '%s includes itself' % node.filename
+                    self._AddWarning(msg, node)
 
         return forward_declared_classes, included_files
 
