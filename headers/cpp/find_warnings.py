@@ -138,9 +138,6 @@ class WarningHunter(object):
             if isinstance(node, ast.Include) and not node.system:
                 module = self._GetHeaderFile(node.filename)
                 included_files[node.filename] = node, module
-                if node.filename == self.filename:
-                    msg = '%s includes itself' % node.filename
-                    self._AddWarning(msg, node)
 
         return forward_declared_classes, included_files
 
@@ -210,6 +207,8 @@ class WarningHunter(object):
                 msg = ('should not include C++ source files: %s' %
                        module.filename)
                 self._AddWarning(msg, node)
+            if node.filename == self.filename:
+                self._AddWarning('%s includes itself' % node.filename, node)
             if not module.IsAnyPublicSymbolUsed(self.ast_list):
                 msg = '%s does not need to be #included' % node.filename
                 self._AddWarning(msg, node)
