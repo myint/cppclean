@@ -1,4 +1,4 @@
-Processing test/foo.h
+Processing foo.h
 Include(1, 15, <map>)
 Include(16, 33, <string>)
 Include(35, 51, "bar.h")

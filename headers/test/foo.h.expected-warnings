@@ -1,8 +1,6 @@
-Processing test/foo.h
-Unable to find bar.h
-Unable to find xss_module.h
-Unable to find not-used.h
+Processing foo.h
 Unable to find dir//bar.h
-test/foo.h:14: 'Unused' not used
-test/foo.h:61: 'ProtoArray' not used
-test/foo.h:150: 'AR' not used
+foo.h:14: 'Unused' not used
+foo.h:61: 'ProtoArray' not used
+foo.h:113: not-used.h does not need to be #included
+foo.h:150: 'AR' not used
