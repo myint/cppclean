@@ -50,7 +50,7 @@ class Token(object):
     pre-processor directives.
 
     start contains the index of the first char of the token in the source
-    end contais the index of the last char of the token in the source
+    end contains the index of the last char of the token in the source
     """
 
     def __init__(self, token_type, name, start, end):
