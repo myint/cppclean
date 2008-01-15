@@ -67,15 +67,6 @@ class Token(object):
 
     __repr__ = __str__
 
-    # __eq__ is only to support unit testing.
-    def __eq__(self, other):
-        assert isinstance(other, self.__class__)
-        return (self.token_type == other.token_type and
-                self.name == other.name and
-                self.start == other.start and
-                self.end == other.end and
-                self.whence == other.whence)
-
 
 def GetTokens(source):
     """Returns a sequence of Tokens.

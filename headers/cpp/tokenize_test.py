@@ -32,7 +32,17 @@ CONSTANT = tokenize.CONSTANT
 NAME = tokenize.NAME
 PREPROCESSOR = tokenize.PREPROCESSOR
 
+
+def __eq__(self, other):
+    assert isinstance(other, self.__class__)
+    return (self.token_type == other.token_type and
+            self.name == other.name and
+            self.start == other.start and
+            self.end == other.end and
+            self.whence == other.whence)
+
 Token = tokenize.Token
+Token.__eq__ = __eq__
 
 
 class TokenizeTest(unittest.TestCase):
