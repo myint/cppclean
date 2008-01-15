@@ -67,6 +67,15 @@ class Token(object):
 
     __repr__ = __str__
 
+    # __eq__ is only to support unit testing.
+    def __eq__(self, other):
+        assert isinstance(other, self.__class__)
+        return (self.token_type == other.token_type and
+                self.name == other.name and
+                self.start == other.start and
+                self.end == other.end and
+                self.whence == other.whence)
+
 
 def GetTokens(source):
     """Returns a sequence of Tokens.
@@ -129,6 +138,11 @@ def GetTokens(source):
                 i += 1
                 while source[i] in int_or_float_digits:
                     i += 1
+                # Handle float suffixes.
+                for suffix in ('l', 'f'):
+                    if suffix == source[i:i+1].lower():
+                        i += 1
+                        break
         elif c.isdigit():                        # Find integer.
             token_type = CONSTANT
             if c == '0' and source[i+1] in 'xX':
@@ -139,7 +153,15 @@ def GetTokens(source):
             else:
                 while source[i] in int_or_float_digits2:
                     i += 1
+            # Handle integer (and float) suffixes.
+            for suffix in ('ull', 'll', 'ul', 'l', 'f', 'u'):
+                size = len(suffix)
+                if suffix == source[i:i+size].lower():
+                    i += size
+                    break
         elif c == '"':                           # Find string.
+            # TODO(nnorwitz): support C++0x string preffixes:
+            #   R, u8, u8R, u, uR, U, UR, L, or LR.
             token_type = CONSTANT
             i = source.find('"', i+1)
             while source[i-1] == '\\':
@@ -155,6 +177,7 @@ def GetTokens(source):
                 i = source.find('"', i+1)
             i += 1
         elif c == "'":                           # Find char.
+            # TODO(nnorwitz): support C++0x char preffixes: u, U, L.
             token_type = CONSTANT
             # NOTE(nnorwitz): may not be quite correct, should be good enough.
             i = source.find("'", i+1)
