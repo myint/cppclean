@@ -366,7 +366,7 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Token(CONSTANT, r"'\\'", 0, 4), tokens[0])
         self.assertEqual(Token(SYNTAX, ';', 4, 5), tokens[1])
 
-    def testTernaryOperator(self):
+    def testGetTokens_TernaryOperator(self):
         #                        012345678901234567
         tokens = self.GetTokens('cond ? foo : bar;')
         self.assertEqual(6, len(tokens), tokens)
