@@ -25,12 +25,21 @@ import unittest
 
 from cpp import tokenize
 
-# For convenience, add to test module.
-UNKNOWN = tokenize.UNKNOWN
-SYNTAX = tokenize.SYNTAX
-CONSTANT = tokenize.CONSTANT
-NAME = tokenize.NAME
-PREPROCESSOR = tokenize.PREPROCESSOR
+# For convenience, add factories and __eq__ to test the module.
+def Syntax(name, start, end):
+    return tokenize.Token(tokenize.SYNTAX, name, start, end)
+
+
+def Constant(name, start, end):
+    return tokenize.Token(tokenize.CONSTANT, name, start, end)
+
+
+def Name(name, start, end):
+    return tokenize.Token(tokenize.NAME, name, start, end)
+
+
+def Preprocessor(name, start, end):
+    return tokenize.Token(tokenize.PREPROCESSOR, name, start, end)
 
 
 def __eq__(self, other):
@@ -41,8 +50,7 @@ def __eq__(self, other):
             self.end == other.end and
             self.whence == other.whence)
 
-Token = tokenize.Token
-Token.__eq__ = __eq__
+tokenize.Token.__eq__ = __eq__
 
 
 class TokenizeTest(unittest.TestCase):
@@ -70,132 +78,132 @@ class TokenizeTest(unittest.TestCase):
             #                        012 345
             tokens = self.GetTokens('5 %s 3' % operator)
             self.assertEqual(3, len(tokens), tokens)
-            self.assertEqual(Token(CONSTANT, '5', 0, 1), tokens[0])
-            self.assertEqual(Token(SYNTAX, operator, 2, 3), tokens[1])
-            self.assertEqual(Token(CONSTANT, '3', 4, 5), tokens[2])
+            self.assertEqual(Constant('5', 0, 1), tokens[0])
+            self.assertEqual(Syntax(operator, 2, 3), tokens[1])
+            self.assertEqual(Constant('3', 4, 5), tokens[2])
 
     def testGetTokens_MultiCharBinaryOperators(self):
         for operator in ('<<', '>>', '**'):
             #                        0123456
             tokens = self.GetTokens('5 %s 3' % operator)
             self.assertEqual(3, len(tokens), tokens)
-            self.assertEqual(Token(CONSTANT, '5', 0, 1), tokens[0])
-            self.assertEqual(Token(SYNTAX, operator, 2, 4), tokens[1])
-            self.assertEqual(Token(CONSTANT, '3', 5, 6), tokens[2])
+            self.assertEqual(Constant('5', 0, 1), tokens[0])
+            self.assertEqual(Syntax(operator, 2, 4), tokens[1])
+            self.assertEqual(Constant('3', 5, 6), tokens[2])
 
     def testGetTokens_AdditionWithComment(self):
         #                        0123456789012 3 4 56789012345
         tokens = self.GetTokens('5 /* comment\n\n\nfoo */ + 3')
         self.assertEqual(3, len(tokens), tokens)
-        self.assertEqual(Token(CONSTANT, '5', 0, 1), tokens[0])
-        self.assertEqual(Token(SYNTAX, '+', 22, 23), tokens[1])
-        self.assertEqual(Token(CONSTANT, '3', 24, 25), tokens[2])
+        self.assertEqual(Constant('5', 0, 1), tokens[0])
+        self.assertEqual(Syntax('+', 22, 23), tokens[1])
+        self.assertEqual(Constant('3', 24, 25), tokens[2])
 
     def testGetTokens_LogicalOperators(self):
         for operator in ('&&', '||'):
             #                        012345
             tokens = self.GetTokens('a %s b' % operator)
             self.assertEqual(3, len(tokens), tokens)
-            self.assertEqual(Token(NAME, 'a', 0, 1), tokens[0])
-            self.assertEqual(Token(SYNTAX, operator, 2, 4), tokens[1])
-            self.assertEqual(Token(NAME, 'b', 5, 6), tokens[2])
+            self.assertEqual(Name('a', 0, 1), tokens[0])
+            self.assertEqual(Syntax(operator, 2, 4), tokens[1])
+            self.assertEqual(Name('b', 5, 6), tokens[2])
 
         #                        01234
         tokens = self.GetTokens('!not')
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(SYNTAX, '!', 0, 1), tokens[0])
-        self.assertEqual(Token(NAME, 'not', 1, 4), tokens[1])
+        self.assertEqual(Syntax('!', 0, 1), tokens[0])
+        self.assertEqual(Name('not', 1, 4), tokens[1])
 
     def testGetTokens_OnesComplement(self):
         #                        01234
         tokens = self.GetTokens('~not')
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(SYNTAX, '~', 0, 1), tokens[0])
-        self.assertEqual(Token(NAME, 'not', 1, 4), tokens[1])
+        self.assertEqual(Syntax('~', 0, 1), tokens[0])
+        self.assertEqual(Name('not', 1, 4), tokens[1])
 
     def testGetTokens_PreIncrementOperators(self):
         for operator in ('++', '--'):
             #                        012345
             tokens = self.GetTokens('%sFOO' % operator)
             self.assertEqual(2, len(tokens), tokens)
-            self.assertEqual(Token(SYNTAX, operator, 0, 2), tokens[0])
-            self.assertEqual(Token(NAME, 'FOO', 2, 5), tokens[1])
+            self.assertEqual(Syntax(operator, 0, 2), tokens[0])
+            self.assertEqual(Name('FOO', 2, 5), tokens[1])
 
             #                        012345
             tokens = self.GetTokens('%s FOO' % operator)
             self.assertEqual(2, len(tokens), tokens)
-            self.assertEqual(Token(SYNTAX, operator, 0, 2), tokens[0])
-            self.assertEqual(Token(NAME, 'FOO', 3, 6), tokens[1])
+            self.assertEqual(Syntax(operator, 0, 2), tokens[0])
+            self.assertEqual(Name('FOO', 3, 6), tokens[1])
 
     def testGetTokens_PostIncrementOperators(self):
         for operator in ('++', '--'):
             #                        012345
             tokens = self.GetTokens('FOO%s' % operator)
             self.assertEqual(2, len(tokens), tokens)
-            self.assertEqual(Token(NAME, 'FOO', 0, 3), tokens[0])
-            self.assertEqual(Token(SYNTAX, operator, 3, 5), tokens[1])
+            self.assertEqual(Name('FOO', 0, 3), tokens[0])
+            self.assertEqual(Syntax(operator, 3, 5), tokens[1])
 
             #                        012345
             tokens = self.GetTokens('FOO %s' % operator)
             self.assertEqual(2, len(tokens), tokens)
-            self.assertEqual(Token(NAME, 'FOO', 0, 3), tokens[0])
-            self.assertEqual(Token(SYNTAX, operator, 4, 6), tokens[1])
+            self.assertEqual(Name('FOO', 0, 3), tokens[0])
+            self.assertEqual(Syntax(operator, 4, 6), tokens[1])
 
     def testGetTokens_Semicolons(self):
         #                        0123456 789012
         tokens = self.GetTokens('  foo;\n  bar;')
         self.assertEqual(4, len(tokens), tokens)
-        self.assertEqual(Token(NAME, 'foo', 2, 5), tokens[0])
-        self.assertEqual(Token(SYNTAX, ';', 5, 6), tokens[1])
-        self.assertEqual(Token(NAME, 'bar', 9, 12), tokens[2])
-        self.assertEqual(Token(SYNTAX, ';', 12, 13), tokens[3])
+        self.assertEqual(Name('foo', 2, 5), tokens[0])
+        self.assertEqual(Syntax(';', 5, 6), tokens[1])
+        self.assertEqual(Name('bar', 9, 12), tokens[2])
+        self.assertEqual(Syntax(';', 12, 13), tokens[3])
 
     def testGetTokens_Pointers1(self):
         #                        0123456789
         tokens = self.GetTokens('foo->bar;')
         self.assertEqual(4, len(tokens), tokens)
-        self.assertEqual(Token(NAME, 'foo', 0, 3), tokens[0])
-        self.assertEqual(Token(SYNTAX, '->', 3, 5), tokens[1])
-        self.assertEqual(Token(NAME, 'bar', 5, 8), tokens[2])
-        self.assertEqual(Token(SYNTAX, ';', 8, 9), tokens[3])
+        self.assertEqual(Name('foo', 0, 3), tokens[0])
+        self.assertEqual(Syntax('->', 3, 5), tokens[1])
+        self.assertEqual(Name('bar', 5, 8), tokens[2])
+        self.assertEqual(Syntax(';', 8, 9), tokens[3])
 
     def testGetTokens_Pointers2(self):
         #                        01234567890
         tokens = self.GetTokens('(*foo).bar;')
         self.assertEqual(7, len(tokens), tokens)
-        self.assertEqual(Token(SYNTAX, '(', 0, 1), tokens[0])
-        self.assertEqual(Token(SYNTAX, '*', 1, 2), tokens[1])
-        self.assertEqual(Token(NAME, 'foo', 2, 5), tokens[2])
-        self.assertEqual(Token(SYNTAX, ')', 5, 6), tokens[3])
-        self.assertEqual(Token(SYNTAX, '.', 6, 7), tokens[4])
-        self.assertEqual(Token(NAME, 'bar', 7, 10), tokens[5])
-        self.assertEqual(Token(SYNTAX, ';', 10, 11), tokens[6])
+        self.assertEqual(Syntax('(', 0, 1), tokens[0])
+        self.assertEqual(Syntax('*', 1, 2), tokens[1])
+        self.assertEqual(Name('foo', 2, 5), tokens[2])
+        self.assertEqual(Syntax(')', 5, 6), tokens[3])
+        self.assertEqual(Syntax('.', 6, 7), tokens[4])
+        self.assertEqual(Name('bar', 7, 10), tokens[5])
+        self.assertEqual(Syntax(';', 10, 11), tokens[6])
 
     def testGetTokens_Block(self):
         #                        0123456
         tokens = self.GetTokens('{ 0; }')
         self.assertEqual(4, len(tokens), tokens)
-        self.assertEqual(Token(SYNTAX, '{', 0, 1), tokens[0])
-        self.assertEqual(Token(CONSTANT, '0', 2, 3), tokens[1])
-        self.assertEqual(Token(SYNTAX, ';', 3, 4), tokens[2])
-        self.assertEqual(Token(SYNTAX, '}', 5, 6), tokens[3])
+        self.assertEqual(Syntax('{', 0, 1), tokens[0])
+        self.assertEqual(Constant('0', 2, 3), tokens[1])
+        self.assertEqual(Syntax(';', 3, 4), tokens[2])
+        self.assertEqual(Syntax('}', 5, 6), tokens[3])
 
     def testGetTokens_BitFields(self):
         #                        012345678901234567
         tokens = self.GetTokens('unsigned foo : 1;')
         self.assertEqual(5, len(tokens), tokens)
-        self.assertEqual(Token(NAME, 'unsigned', 0, 8), tokens[0])
-        self.assertEqual(Token(NAME, 'foo', 9, 12), tokens[1])
-        self.assertEqual(Token(SYNTAX, ':', 13, 14), tokens[2])
-        self.assertEqual(Token(CONSTANT, '1', 15, 16), tokens[3])
-        self.assertEqual(Token(SYNTAX, ';', 16, 17), tokens[4])
+        self.assertEqual(Name('unsigned', 0, 8), tokens[0])
+        self.assertEqual(Name('foo', 9, 12), tokens[1])
+        self.assertEqual(Syntax(':', 13, 14), tokens[2])
+        self.assertEqual(Constant('1', 15, 16), tokens[3])
+        self.assertEqual(Syntax(';', 16, 17), tokens[4])
 
     def testGetTokens_IntConstants(self):
         #                        01234
         tokens = self.GetTokens('123;')
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(CONSTANT, '123', 0, 3), tokens[0])
-        self.assertEqual(Token(SYNTAX, ';', 3, 4), tokens[1])
+        self.assertEqual(Constant('123', 0, 3), tokens[0])
+        self.assertEqual(Syntax(';', 3, 4), tokens[1])
 
         for suffix in ('l', 'u', 'ul', 'll', 'ull'):
             #                        0123456
@@ -203,8 +211,8 @@ class TokenizeTest(unittest.TestCase):
             self.assertEqual(2, len(tokens), tokens)
             value = '123%s' % suffix
             size = len(value)
-            self.assertEqual(Token(CONSTANT, value, 0, size), tokens[0])
-            self.assertEqual(Token(SYNTAX, ';', size, size+1), tokens[1])
+            self.assertEqual(Constant(value, 0, size), tokens[0])
+            self.assertEqual(Syntax(';', size, size+1), tokens[1])
 
             suffix = suffix.upper()
 
@@ -213,15 +221,15 @@ class TokenizeTest(unittest.TestCase):
             self.assertEqual(2, len(tokens), tokens)
             value = '123%s' % suffix
             size = len(value)
-            self.assertEqual(Token(CONSTANT, value, 0, size), tokens[0])
-            self.assertEqual(Token(SYNTAX, ';', size, size+1), tokens[1])
+            self.assertEqual(Constant(value, 0, size), tokens[0])
+            self.assertEqual(Syntax(';', size, size+1), tokens[1])
 
     def testGetTokens_OctalConstants(self):
         #                        0123456789
         tokens = self.GetTokens('01234567;')
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(CONSTANT, '01234567', 0, 8), tokens[0])
-        self.assertEqual(Token(SYNTAX, ';', 8, 9), tokens[1])
+        self.assertEqual(Constant('01234567', 0, 8), tokens[0])
+        self.assertEqual(Syntax(';', 8, 9), tokens[1])
 
         for suffix in ('l', 'u', 'ul', 'll', 'ull'):
             #                        012345678901
@@ -229,8 +237,8 @@ class TokenizeTest(unittest.TestCase):
             self.assertEqual(2, len(tokens), tokens)
             value = '01234567%s' % suffix
             size = len(value)
-            self.assertEqual(Token(CONSTANT, value, 0, size), tokens[0])
-            self.assertEqual(Token(SYNTAX, ';', size, size+1), tokens[1])
+            self.assertEqual(Constant(value, 0, size), tokens[0])
+            self.assertEqual(Syntax(';', size, size+1), tokens[1])
 
             suffix = suffix.upper()
 
@@ -239,15 +247,15 @@ class TokenizeTest(unittest.TestCase):
             self.assertEqual(2, len(tokens), tokens)
             value = '01234567%s' % suffix
             size = len(value)
-            self.assertEqual(Token(CONSTANT, value, 0, size), tokens[0])
-            self.assertEqual(Token(SYNTAX, ';', size, size+1), tokens[1])
+            self.assertEqual(Constant(value, 0, size), tokens[0])
+            self.assertEqual(Syntax(';', size, size+1), tokens[1])
 
     def testGetTokens_HexConstants(self):
         #                        012345678901
         tokens = self.GetTokens('0xDeadBEEF;')
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(CONSTANT, '0xDeadBEEF', 0, 10), tokens[0])
-        self.assertEqual(Token(SYNTAX, ';', 10, 11), tokens[1])
+        self.assertEqual(Constant('0xDeadBEEF', 0, 10), tokens[0])
+        self.assertEqual(Syntax(';', 10, 11), tokens[1])
 
         for suffix in ('l', 'u', 'ul', 'll', 'ull'):
             #                        0123456789
@@ -255,8 +263,8 @@ class TokenizeTest(unittest.TestCase):
             self.assertEqual(2, len(tokens), tokens)
             value = '0xBEEF%s' % suffix
             size = len(value)
-            self.assertEqual(Token(CONSTANT, value, 0, size), tokens[0])
-            self.assertEqual(Token(SYNTAX, ';', size, size+1), tokens[1])
+            self.assertEqual(Constant(value, 0, size), tokens[0])
+            self.assertEqual(Syntax(';', size, size+1), tokens[1])
 
             suffix = suffix.upper()
 
@@ -265,129 +273,129 @@ class TokenizeTest(unittest.TestCase):
             self.assertEqual(2, len(tokens), tokens)
             value = '0xBEEF%s' % suffix
             size = len(value)
-            self.assertEqual(Token(CONSTANT, value, 0, size), tokens[0])
-            self.assertEqual(Token(SYNTAX, ';', size, size+1), tokens[1])
+            self.assertEqual(Constant(value, 0, size), tokens[0])
+            self.assertEqual(Syntax(';', size, size+1), tokens[1])
 
     def testGetTokens_FloatConstants(self):
         #                        012345678901
         tokens = self.GetTokens('3.14;')
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(CONSTANT, '3.14', 0, 4), tokens[0])
-        self.assertEqual(Token(SYNTAX, ';', 4, 5), tokens[1])
+        self.assertEqual(Constant('3.14', 0, 4), tokens[0])
+        self.assertEqual(Syntax(';', 4, 5), tokens[1])
 
         #                        012345678901
         tokens = self.GetTokens('3.14E;')
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(CONSTANT, '3.14E', 0, 5), tokens[0])
-        self.assertEqual(Token(SYNTAX, ';', 5, 6), tokens[1])
+        self.assertEqual(Constant('3.14E', 0, 5), tokens[0])
+        self.assertEqual(Syntax(';', 5, 6), tokens[1])
 
         #                        012345678901
         tokens = self.GetTokens('3.14e;')
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(CONSTANT, '3.14e', 0, 5), tokens[0])
-        self.assertEqual(Token(SYNTAX, ';', 5, 6), tokens[1])
+        self.assertEqual(Constant('3.14e', 0, 5), tokens[0])
+        self.assertEqual(Syntax(';', 5, 6), tokens[1])
 
         #                        012345678901
         tokens = self.GetTokens('.14;')
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(CONSTANT, '.14', 0, 3), tokens[0])
-        self.assertEqual(Token(SYNTAX, ';', 3, 4), tokens[1])
+        self.assertEqual(Constant('.14', 0, 3), tokens[0])
+        self.assertEqual(Syntax(';', 3, 4), tokens[1])
 
         #                        012345678901
         tokens = self.GetTokens('3.14e+10;')
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(CONSTANT, '3.14e+10', 0, 8), tokens[0])
-        self.assertEqual(Token(SYNTAX, ';', 8, 9), tokens[1])
+        self.assertEqual(Constant('3.14e+10', 0, 8), tokens[0])
+        self.assertEqual(Syntax(';', 8, 9), tokens[1])
 
         #                        012345678901
         tokens = self.GetTokens('3.14e-10;')
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(CONSTANT, '3.14e-10', 0, 8), tokens[0])
-        self.assertEqual(Token(SYNTAX, ';', 8, 9), tokens[1])
+        self.assertEqual(Constant('3.14e-10', 0, 8), tokens[0])
+        self.assertEqual(Syntax(';', 8, 9), tokens[1])
 
         #                        012345678901
         tokens = self.GetTokens('3.14f;')
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(CONSTANT, '3.14f', 0, 5), tokens[0])
-        self.assertEqual(Token(SYNTAX, ';', 5, 6), tokens[1])
+        self.assertEqual(Constant('3.14f', 0, 5), tokens[0])
+        self.assertEqual(Syntax(';', 5, 6), tokens[1])
 
         #                        012345678901
         tokens = self.GetTokens('3.14l;')
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(CONSTANT, '3.14l', 0, 5), tokens[0])
-        self.assertEqual(Token(SYNTAX, ';', 5, 6), tokens[1])
+        self.assertEqual(Constant('3.14l', 0, 5), tokens[0])
+        self.assertEqual(Syntax(';', 5, 6), tokens[1])
 
         #                        012345678901
         tokens = self.GetTokens('3.14F;')
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(CONSTANT, '3.14F', 0, 5), tokens[0])
-        self.assertEqual(Token(SYNTAX, ';', 5, 6), tokens[1])
+        self.assertEqual(Constant('3.14F', 0, 5), tokens[0])
+        self.assertEqual(Syntax(';', 5, 6), tokens[1])
 
         #                        012345678901
         tokens = self.GetTokens('3.14L;')
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(CONSTANT, '3.14L', 0, 5), tokens[0])
-        self.assertEqual(Token(SYNTAX, ';', 5, 6), tokens[1])
+        self.assertEqual(Constant('3.14L', 0, 5), tokens[0])
+        self.assertEqual(Syntax(';', 5, 6), tokens[1])
 
     def testGetTokens_CharConstants(self):
         #                        012345678901
         tokens = self.GetTokens("'5';")
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(CONSTANT, "'5'", 0, 3), tokens[0])
-        self.assertEqual(Token(SYNTAX, ';', 3, 4), tokens[1])
+        self.assertEqual(Constant("'5'", 0, 3), tokens[0])
+        self.assertEqual(Syntax(';', 3, 4), tokens[1])
 
         #                        012345678901
         tokens = self.GetTokens("u'5';")
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(CONSTANT, "u'5'", 0, 4), tokens[0])
-        self.assertEqual(Token(SYNTAX, ';', 4, 5), tokens[1])
+        self.assertEqual(Constant("u'5'", 0, 4), tokens[0])
+        self.assertEqual(Syntax(';', 4, 5), tokens[1])
 
         #                        012345678901
         tokens = self.GetTokens("U'5';")
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(CONSTANT, "U'5'", 0, 4), tokens[0])
-        self.assertEqual(Token(SYNTAX, ';', 4, 5), tokens[1])
+        self.assertEqual(Constant("U'5'", 0, 4), tokens[0])
+        self.assertEqual(Syntax(';', 4, 5), tokens[1])
 
         #                        012345678901
         tokens = self.GetTokens("L'5';")
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(CONSTANT, "L'5'", 0, 4), tokens[0])
-        self.assertEqual(Token(SYNTAX, ';', 4, 5), tokens[1])
+        self.assertEqual(Constant("L'5'", 0, 4), tokens[0])
+        self.assertEqual(Syntax(';', 4, 5), tokens[1])
 
         #                         012345678901
         tokens = self.GetTokens(r"'\005';")
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(CONSTANT, r"'\005'", 0, 6), tokens[0])
-        self.assertEqual(Token(SYNTAX, ';', 6, 7), tokens[1])
+        self.assertEqual(Constant(r"'\005'", 0, 6), tokens[0])
+        self.assertEqual(Syntax(';', 6, 7), tokens[1])
 
         #                         012345678901
         tokens = self.GetTokens(r"'\\';")
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(CONSTANT, r"'\\'", 0, 4), tokens[0])
-        self.assertEqual(Token(SYNTAX, ';', 4, 5), tokens[1])
+        self.assertEqual(Constant(r"'\\'", 0, 4), tokens[0])
+        self.assertEqual(Syntax(';', 4, 5), tokens[1])
 
         #                         01 2345678901
         tokens = self.GetTokens(r"'\'';")
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(CONSTANT, r"'\''", 0, 4), tokens[0])
-        self.assertEqual(Token(SYNTAX, ';', 4, 5), tokens[1])
+        self.assertEqual(Constant(r"'\''", 0, 4), tokens[0])
+        self.assertEqual(Syntax(';', 4, 5), tokens[1])
 
         #                         01 2345678901
         tokens = self.GetTokens(r"U'\'';")
         self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Token(CONSTANT, r"U'\''", 0, 5), tokens[0])
-        self.assertEqual(Token(SYNTAX, ';', 5, 6), tokens[1])
+        self.assertEqual(Constant(r"U'\''", 0, 5), tokens[0])
+        self.assertEqual(Syntax(';', 5, 6), tokens[1])
 
     def testGetTokens_TernaryOperator(self):
         #                        012345678901234567
         tokens = self.GetTokens('cond ? foo : bar;')
         self.assertEqual(6, len(tokens), tokens)
-        self.assertEqual(Token(NAME, 'cond', 0, 4), tokens[0])
-        self.assertEqual(Token(SYNTAX, '?', 5, 6), tokens[1])
-        self.assertEqual(Token(NAME, 'foo', 7, 10), tokens[2])
-        self.assertEqual(Token(SYNTAX, ':', 11, 12), tokens[3])
-        self.assertEqual(Token(NAME, 'bar', 13, 16), tokens[4])
-        self.assertEqual(Token(SYNTAX, ';', 16, 17), tokens[5])
+        self.assertEqual(Name('cond', 0, 4), tokens[0])
+        self.assertEqual(Syntax('?', 5, 6), tokens[1])
+        self.assertEqual(Name('foo', 7, 10), tokens[2])
+        self.assertEqual(Syntax(':', 11, 12), tokens[3])
+        self.assertEqual(Name('bar', 13, 16), tokens[4])
+        self.assertEqual(Syntax(';', 16, 17), tokens[5])
 
     # TODO(nnorwitz): test all the following
     # Strings
