@@ -372,6 +372,12 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Token(CONSTANT, r"'\''", 0, 4), tokens[0])
         self.assertEqual(Token(SYNTAX, ';', 4, 5), tokens[1])
 
+        #                         01 2345678901
+        tokens = self.GetTokens(r"U'\'';")
+        self.assertEqual(2, len(tokens), tokens)
+        self.assertEqual(Token(CONSTANT, r"U'\''", 0, 5), tokens[0])
+        self.assertEqual(Token(SYNTAX, ';', 5, 6), tokens[1])
+
     def testGetTokens_TernaryOperator(self):
         #                        012345678901234567
         tokens = self.GetTokens('cond ? foo : bar;')
