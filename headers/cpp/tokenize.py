@@ -31,6 +31,11 @@ VALID_IDENTIFIER_CHARS = set(_letters + _letters.upper() + '_0123456789')
 HEX_DIGITS = set('0123456789abcdefABCDEF')
 INT_OR_FLOAT_DIGITS = set('01234567890eE-+')
 
+
+# C++0x string preffixes.
+_STR_PREFIXES = set(('R', 'u8', 'u8R', 'u', 'uR', 'U', 'UR', 'L', 'LR'))
+
+
 # Token types.
 UNKNOWN = 'UNKNOWN'
 SYNTAX = 'SYNTAX'
@@ -68,6 +73,36 @@ class Token(object):
     __repr__ = __str__
 
 
+def _GetString(source, start, i):
+    i = source.find('"', i+1)
+    while source[i-1] == '\\':
+        # Count the trailing backslashes.
+        backslash_count = 1
+        j = i - 2
+        while source[j] == '\\':
+            backslash_count += 1
+            j -= 1
+        # When trailing backslashes are even, they escape each other.
+        if (backslash_count % 2) == 0:
+            break
+        i = source.find('"', i+1)
+    return i + 1
+
+
+def _GetChar(source, start, i):
+    # NOTE(nnorwitz): may not be quite correct, should be good enough.
+    i = source.find("'", i+1)
+    while source[i-1] == '\\':
+        # Need to special case '\\'.
+        if (i - 2) > start and source[i-2] == '\\':
+            break
+        i = source.find("'", i+1)
+    # Try to handle unterminated single quotes (in a #if 0 block).
+    if i < 0:
+        i = start
+    return i + 1
+
+
 def GetTokens(source):
     """Returns a sequence of Tokens.
 
@@ -103,6 +138,16 @@ def GetTokens(source):
             token_type = NAME
             while source[i] in valid_identifier_chars:
                 i += 1
+            # String and character constants can look like a name if
+            # they are something like L"".
+            if (source[i] == "'" and (i - start) == 1 and
+                source[start:i] in 'uUL'):
+                # u, U, and L are valid C++0x character preffixes.
+                token_type = CONSTANT
+                i = _GetChar(source, start, i)
+            elif source[i] == "'" and source[start:i] in _STR_PREFIXES:
+                token_type = CONSTANT
+                i = _GetString(source, start, i)
         elif c == '/' and source[i+1] == '/':    # Find // comments.
             i = source.find('\n', i)
             if i == -1:  # Handle EOF.
@@ -151,36 +196,11 @@ def GetTokens(source):
                     i += size
                     break
         elif c == '"':                           # Find string.
-            # TODO(nnorwitz): support C++0x string preffixes:
-            #   R, u8, u8R, u, uR, U, UR, L, or LR.
             token_type = CONSTANT
-            i = source.find('"', i+1)
-            while source[i-1] == '\\':
-                # Count the trailing backslashes.
-                backslash_count = 1
-                j = i - 2
-                while source[j] == '\\':
-                    backslash_count += 1
-                    j -= 1
-                # When trailing backslashes are even, they escape each other.
-                if (backslash_count % 2) == 0:
-                    break
-                i = source.find('"', i+1)
-            i += 1
+            i = _GetString(source, start, i)
         elif c == "'":                           # Find char.
-            # TODO(nnorwitz): support C++0x char preffixes: u, U, L.
             token_type = CONSTANT
-            # NOTE(nnorwitz): may not be quite correct, should be good enough.
-            i = source.find("'", i+1)
-            while source[i-1] == '\\':
-                # Need to special case '\\'.
-                if (i - 2) > start and source[i-2] == '\\':
-                    break
-                i = source.find("'", i+1)
-            i += 1
-            # Try to handle unterminated single quotes (in a #if 0 block).
-            if i <= 0:
-                i = start + 1
+            i = _GetChar(source, start, i)
         elif c == '#':                           # Find pre-processor command.
             token_type = PREPROCESSOR
             got_if = source[i:i+3] == '#if' and source[i+3:i+4].isspace()

@@ -329,10 +329,46 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Token(CONSTANT, '3.14L', 0, 5), tokens[0])
         self.assertEqual(Token(SYNTAX, ';', 5, 6), tokens[1])
 
+    def testGetTokens_CharConstants(self):
+        #                        012345678901
+        tokens = self.GetTokens("'5';")
+        self.assertEqual(2, len(tokens), tokens)
+        self.assertEqual(Token(CONSTANT, "'5'", 0, 3), tokens[0])
+        self.assertEqual(Token(SYNTAX, ';', 3, 4), tokens[1])
+
+        #                        012345678901
+        tokens = self.GetTokens("u'5';")
+        self.assertEqual(2, len(tokens), tokens)
+        self.assertEqual(Token(CONSTANT, "u'5'", 0, 4), tokens[0])
+        self.assertEqual(Token(SYNTAX, ';', 4, 5), tokens[1])
+
+        #                        012345678901
+        tokens = self.GetTokens("U'5';")
+        self.assertEqual(2, len(tokens), tokens)
+        self.assertEqual(Token(CONSTANT, "U'5'", 0, 4), tokens[0])
+        self.assertEqual(Token(SYNTAX, ';', 4, 5), tokens[1])
+
+        #                        012345678901
+        tokens = self.GetTokens("L'5';")
+        self.assertEqual(2, len(tokens), tokens)
+        self.assertEqual(Token(CONSTANT, "L'5'", 0, 4), tokens[0])
+        self.assertEqual(Token(SYNTAX, ';', 4, 5), tokens[1])
+
+        #                         012345678901
+        tokens = self.GetTokens(r"'\005';")
+        self.assertEqual(2, len(tokens), tokens)
+        self.assertEqual(Token(CONSTANT, r"'\005'", 0, 6), tokens[0])
+        self.assertEqual(Token(SYNTAX, ';', 6, 7), tokens[1])
+
+        #                         012345678901
+        tokens = self.GetTokens(r"'\\';")
+        self.assertEqual(2, len(tokens), tokens)
+        self.assertEqual(Token(CONSTANT, r"'\\'", 0, 4), tokens[0])
+        self.assertEqual(Token(SYNTAX, ';', 4, 5), tokens[1])
+
     # TODO(nnorwitz): test all the following
     # ? :
     # Strings
-    # Characters
     # Preprocessor: #define
     # Preprocessor: #if 0
     # Assignment
