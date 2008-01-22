@@ -366,8 +366,18 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Token(CONSTANT, r"'\\'", 0, 4), tokens[0])
         self.assertEqual(Token(SYNTAX, ';', 4, 5), tokens[1])
 
+    def testTernaryOperator(self):
+        #                        012345678901234567
+        tokens = self.GetTokens('cond ? foo : bar;')
+        self.assertEqual(6, len(tokens), tokens)
+        self.assertEqual(Token(NAME, 'cond', 0, 4), tokens[0])
+        self.assertEqual(Token(SYNTAX, '?', 5, 6), tokens[1])
+        self.assertEqual(Token(NAME, 'foo', 7, 10), tokens[2])
+        self.assertEqual(Token(SYNTAX, ':', 11, 12), tokens[3])
+        self.assertEqual(Token(NAME, 'bar', 13, 16), tokens[4])
+        self.assertEqual(Token(SYNTAX, ';', 16, 17), tokens[5])
+
     # TODO(nnorwitz): test all the following
-    # ? :
     # Strings
     # Preprocessor: #define
     # Preprocessor: #if 0
