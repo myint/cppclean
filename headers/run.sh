@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 PGM=$1
 shift
 
-export PYTHONPATH=/home/$USER/work/headers
+export PYTHONPATH=${0%/*}
 
 $PYTHONPATH/cpp/$PGM.py $*

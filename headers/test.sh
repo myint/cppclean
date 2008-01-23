@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 # Run all the unittests.
 
-export PYTHONPATH=/home/$USER/work/headers
+export PYTHONPATH=${0%/*}
 
 for f in $PYTHONPATH/cpp/*_test.py ; do
   $f
