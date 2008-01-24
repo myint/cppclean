@@ -240,3 +240,4 @@ string foo = "\nX=\"/*\"";
 
 struct streamer::Key GlobalKey;
 typedef time_t (* TimeFunc)(time_t*);
+typedef char dummy_des_key_schedule[128];

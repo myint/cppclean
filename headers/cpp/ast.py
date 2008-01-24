@@ -926,6 +926,7 @@ class AstBuilder(object):
         # Get the remainder of the typedef up to the semi-colon.
         tokens.extend(self._GetTokensUpTo(tokenize.SYNTAX, ';'))
 
+        # TODO(nnorwitz): clean all this up.
         assert tokens
         name = tokens.pop()
         indices = name
@@ -933,12 +934,17 @@ class AstBuilder(object):
             indices = tokens[0]
         if not indices:
             indices = token
-        # HACK(nnorwitz): Handle pointers to functions "properly".
         if name.name == ')':
+            # HACK(nnorwitz): Handle pointers to functions "properly".
             if (len(tokens) >= 4 and
                 tokens[1].name == '(' and tokens[2].name == '*'):
                 tokens.append(name)
                 name = tokens[3]
+        elif name.name == ']':
+            # HACK(nnorwitz): Handle arrays properly.
+            if len(tokens) >= 2:
+                tokens.append(name)
+                name = tokens[1]
         return Typedef(indices.start, indices.end, name.name, tokens,
                        self.namespace_stack)
 

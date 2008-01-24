@@ -68,3 +68,4 @@ Class(3558, 3563, Colon, None, [Function(3576, 3578, [Token('::', 3576, 3578), T
 VariableDeclaration(3615, 3621,  string foo= "\nX=\"/*\"")
 VariableDeclaration(3650, 3658, struct streamer::Key GlobalKey)
 Typedef(3683, 3689, TimeFunc, [Token('time_t', 3683, 3689), Token('(', 3690, 3691), Token('*', 3691, 3692), Token('TimeFunc', 3693, 3701), Token(')', 3701, 3702), Token('(', 3702, 3703), Token('time_t', 3703, 3709), Token('*', 3709, 3710), Token(')', 3710, 3711)])
+Typedef(3721, 3725, dummy_des_key_schedule, [None, Token('dummy_des_key_schedule', 3726, 3748), Token('[', 3748, 3749), Token('128', 3749, 3752), Token(']', 3752, 3753)])
