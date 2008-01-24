@@ -29,7 +29,7 @@ Class(1354, 1358, Fool, [[Token('Bar', 1368, 1371)], [Token('Baz', 1380, 1383)]]
 Function(1435, 1439, [Token('void', 1435, 1439)] lkjsdfkd([]), 0x00, None in <anonymous>)
 Class(1462, 1464, TT, [[Token('TTbase', 1474, 1480), Token('<', 1480, 1481), Token('Bar', 1481, 1484)]], [])
 VariableDeclaration(1491, 1495, * void ptof)
-Typedef(1528, 1532, ), [None, Token('(', 1532, 1533), Token('*', 1533, 1534), Token('Setter', 1534, 1540), Token(')', 1540, 1541), Token('(', 1541, 1542), Token('int', 1542, 1545), Token('*', 1545, 1546), Token(',', 1546, 1547), Token('int', 1548, 1551)])
+Typedef(1528, 1532, Setter, [Token('(', 1532, 1533), Token('*', 1533, 1534), Token('Setter', 1534, 1540), Token(')', 1540, 1541), Token('(', 1541, 1542), Token('int', 1542, 1545), Token('*', 1545, 1546), Token(',', 1546, 1547), Token('int', 1548, 1551), Token(')', 1551, 1552)])
 VariableDeclaration(1572, 1576,  Fool data[]={NULL, })
 Class(1604, 1611, def_var, None, [VariableDeclaration(1616, 1622, static const int kConstant1= 5), VariableDeclaration(1651, 1657, static const int kConstant=(kConstant2-1)/ 4)])
 Include(1706, 1727, "not-used.h")

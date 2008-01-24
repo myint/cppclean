@@ -933,7 +933,13 @@ class AstBuilder(object):
             indices = tokens[0]
         if not indices:
             indices = token
-        # TODO(nnorwitz): handle pointers to functions properly
+        # HACK(nnorwitz): Handle pointers to functions "properly".
+        if name.name == ')':
+            tokens = filter(None, tokens)
+            if (len(tokens) >= 3 and
+                tokens[0].name == '(' and tokens[1].name == '*'):
+                tokens.append(name)
+                name = tokens[2]
         return Typedef(indices.start, indices.end, name.name, tokens,
                        self.namespace_stack)
 
