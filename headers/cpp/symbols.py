@@ -20,6 +20,11 @@
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
+if 'BaseException' not in dir(__builtins__):
+    # Support Python 2.4 and earlier.
+    BaseException = Exception
+
+
 class Error(BaseException):
     """Exception raised when lookup fails."""
 
