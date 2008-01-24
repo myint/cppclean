@@ -29,7 +29,7 @@ Class(1354, 1358, Fool, [[Token('Bar', 1368, 1371)], [Token('Baz', 1380, 1383)]]
 Function(1435, 1439, [Token('void', 1435, 1439)] lkjsdfkd([]), 0x00, None in <anonymous>)
 Class(1462, 1464, TT, [[Token('TTbase', 1474, 1480), Token('<', 1480, 1481), Token('Bar', 1481, 1484)]], [])
 VariableDeclaration(1491, 1495, * void ptof)
-Typedef(1528, 1532, Setter, [Token('(', 1532, 1533), Token('*', 1533, 1534), Token('Setter', 1534, 1540), Token(')', 1540, 1541), Token('(', 1541, 1542), Token('int', 1542, 1545), Token('*', 1545, 1546), Token(',', 1546, 1547), Token('int', 1548, 1551), Token(')', 1551, 1552)])
+Typedef(1528, 1532, Setter, [None, Token('(', 1532, 1533), Token('*', 1533, 1534), Token('Setter', 1534, 1540), Token(')', 1540, 1541), Token('(', 1541, 1542), Token('int', 1542, 1545), Token('*', 1545, 1546), Token(',', 1546, 1547), Token('int', 1548, 1551), Token(')', 1551, 1552)])
 VariableDeclaration(1572, 1576,  Fool data[]={NULL, })
 Class(1604, 1611, def_var, None, [VariableDeclaration(1616, 1622, static const int kConstant1= 5), VariableDeclaration(1651, 1657, static const int kConstant=(kConstant2-1)/ 4)])
 Include(1706, 1727, "not-used.h")
@@ -67,3 +67,4 @@ Class(3491, 3494, MyF, None, [Friend(3530, 3535, [Token('class', 3530, 3535), To
 Class(3558, 3563, Colon, None, [Function(3576, 3578, [Token('::', 3576, 3578), Token('Foo', 3578, 3581)] GetFoo([]), 0x02, None), Function(3596, 3599, [Token('Foo', 3596, 3599)] GetFoo2([]), 0x00, None)])
 VariableDeclaration(3615, 3621,  string foo= "\nX=\"/*\"")
 VariableDeclaration(3650, 3658, struct streamer::Key GlobalKey)
+Typedef(3683, 3689, TimeFunc, [Token('time_t', 3683, 3689), Token('(', 3690, 3691), Token('*', 3691, 3692), Token('TimeFunc', 3693, 3701), Token(')', 3701, 3702), Token('(', 3702, 3703), Token('time_t', 3703, 3709), Token('*', 3709, 3710), Token(')', 3710, 3711)])

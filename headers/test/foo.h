@@ -239,3 +239,4 @@ class Colon {
 string foo = "\nX=\"/*\"";
 
 struct streamer::Key GlobalKey;
+typedef time_t (* TimeFunc)(time_t*);
