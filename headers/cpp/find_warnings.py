@@ -227,6 +227,9 @@ class WarningHunter(object):
         # TODO(nnorwitz): other warnings to add:
         #   * unused forward decls for variables (globals)/classes
         #   * Functions that are too large/complex
+        #   * Functions that are defined public, but no decl (in header)
+        #   * Functions that are declared (in header) but not defined
+        #   * Functions forward declared (in cc file) but not used
         #   * Variables declared far from first use
 
 
