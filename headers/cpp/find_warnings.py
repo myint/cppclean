@@ -229,6 +229,7 @@ class WarningHunter(object):
         #   * Functions that are too large/complex
         #   * Functions that are defined public, but no decl (in header)
         #   * Functions that are declared (in header) but not defined
+        #     - unless if they are templatized
         #   * Functions forward declared (in cc file) but not used
         #   * Variables declared far from first use
 
