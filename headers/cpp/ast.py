@@ -49,6 +49,28 @@ FUNCTION_ATTRIBUTE = 0x20
 FUNCTION_UNKNOWN_ANNOTATION = 0x40
 FUNCTION_THROW = 0x80
 
+"""
+These are currently unused.  Should really handle these properly at some point.
+
+TYPE_MODIFIER_INLINE   = 0x010000
+TYPE_MODIFIER_EXTERN   = 0x020000
+TYPE_MODIFIER_STATIC   = 0x040000
+TYPE_MODIFIER_CONST    = 0x080000
+TYPE_MODIFIER_REGISTER = 0x100000
+TYPE_MODIFIER_VOLATILE = 0x200000
+TYPE_MODIFIER_MUTABLE  = 0x400000
+
+TYPE_MODIFIER_MAP = {
+    'inline': TYPE_MODIFIER_INLINE,
+    'extern': TYPE_MODIFIER_EXTERN,
+    'static': TYPE_MODIFIER_STATIC,
+    'const': TYPE_MODIFIER_CONST,
+    'register': TYPE_MODIFIER_REGISTER,
+    'volatile': TYPE_MODIFIER_VOLATILE,
+    'mutable': TYPE_MODIFIER_MUTABLE,
+    }
+"""
+
 _INTERNAL_TOKEN = 'internal'
 _NAMESPACE_POP = 'ns-pop'
 
@@ -389,7 +411,10 @@ class Function(_GenericDeclaration):
         return self.body is not None
 
     def IsExportable(self):
-        return True
+        for t in self.return_type:
+            if t.name == 'static':
+                return False
+        return None not in self.namespace
 
     def Requires(self, node):
         if self.parameters:
@@ -453,6 +478,14 @@ class AstBuilder(object):
                 self.HandleError('exception', token)
                 raise
 
+    def _CreateVariable(self, pos_token, name, type_name, type_modifiers,
+                        ref_pointer_name_seq, value=None):
+        reference = '&' in ref_pointer_name_seq
+        pointer = '*' in ref_pointer_name_seq
+        Var = VariableDeclaration
+        return Var(pos_token.start, pos_token.end, name, type_name,
+                   type_modifiers, reference, pointer, value)
+
     def _GenerateOne(self, token):
         if token.token_type == tokenize.NAME:
             if (keywords.IsKeyword(token.name) and
@@ -493,12 +526,8 @@ class AstBuilder(object):
                     name, type_name, modifiers = \
                           _DeclarationToParts(temp_tokens)
                     t0 = temp_tokens[0]
-                    reference = '&' in names
-                    pointer = '*' in names
-                    value = None
-                    return VariableDeclaration(t0.start, t0.end, name,
-                                               type_name, modifiers,
-                                               reference, pointer, value)
+                    return self._CreateVariable(t0, name, type_name, modifiers,
+                                                names)
                 if last_token.name == '{':
                     self._AddBackTokens(temp_tokens[1:])
                     self._AddBackToken(last_token)
@@ -675,16 +704,16 @@ class AstBuilder(object):
             modifier_token = token
             token = self._GetNextToken()
             if modifier_token.name == 'const':
-                modifiers += FUNCTION_CONST
+                modifiers |= FUNCTION_CONST
             elif modifier_token.name == '__attribute__':
                 # TODO(nnorwitz): handle more __attribute__ details.
-                modifiers += FUNCTION_ATTRIBUTE
+                modifiers |= FUNCTION_ATTRIBUTE
                 assert token.name == '(', token
                 # Consume everything between the (parens).
                 unused_tokens = list(self._GetMatchingChar('(', ')'))
                 token = self._GetNextToken()
             elif modifier_token.name == 'throw':
-                modifiers += FUNCTION_THROW
+                modifiers |= FUNCTION_THROW
                 assert token.name == '(', token
                 # Consume everything between the (parens).
                 unused_tokens = list(self._GetMatchingChar('(', ')'))
@@ -692,7 +721,7 @@ class AstBuilder(object):
             elif modifier_token.name == modifier_token.name.upper():
                 # HACK(nnorwitz):  assume that all upper-case names
                 # are some macro we aren't expanding.
-                modifiers += FUNCTION_UNKNOWN_ANNOTATION
+                modifiers |= FUNCTION_UNKNOWN_ANNOTATION
             else:
                 self.HandleError('unexpected token', modifier_token)
 
@@ -717,10 +746,8 @@ class AstBuilder(object):
                 token = self._GetNextToken()
                 assert token.token_type == tokenize.SYNTAX, token
                 assert token.name == ';', token
-                return VariableDeclaration(indices.start, indices.end,
-                                           name.name, indices.name, modifiers,
-                                           reference=False, pointer=False,
-                                           initial_value=None)
+                return self._CreateVariable(indices, name.name, indices.name,
+                                            modifiers, '')
             # At this point, we got something like:
             #  return_type (type::*name_)(params);
             # This is a data member called name_ that is a function pointer.
@@ -731,10 +758,8 @@ class AstBuilder(object):
             # Just put in something so we don't crash and can move on.
             real_name = parameters[-1]
             modifiers = [p.name for p in self._GetParameters()]
-            return VariableDeclaration(indices.start, indices.end,
-                                       real_name.name, indices.name, modifiers,
-                                       reference=False, pointer=False,
-                                       initial_value=None)
+            return self._CreateVariable(indices, real_name.name, indices.name,
+                                        modifiers, '')
 
         if token.name == '{':
             body = list(self.GetScope())
@@ -744,7 +769,7 @@ class AstBuilder(object):
                 token = self._GetNextToken()
                 assert token.token_type == tokenize.CONSTANT, token
                 assert token.name == '0', token
-                modifiers += FUNCTION_PURE_VIRTUAL
+                modifiers |= FUNCTION_PURE_VIRTUAL
                 token = self._GetNextToken()
 
             assert token.name == ';', (token, return_type_and_name, parameters)
@@ -817,11 +842,7 @@ class AstBuilder(object):
 
         # Must be variable declaration using the type prefixed with keyword.
         assert token.token_type == tokenize.NAME, token
-        modifiers = []
-        reference = pointer = False
-        return VariableDeclaration(token.start, token.end, token.name, name,
-                                   modifiers, reference, pointer,
-                                   initial_value=None)
+        return self._CreateVariable(token, token.name, name, [], '')
 
     def handle_struct(self):
         # Special case the handling typedef/aliasing of structs here.
@@ -841,14 +862,10 @@ class AstBuilder(object):
                 assert temp.name == ';', (temp, name_tokens, var_token)
             if is_syntax or (is_variable and not self._handling_typedef):
                 modifiers = ['struct']
-                reference = '&' in var_token.name
-                pointer = '*' in var_token.name
                 type_name = ''.join(t.name for t in name_tokens)
-                first_token = name_tokens[0]
-                return VariableDeclaration(first_token.start, first_token.end,
-                                           variable.name, type_name,
-                                           modifiers, reference, pointer,
-                                           initial_value=None)
+                position = name_tokens[0]
+                return self._CreateVariable(position, variable.name, type_name,
+                                            modifiers, var_token.name)
             name_tokens.extend((var_token, next_token))
             self._AddBackTokens(name_tokens)
         else:
@@ -862,6 +879,8 @@ class AstBuilder(object):
         return self._GetNestedType(Enum)
 
     def handle_auto(self):
+        # TODO(nnorwitz): warn about using auto?  Probably not since it
+        # will be reclaimed and useful for C++0x.
         pass
 
     def handle_register(self):
@@ -1028,13 +1047,9 @@ class AstBuilder(object):
                 if next_token.name == ';':
                     # Handle data
                     modifiers = ['class']
-                    reference = '&' in token.name
-                    pointer = '*' in token.name
-                    return VariableDeclaration(class_token.start,
-                                               class_token.end,
-                                               name_token.name, class_name,
-                                               modifiers, reference, pointer,
-                                               initial_value=None)
+                    return self._CreateVariable(class_token, name_token.name,
+                                                class_name,
+                                                modifiers, token.name)
                 else:
                     # Assume this is a method.
                     tokens = (class_token, token, name_token, next_token)
@@ -1081,13 +1096,9 @@ class AstBuilder(object):
                                            bases, body, self.namespace_stack)
 
                     modifiers = []
-                    reference = '&' in token.name
-                    pointer = '*' in token.name
-                    return VariableDeclaration(class_token.start,
-                                               class_token.end,
-                                               token.name, new_class,
-                                               modifiers, reference, pointer,
-                                               initial_value=None)
+                    return self._CreateVariable(class_token,
+                                                token.name, new_class,
+                                                modifiers, token.name)
         else:
             if not self._handling_typedef:
                 self.HandleError('non-typedef token', token)
