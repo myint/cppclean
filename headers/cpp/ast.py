@@ -411,9 +411,10 @@ class Function(_GenericDeclaration):
         return self.body is not None
 
     def IsExportable(self):
-        for t in self.return_type:
-            if t.name == 'static':
-                return False
+        if self.return_type:
+            for t in self.return_type:
+                if t.name == 'static':
+                    return False
         return None not in self.namespace
 
     def Requires(self, node):
