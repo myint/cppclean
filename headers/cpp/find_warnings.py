@@ -96,14 +96,19 @@ class WarningHunter(object):
         else:
             print 'Warning', filename, 'already in cache'
 
-    def _AddWarning(self, msg, ast):
-        line_num = self.metrics.GetLineNumber(ast.start)
-        self.warnings.append((line_num, msg))
+    def _AddWarning(self, msg, node, filename=None):
+        source = self.metrics
+        if filename is not None:
+            source = metrics.Metrics(open(filename).read())
+        else:
+            filename = self.filename
+        line_num = source.GetLineNumber(node.start)
+        self.warnings.append((filename, line_num, msg))
 
     def ShowWarnings(self):
         self.warnings.sort()
-        for line_num, msg in self.warnings:
-            print '%s:%d: %s' % (self.filename, line_num, msg)
+        for filename, line_num, msg in self.warnings:
+            print '%s:%d: %s' % (filename, line_num, msg)
 
     def FindWarnings(self):
         # print 'Searching for warnings in:', self.filename
@@ -229,11 +234,30 @@ class WarningHunter(object):
         #     track all variable accesses/derefs.
         #   * too much non-template impl in header file
 
+    def _FindPublicFunctionWarnings(self, node, name, primary_header,
+                                    public_symbols, all_headers):
+        # Not found in the primary header, search all other headers.
+        for header_node, header in all_headers.itervalues():
+            if name in header.public_symbols:
+                if primary_header:
+                    msg = ('expected to find %s in %s, but found in %s' %
+                           (name, primary_header.filename, header.filename))
+                    self._AddWarning(msg, node)
+                break
+        else:
+            where = 'in any directly included header'
+            if primary_header:
+                where = ('in expected header ' + primary_header.filename +
+                         ' or any other directly #included header')
+            self._AddWarning('%s not found %s' % (name, where), node)
+
     def _CheckPublicFunctions(self, primary_header, all_headers):
         # Verify all the public functions are also declared in a header file.
         public_symbols = ()
+        declared_only_symbols = {}
         if primary_header:
             public_symbols = primary_header.public_symbols
+            declared_only_symbols = dict.fromkeys(public_symbols, True)
         for node in self.ast_list:
             # Make sure we have a function that should be exported.
             if not isinstance(node, ast.Function):
@@ -244,22 +268,17 @@ class WarningHunter(object):
             # This function should be declared in a header file.
             name = node.name
             if name in public_symbols:
-                continue  # It's in the primary header file.
-
-            # Not found in the primary header, search all other headers.
-            for header_node, header in all_headers.itervalues():
-                if name in header.public_symbols:
-                    if primary_header:
-                        msg = ('expected to find %s in %s, but found in %s' %
-                               (name, primary_header.filename, header.filename))
-                        self._AddWarning(msg, node)
-                    break
+                declared_only_symbols[name] = False
             else:
-                where = 'in any directly included header'
-                if primary_header:
-                    where = ('in expected header ' + primary_header.filename +
-                             ' or any other directly #included header')
-                self._AddWarning('%s not found %s' % (name, where), node)
+                self._FindPublicFunctionWarnings(node, name, primary_header,
+                                                 public_symbols, all_headers)
+
+        for name, declared_only in declared_only_symbols.iteritems():
+            if declared_only:
+                # TODO(nnorwitz): shouldn't warn if function is templatized.
+                node = public_symbols[name]
+                msg = '%s declared but not defined' % name
+                self._AddWarning(msg, node, primary_header.filename)
 
     def _GetPrimaryHeader(self, included_files):
         basename = os.path.splitext(self.filename)[0]
@@ -298,8 +317,6 @@ class WarningHunter(object):
         # TODO(nnorwitz): other warnings to add:
         #   * unused forward decls for variables (globals)/classes
         #   * Functions that are too large/complex
-        #   * Functions that are declared (in header) but not defined
-        #     - unless if they are templatized
         #   * Variables declared far from first use
 
 
