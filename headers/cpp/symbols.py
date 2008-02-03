@@ -126,9 +126,7 @@ class SymbolTable(object):
         if symbol.parts[0] == '':
             # Handle absolute (global) ::symbol_names.
             symbol.parts = symbol.parts[1:]
-            return self._LookupGlobal(symbol)
-
-        if namespace_stack is not None:
+        elif namespace_stack is not None:
             result = self._LookupInAllNamespaces(symbol)
             if result:
                 return result
@@ -146,7 +144,7 @@ class SymbolTable(object):
 
         Args:
           symbol_name: 'name of the symbol to lookup'
-          namespace_stack: None or ['namespaces', 'defined', 'in']
+          namespace_stack: None or ['namespaces', 'symbol', 'defined', 'in']
           node: ast.Node that defines this symbol
           module: module (any object) this symbol is defined in
 
