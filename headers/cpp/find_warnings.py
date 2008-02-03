@@ -310,7 +310,7 @@ class WarningHunter(object):
             # be configurable or removed in the future.  But it's easy
             # to check for now.
             msg = 'forward declarations not expected in source file'
-            self._AddWarning(msg, self.ast_list[0])
+            self._AddWarning(msg, forward_declarations.itervalues().next())
 
         # A primary header is optional.  However, when looking up
         # defined methods in the source, always look in the
