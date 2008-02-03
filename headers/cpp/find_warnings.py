@@ -239,7 +239,11 @@ class WarningHunter(object):
         # Not found in the primary header, search all other headers.
         for header_node, header in all_headers.itervalues():
             if name in header.public_symbols:
-                if primary_header:
+                # If the primary.filename == header.filename, it probably
+                # indicates an error elsewhere.  It sucks to mask it,
+                # but false positives are worse.
+                if (primary_header and
+                    primary_header.filename != header.filename):
                     msg = ('expected to find %s in %s, but found in %s' %
                            (name, primary_header.filename, header.filename))
                     self._AddWarning(msg, node)
