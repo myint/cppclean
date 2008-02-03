@@ -161,3 +161,21 @@ class SymbolTable(object):
         else:
             last_namespace = self.namespaces[None]
         return self._Add(symbol_name, last_namespace, node, module)
+
+    def GetNamespace(self, name_seq):
+        """Returns the prefix of names from name_seq that are known namespaces.
+
+        Args:
+          name_seq: ['names', 'of', 'possible', 'namespace', 'to', 'find']
+
+        Returns:
+          ['names', 'that', 'are', 'namespaces', 'possibly', 'empty', 'list']
+        """
+        namespaces = self.namespaces
+        result = []
+        for name in name_seq:
+            namespaces = namespaces.get(name)
+            if not namespaces:
+                break
+            result.append(name)
+        return result

@@ -171,6 +171,27 @@ class SymbolTableTest(unittest.TestCase):
         # Verify ns3 still has 1 element ('foo').
         self.assertEqual(1, len(st.namespaces['ns1']['ns2']['ns3']))
 
+    def testGetNamespace(self):
+        # Setup.
+        st = symbols.SymbolTable()
+        node = object()
+        module = object()
+        ns_stack = ['ns1', 'ns2', 'ns3']
+        name = 'foo'
+        self.assertEqual(True, st.AddSymbol(name, ns_stack, node, module))
+
+        # Verify.
+        self.assertEqual([], st.GetNamespace([]))
+        self.assertEqual(['ns1'], st.GetNamespace(['ns1']))
+        self.assertEqual(['ns1'], st.GetNamespace(['ns1', 'foo']))
+        self.assertEqual(['ns1'], st.GetNamespace(['ns1', 'foo']))
+        self.assertEqual(['ns1'], st.GetNamespace(['ns1', 'foo', 'ns2']))
+        self.assertEqual(['ns1', 'ns2'], st.GetNamespace(['ns1', 'ns2']))
+        self.assertEqual(['ns1', 'ns2'], st.GetNamespace(['ns1', 'ns2', 'f']))
+        self.assertEqual(['ns1', 'ns2'], st.GetNamespace(['ns1', 'ns2', 'f']))
+        self.assertEqual(['ns1', 'ns2', 'ns3'],
+                         st.GetNamespace(['ns1', 'ns2', 'ns3', 'f']))
+
 
 def test_main():
     test_support.run_unittest(SymbolTableTest)
