@@ -18,3 +18,6 @@ void SomeOtherFunction1() {
 
 void SomePublicFunction() {
 }
+
+void SomeClass::Method() {
+}

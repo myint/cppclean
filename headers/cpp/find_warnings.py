@@ -256,11 +256,17 @@ class WarningHunter(object):
         public_symbols = ()
         declared_only_symbols = {}
         if primary_header:
-            public_symbols = primary_header.public_symbols
+            public_symbols = {}
+            for name, symbol in primary_header.public_symbols.iteritems():
+                if isinstance(symbol, ast.Function):
+                    public_symbols[name] = symbol
             declared_only_symbols = dict.fromkeys(public_symbols, True)
+
         for node in self.ast_list:
             # Make sure we have a function that should be exported.
             if not isinstance(node, ast.Function):
+                continue
+            if isinstance(node, ast.Method):
                 continue
             if not (node.IsDefinition() and node.IsExportable()):
                 continue
