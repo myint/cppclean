@@ -156,7 +156,10 @@ class WarningHunter(object):
     def _GetClassesUsed(self):
         def _ProcessFunction(function):
             if function.return_type:
-                classes_used[function.return_type[0].name] = True
+                index = 0
+                if function.return_type[0].name in ('struct', 'class'):
+                    index = 1
+                classes_used[function.return_type[index].name] = True
             # TODO(nnorwitz): ignoring the body for now.
             for p in ast._SequenceToParameters(function.parameters):
                 classes_used[p.type_name] = True

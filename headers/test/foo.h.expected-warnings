@@ -4,4 +4,3 @@ foo.h:14: 'Unused' not used
 foo.h:61: 'ProtoArray' not used
 foo.h:113: not-used.h does not need to be #included
 foo.h:150: 'AR' not used
-foo.h:251: 'Flag' not used
