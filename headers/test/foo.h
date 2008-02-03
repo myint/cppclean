@@ -241,3 +241,9 @@ string foo = "\nX=\"/*\"";
 struct streamer::Key GlobalKey;
 typedef time_t (* TimeFunc)(time_t*);
 typedef char dummy_des_key_schedule[128];
+
+class Copy {
+public:
+  Copy();  // normal ctor
+  Copy& operator=(const Copy& other);  // copy ctor
+};

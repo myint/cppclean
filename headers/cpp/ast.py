@@ -502,8 +502,14 @@ class AstBuilder(object):
                 method = getattr(self, 'handle_' + token.name)
                 return method()
             elif token.name == self.in_class:
-                # The token name is the same as the class, must be a ctor.
-                return self._GetMethod([token], FUNCTION_CTOR)
+                # The token name is the same as the class, must be a ctor if
+                # there is a paren.  Otherwise, it's the return type.
+                # Peek ahead to get the next token to figure out which.
+                next = self._GetNextToken()
+                self._AddBackToken(next)
+                if next.token_type == tokenize.SYNTAX and next.name == '(':
+                    return self._GetMethod([token], FUNCTION_CTOR)
+                # Fall through--handle like any other method.
 
             # Handle data or function declaration/definition.
             syntax = tokenize.SYNTAX
