@@ -258,3 +258,6 @@ template<class T> class TemplateCtorDtor {
   TemplateCtorDtor<T>(T *ptr);
   ~TemplateCtorDtor<T>();
 };
+
+template <typename Type>
+Type* Singleton<Type>::instance_ = NULL;

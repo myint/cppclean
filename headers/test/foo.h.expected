@@ -73,3 +73,4 @@ Class(3762, 3766, Copy, None, [Function(3779, 3783, None Copy([]), 0x08, None), 
 Struct(3866, 3870, Flag, None, None)
 Class(3878, 3890, StructMethod, None, [Function(3895, 3900, [Token('struct', 3895, 3900), Token('Flag', 3902, 3906), Token('*', 3907, 3908)] flag([]), 0x00, None)])
 Class(3944, 3960, TemplateCtorDtor, None, [Function(3974, 3990, None TemplateCtorDtor([Token('T', 3994, 3995), Token('*', 3996, 3997), Token('ptr', 3997, 4000)]), 0x08, None), Function(4006, 4022, None TemplateCtorDtor([]), 0x10, None)])
+VariableDeclaration(4058, 4062,  Type Type::instance_=* NULL)

@@ -1070,7 +1070,13 @@ class AstBuilder(object):
             elif token.name == 'friend':
                 return self.handle_friend()
         self._AddBackToken(token)
-        return self.GetMethod()
+        tokens, last = self._GetVarTokensUpTo(tokenize.SYNTAX, '(', ';')
+        tokens.append(last)
+        self._AddBackTokens(tokens)
+        if last.name == '(':
+            return self.GetMethod()
+        # Must be a variable definition.
+        return None
 
     def handle_true(self):
         pass  # Nothing to do.
