@@ -459,9 +459,9 @@ class AstBuilder(object):
                 not keywords.IsBuiltinType(token.name)):
                 method = getattr(self, 'handle_' + token.name)
                 return method()
-            elif token == self.in_class:
-                # The token is the class we are in, must be a ctor.
-                return self._GetMethod(token, FUNCTION_CTOR)
+            elif token.name == self.in_class:
+                # The token name is the same as the class, must be a ctor.
+                return self._GetMethod([token], FUNCTION_CTOR)
             else:
                 # Handle data or function declaration/definition.
                 syntax = tokenize.SYNTAX
@@ -469,8 +469,8 @@ class AstBuilder(object):
                     self._GetVarTokensUpTo(syntax, '(', ';', '{', '[')
                 temp_tokens.insert(0, token)
                 if last_token.name == '(':
-                    # If there is an assignment before a paren, this is an
-                    # expression, not a method.
+                    # If there is an assignment before the paren,
+                    # this is an expression, not a method.
                     expr = bool([e for e in temp_tokens if e.name == '='])
                     if expr:
                         new_temp = self._GetTokensUpTo(tokenize.SYNTAX, ';')
