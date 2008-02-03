@@ -47,8 +47,8 @@ class Module(object):
 
     def _GetExportedSymbols(self):
         if not self.ast_list:
-            return []
-        return [node for node in self.ast_list if node.IsExportable()]
+            return {}
+        return dict((n.name, n) for n in self.ast_list if n.IsExportable())
 
     def IsAnyPublicSymbolUsed(self, ast_list):
         """Returns a bool whether any token in ast_list uses this module."""
@@ -63,7 +63,7 @@ class Module(object):
         if self.ast_list is None:
             return True
 
-        for symbol in self.public_symbols:
+        for symbol in self.public_symbols.itervalues():
             if _IsSymbolUsed(symbol):
                 return True
         return False
@@ -229,6 +229,47 @@ class WarningHunter(object):
         #     track all variable accesses/derefs.
         #   * too much non-template impl in header file
 
+    def _CheckPublicFunctions(self, primary_header, all_headers):
+        # Verify all the public functions are also declared in a header file.
+        public_symbols = ()
+        if primary_header:
+            public_symbols = primary_header.public_symbols
+        for node in self.ast_list:
+            # Make sure we have a function that should be exported.
+            if not isinstance(node, ast.Function):
+                continue
+            if not (node.IsDefinition() and node.IsExportable()):
+                continue
+
+            # This function should be declared in a header file.
+            name = node.name
+            if name in public_symbols:
+                continue  # It's in the primary header file.
+
+            # Not found in the primary header, search all other headers.
+            for header_node, header in all_headers.itervalues():
+                if name in header.public_symbols:
+                    if primary_header:
+                        msg = ('expected to find %s in %s, but found in %s' %
+                               (name, primary_header.filename, header.filename))
+                        self._AddWarning(msg, node)
+                    break
+            else:
+                where = 'in any directly included header'
+                if primary_header:
+                    where = ('in expected header ' + primary_header.filename +
+                             ' or any other directly #included header')
+                self._AddWarning('%s not found %s' % (name, where), node)
+
+    def _GetPrimaryHeader(self, included_files):
+        basename = os.path.splitext(self.filename)[0]
+        primary_header = included_files.get(basename + '.h')
+        if not primary_header:
+            primary_header = included_files.get(basename)
+        if primary_header:
+            return primary_header[1]
+        return None
+
     def _FindSourceWarnings(self):
         forward_declarations, included_files = self._GetForwardDeclarations()
         if forward_declarations:
@@ -236,36 +277,27 @@ class WarningHunter(object):
             # be something to warn against.  I expect this will either
             # be configurable or removed in the future.  But it's easy
             # to check for now.
-            msg = 'forard declarations not expected in source file'
+            msg = 'forward declarations not expected in source file'
             self._AddWarning(msg, self.ast_list[0])
-
-        basename = os.path.splitext(self.filename)
-        primay_header = included_files.get(basename + '.h')
-        if not primay_header:
-            primay_header = included_files.get(basename)
-            if not primay_header:
-                # TODO(nnorwitz): This shouldn't always be a warning.
-                # For example, *main.cc shouldn't need a header.  But
-                # almost all other source files should have a
-                # corresponding header.
-                msg = 'unable to find header file with matching name'
-                self._AddWarning(msg, self.ast_list[0])
 
         # A primary header is optional.  However, when looking up
         # defined methods in the source, always look in the
         # primary_header first.  Expect that is the most likely location.
         # Use of primary_header is primarily an optimization.
+        primary_header = self._GetPrimaryHeader(included_files)
+        if not primary_header:
+            # TODO(nnorwitz): This shouldn't always be a warning.
+            # For example, *main.cc shouldn't need a header.  But
+            # almost all other source files should have a
+            # corresponding header.
+            msg = 'unable to find header file with matching name'
+            self._AddWarning(msg, self.ast_list[0])
 
-        # Verify all the public functions are also declared in a header file.
-        for node in self.ast_list:
-            if isinstance(node, ast.Function) and node.IsDefinition():
-                # TODO(nnorwitz): impl
-                pass
-        
+        self._CheckPublicFunctions(primary_header, included_files)
+
         # TODO(nnorwitz): other warnings to add:
         #   * unused forward decls for variables (globals)/classes
         #   * Functions that are too large/complex
-        #   * Functions that are defined public, but no decl (in header)
         #   * Functions that are declared (in header) but not defined
         #     - unless if they are templatized
         #   * Variables declared far from first use

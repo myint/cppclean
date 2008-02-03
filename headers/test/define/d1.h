@@ -1,0 +1,2 @@
+
+void SomePublicFunction(void);
