@@ -33,6 +33,7 @@ import sys
 from cpp import ast
 from cpp import headers
 from cpp import metrics
+from cpp import symbols
 from cpp import tokenize
 from cpp import utils
 
@@ -88,6 +89,7 @@ class WarningHunter(object):
         self.filename = filename
         self.source = source
         self.ast_list = ast_list
+        self.symbol_table = symbols.SymbolTable()
 
         self.metrics = metrics.Metrics(source)
         self.warnings = []
@@ -119,6 +121,10 @@ class WarningHunter(object):
         else:
             print 'Unknown filetype for: %s' % self.filename
 
+    def _UpdateSymbolTable(self, module):
+        for name, node in module.public_symbols.iteritems():
+            self.symbol_table.AddSymbol(name, node.namespace, node, module)
+
     def _GetHeaderFile(self, filename):
         if filename in self._module_cache:
             return self._module_cache[filename]
@@ -135,6 +141,8 @@ class WarningHunter(object):
                 sys.exit(1)
             except:
                 print 'Exception while processing', filename
+            else:
+                self._UpdateSymbolTable(module)
         self._module_cache[filename] = module
         return module
 
@@ -274,7 +282,11 @@ class WarningHunter(object):
             if not isinstance(node, ast.Function):
                 continue
             if isinstance(node, ast.Method):
-                continue
+                # Ensure that for Foo::Bar, Foo is *not* a namespace.
+                # If Foo is a namespace, we have a function and not a method.
+                names = [n.name for n in node.in_class]
+                if names != self.symbol_table.GetNamespace(names):
+                    continue
             if not (node.IsDefinition() and node.IsExportable()):
                 continue
 

@@ -152,7 +152,7 @@ class SymbolTable(object):
           bool(if symbol was *not* already present)
         """
         # TODO(nnorwitz): verify symbol_name doesn't contain :: ?
-        if namespace_stack is not None:
+        if namespace_stack:
             # Handle non-global symbols (ie, in some namespace).
             assert namespace_stack, 'namespace_stack must not be empty'
             last_namespace = self.namespaces
