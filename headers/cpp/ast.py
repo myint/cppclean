@@ -438,6 +438,8 @@ class Method(Function):
                  modifiers, body, namespace):
         Function.__init__(self, start, end, name, return_type, parameters,
                           modifiers, body, namespace)
+        # TODO(nnorwitz): in_class could also be a namespace which can
+        # mess up finding functions properly.
         self.in_class = in_class
 
 
