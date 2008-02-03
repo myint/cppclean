@@ -15,7 +15,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Find warnings for C++ code."""
+"""Find warnings for C++ code.
+
+TODO(nnorwitz): provide a mechanism to configure which warnings should
+be generated and which should be suppressed.  Currently, all possible
+warnings will always be displayed.  There is no way to suppress any.
+There also needs to be a way to use annotations in the source code to
+suppress warnings.
+"""
 
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
@@ -41,7 +48,7 @@ class Module(object):
     def _GetExportedSymbols(self):
         if not self.ast_list:
             return []
-        return [node for node in self.ast_list if node.IsDefinition()]
+        return [node for node in self.ast_list if node.IsExportable()]
 
     def IsAnyPublicSymbolUsed(self, ast_list):
         """Returns a bool whether any token in ast_list uses this module."""
@@ -133,7 +140,7 @@ class WarningHunter(object):
         # TODO(nnorwitz): Need to handle structs too.
         forward_declared_classes = {}
         for node in self.ast_list:
-            if node.IsDeclaration():
+            if isinstance(node, ast.Class) and node.IsDeclaration():
                 forward_declared_classes[node.FullName()] = node
             if isinstance(node, ast.Include) and not node.system:
                 module = self._GetHeaderFile(node.filename)
@@ -223,7 +230,38 @@ class WarningHunter(object):
         #   * too much non-template impl in header file
 
     def _FindSourceWarnings(self):
-        self._FindUnusedWarnings()
+        forward_declarations, included_files = self._GetForwardDeclarations()
+        if forward_declarations:
+            # TODO(nnorwitz): This really isn't a problem, but might
+            # be something to warn against.  I expect this will either
+            # be configurable or removed in the future.  But it's easy
+            # to check for now.
+            msg = 'forard declarations not expected in source file'
+            self._AddWarning(msg, self.ast_list[0])
+
+        basename = os.path.splitext(self.filename)
+        primay_header = included_files.get(basename + '.h')
+        if not primay_header:
+            primay_header = included_files.get(basename)
+            if not primay_header:
+                # TODO(nnorwitz): This shouldn't always be a warning.
+                # For example, *main.cc shouldn't need a header.  But
+                # almost all other source files should have a
+                # corresponding header.
+                msg = 'unable to find header file with matching name'
+                self._AddWarning(msg, self.ast_list[0])
+
+        # A primary header is optional.  However, when looking up
+        # defined methods in the source, always look in the
+        # primary_header first.  Expect that is the most likely location.
+        # Use of primary_header is primarily an optimization.
+
+        # Verify all the public functions are also declared in a header file.
+        for node in self.ast_list:
+            if isinstance(node, ast.Function) and node.IsDefinition():
+                # TODO(nnorwitz): impl
+                pass
+        
         # TODO(nnorwitz): other warnings to add:
         #   * unused forward decls for variables (globals)/classes
         #   * Functions that are too large/complex

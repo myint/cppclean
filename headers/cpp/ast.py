@@ -62,9 +62,15 @@ class Node(object):
         self.end = end
 
     def IsDeclaration(self):
+        """Returns bool if this node is a declaration."""
         return False
 
     def IsDefinition(self):
+        """Returns bool if this node is a definition."""
+        return False
+
+    def IsExportable(self):
+        """Returns bool if this node exportable from a header file."""
         return False
 
     def Requires(self, node):
@@ -290,6 +296,9 @@ class Typedef(_GenericDeclaration):
     def IsDefinition(self):
         return True
 
+    def IsExportable(self):
+        return True
+
     def Requires(self, node):
         # TODO(nnorwitz): handle namespaces, etc.
         name = node.name
@@ -309,6 +318,9 @@ class _NestedType(_GenericDeclaration):
         self.fields = fields
 
     def IsDefinition(self):
+        return True
+
+    def IsExportable(self):
         return True
 
     def __str__(self):
@@ -334,6 +346,9 @@ class Class(_GenericDeclaration):
         return self.bases is None and self.body is None
 
     def IsDefinition(self):
+        return not self.IsDeclaration()
+
+    def IsExportable(self):
         return not self.IsDeclaration()
 
     def Requires(self, node):
@@ -367,7 +382,13 @@ class Function(_GenericDeclaration):
         self.modifiers = modifiers
         self.body = body
 
+    def IsDeclaration(self):
+        return self.body is None
+
     def IsDefinition(self):
+        return self.body is not None
+
+    def IsExportable(self):
         return True
 
     def Requires(self, node):
