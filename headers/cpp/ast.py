@@ -504,50 +504,50 @@ class AstBuilder(object):
             elif token.name == self.in_class:
                 # The token name is the same as the class, must be a ctor.
                 return self._GetMethod([token], FUNCTION_CTOR)
-            else:
-                # Handle data or function declaration/definition.
-                syntax = tokenize.SYNTAX
-                temp_tokens, last_token = \
-                    self._GetVarTokensUpTo(syntax, '(', ';', '{', '[')
-                temp_tokens.insert(0, token)
-                if last_token.name == '(':
-                    # If there is an assignment before the paren,
-                    # this is an expression, not a method.
-                    expr = bool([e for e in temp_tokens if e.name == '='])
-                    if expr:
-                        new_temp = self._GetTokensUpTo(tokenize.SYNTAX, ';')
-                        temp_tokens.append(last_token)
-                        temp_tokens.extend(new_temp)
-                        last_token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
 
-                if last_token.name == '[':
-                    # Handle array, this isn't a method.
-                    # TODO(nnorwitz): keep the size somewhere.
-                    # unused_size = self._GetTokensUpTo(tokenize.SYNTAX, ']')
+            # Handle data or function declaration/definition.
+            syntax = tokenize.SYNTAX
+            temp_tokens, last_token = \
+                self._GetVarTokensUpTo(syntax, '(', ';', '{', '[')
+            temp_tokens.insert(0, token)
+            if last_token.name == '(':
+                # If there is an assignment before the paren,
+                # this is an expression, not a method.
+                expr = bool([e for e in temp_tokens if e.name == '='])
+                if expr:
+                    new_temp = self._GetTokensUpTo(tokenize.SYNTAX, ';')
                     temp_tokens.append(last_token)
-                    temp_tokens2, last_token = \
-                        self._GetVarTokensUpTo(tokenize.SYNTAX, ';')
-                    temp_tokens.extend(temp_tokens2)
+                    temp_tokens.extend(new_temp)
+                    last_token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
 
-                if last_token.name == ';':
-                    # Handle data, this isn't a method.
-                    names = [t.name for t in temp_tokens]
-                    name, type_name, modifiers = \
-                          _DeclarationToParts(temp_tokens)
-                    t0 = temp_tokens[0]
-                    return self._CreateVariable(t0, name, type_name, modifiers,
-                                                names)
-                if last_token.name == '{':
-                    self._AddBackTokens(temp_tokens[1:])
-                    self._AddBackToken(last_token)
-                    method_name = temp_tokens[0].name
-                    method = getattr(self, 'handle_' + method_name, None)
-                    if not method:
-                        # Must be declaring a variable.
-                        # TODO(nnorwitz): handle the declaration.
-                        return None
-                    return method()
-                return self._GetMethod(temp_tokens, 0, False)
+            if last_token.name == '[':
+                # Handle array, this isn't a method.
+                # TODO(nnorwitz): keep the size somewhere.
+                # unused_size = self._GetTokensUpTo(tokenize.SYNTAX, ']')
+                temp_tokens.append(last_token)
+                temp_tokens2, last_token = \
+                    self._GetVarTokensUpTo(tokenize.SYNTAX, ';')
+                temp_tokens.extend(temp_tokens2)
+
+            if last_token.name == ';':
+                # Handle data, this isn't a method.
+                names = [t.name for t in temp_tokens]
+                name, type_name, modifiers = \
+                      _DeclarationToParts(temp_tokens)
+                t0 = temp_tokens[0]
+                return self._CreateVariable(t0, name, type_name, modifiers,
+                                            names)
+            if last_token.name == '{':
+                self._AddBackTokens(temp_tokens[1:])
+                self._AddBackToken(last_token)
+                method_name = temp_tokens[0].name
+                method = getattr(self, 'handle_' + method_name, None)
+                if not method:
+                    # Must be declaring a variable.
+                    # TODO(nnorwitz): handle the declaration.
+                    return None
+                return method()
+            return self._GetMethod(temp_tokens, 0, False)
         elif token.token_type == tokenize.SYNTAX:
             if token.name == '~' and self.in_class:
                 # Must be a dtor (probably not in method body).
