@@ -433,6 +433,14 @@ class Function(_GenericDeclaration):
         return self._TypeStringHelper(suffix)
 
 
+class Method(Function):
+    def __init__(self, start, end, name, in_class, return_type, parameters,
+                 modifiers, body, namespace):
+        Function.__init__(self, start, end, name, return_type, parameters,
+                          modifiers, body, namespace)
+        self.in_class = in_class
+
+
 class AstBuilder(object):
     def __init__(self, token_stream, filename, in_class='', visibility=None):
         self.tokens = token_stream
@@ -775,9 +783,21 @@ class AstBuilder(object):
 
             assert token.name == ';', (token, return_type_and_name, parameters)
 
-        return Function(indices.start, indices.end,
-                        name.name, return_type, parameters, modifiers, body,
-                        self.namespace_stack)
+        # Looks like we got a method, not a function.
+        if return_type and return_type[-1].name == '::':
+            # Assumes that function names aren't defined with :: as prefix.
+            index = len(return_type) - 1
+            # Strip off class name(s) and store that separately.
+            while index >= 0 and return_type[index] == '::':
+                index -= 2
+            index -= 1
+            in_class = return_type[index::2]
+            del return_type[index:]
+            return Method(indices.start, indices.end, name.name, in_class, 
+                          return_type, parameters, modifiers, body,
+                          self.namespace_stack)
+        return Function(indices.start, indices.end, name.name, return_type,
+                        parameters, modifiers, body, self.namespace_stack)
 
     def handle_bool(self):
         pass
