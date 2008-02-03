@@ -33,12 +33,12 @@ try:
 except ImportError:
     siteheaders = None
 _TRANSITIVE = getattr(siteheaders, 'TRANSITIVE', False)
-_INCLUDE_DIRS = getattr(siteheaders, 'INCLUDE_DIRS', ['.'])
+GetIncludeDirs = getattr(siteheaders, 'GetIncludeDirs', lambda fn: ['.'])
 
 
 def ReadSource(relative_filename):
     source = None
-    for path in _INCLUDE_DIRS:
+    for path in GetIncludeDirs(relative_filename):
         filename = os.path.join(path, relative_filename)
         source = utils.ReadFile(filename, False)
         if source is not None:
