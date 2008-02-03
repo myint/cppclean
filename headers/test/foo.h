@@ -247,3 +247,8 @@ public:
   Copy();  // normal ctor
   Copy& operator=(const Copy& other);  // copy ctor
 };
+
+struct Flag;
+class StructMethod {
+  struct Flag *flag();
+};

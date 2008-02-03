@@ -883,11 +883,19 @@ class AstBuilder(object):
                          var_token.name[0] in '*&')
             is_variable = (var_token.token_type == tokenize.NAME and
                            next_token.name == ';')
-            # TODO(nnorwitz): handle methods declared to return a struct.
             variable = var_token
             if is_syntax and not is_variable:
                 variable = next_token
                 temp = self._GetNextToken()
+                if temp.token_type == tokenize.SYNTAX and temp.name == '(':
+                    # Handle methods declared to return a struct.
+                    t0 = name_tokens[0]
+                    struct = tokenize.Token(tokenize.NAME, 'struct',
+                                            t0.start-7, t0.start-2)
+                    type_and_name = [struct]
+                    type_and_name.extend(name_tokens)
+                    type_and_name.extend((var_token, next_token))
+                    return self._GetMethod(type_and_name, 0, False)
                 assert temp.name == ';', (temp, name_tokens, var_token)
             if is_syntax or (is_variable and not self._handling_typedef):
                 modifiers = ['struct']
