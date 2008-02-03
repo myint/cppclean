@@ -697,17 +697,41 @@ class AstBuilder(object):
         return self._GetMethod(return_type_and_name, modifiers, False)
 
     def _GetMethod(self, return_type_and_name, modifiers, get_paren=True):
+        template_portion = None
         if get_paren:
             token = self._GetNextToken()
+            assert token.token_type == tokenize.SYNTAX, token
+            if token.name == '<':
+                # Handle templatized dtors.
+                template_portion = [token]
+                template_portion.extend(self._GetMatchingChar('<', '>'))
+                tn = template_portion[-1]
+                closing_template = tokenize.Token(tokenize.SYNTAX, '>',
+                                                  tn.end+1, tn.end+2)
+                template_portion.append(closing_template)
+                token = self._GetNextToken()
             assert token.token_type == tokenize.SYNTAX, token
             assert token.name == '(', token
 
         name = return_type_and_name.pop()
+        # Handle templatized ctors.
+        if name.name == '>':
+            index = 1
+            while return_type_and_name[index].name != '<':
+                index += 1
+            template_portion = return_type_and_name[index:] + [name]
+            del return_type_and_name[index:]
+            name = return_type_and_name.pop()
+
+        # TODO(nnorwitz): store template_portion.
         return_type = return_type_and_name
         indices = name
         if return_type:
             indices = return_type[0]
 
+        # Force ctor for templatized ctors.
+        if name.name == self.in_class and not modifiers:
+            modifiers |= FUNCTION_CTOR
         parameters = list(self._GetParameters())
 
         # Handling operator() is especially weird.

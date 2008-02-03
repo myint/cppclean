@@ -252,3 +252,9 @@ struct Flag;
 class StructMethod {
   struct Flag *flag();
 };
+
+template<class T> class TemplateCtorDtor {
+ public:
+  TemplateCtorDtor<T>(T *ptr);
+  ~TemplateCtorDtor<T>();
+};
