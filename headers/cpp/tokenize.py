@@ -25,6 +25,11 @@ import sys
 from cpp import utils
 
 
+if 'set' not in dir(__builtins__):
+    # Nominal support for Python 2.3.
+    from sets import Set as set
+
+
 # TODO(nnorwitz): consider adding $ as a valid identifier char.
 _letters = 'abcdefghijklmnopqrstuvwxyz'
 VALID_IDENTIFIER_CHARS = set(_letters + _letters.upper() + '_0123456789')

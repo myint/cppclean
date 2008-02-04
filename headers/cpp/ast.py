@@ -38,6 +38,13 @@ from cpp import tokenize
 from cpp import utils
 
 
+if 'reversed' not in dir(__builtins__):
+    # Support Python 2.3 and earlier.
+    def reversed(seq):
+        for i in range(len(seq)-1, -1, -1):
+            yield seq[i]
+
+
 VISIBILITY_PUBLIC, VISIBILITY_PROTECTED, VISIBILITY_PRIVATE = range(3)
 
 FUNCTION_CONST = 0x01
@@ -224,7 +231,7 @@ def _DeclarationToParts(parts):
                 p.token_type == tokenize.NAME):
                 type_name.append(tokenize.Token(tokenize.SYNTAX, ' ', 0, 0))
             type_name.append(p)
-    type_name = ''.join(t.name for t in type_name)
+    type_name = ''.join([t.name for t in type_name])
     return name.name, type_name, modifiers
 
 
@@ -868,7 +875,7 @@ class AstBuilder(object):
         name = None
         name_tokens, token = self.GetName()
         if name_tokens:
-            name = ''.join(t.name for t in name_tokens)
+            name = ''.join([t.name for t in name_tokens])
 
         # Handle forward declarations.
         if token.token_type == tokenize.SYNTAX and token.name == ';':
@@ -923,7 +930,7 @@ class AstBuilder(object):
                 assert temp.name == ';', (temp, name_tokens, var_token)
             if is_syntax or (is_variable and not self._handling_typedef):
                 modifiers = ['struct']
-                type_name = ''.join(t.name for t in name_tokens)
+                type_name = ''.join([t.name for t in name_tokens])
                 position = name_tokens[0]
                 return self._CreateVariable(position, variable.name, type_name,
                                             modifiers, var_token.name)
@@ -1099,7 +1106,7 @@ class AstBuilder(object):
         else:
             self._AddBackToken(class_token)
             name_tokens, token = self.GetName()
-            class_name = ''.join(t.name for t in name_tokens)
+            class_name = ''.join([t.name for t in name_tokens])
         bases = None
         if token.token_type == tokenize.SYNTAX:
             if token.name == ';':

@@ -24,6 +24,12 @@ if 'BaseException' not in dir(__builtins__):
     # Support Python 2.4 and earlier.
     BaseException = Exception
 
+if 'reversed' not in dir(__builtins__):
+    # Support Python 2.3 and earlier.
+    def reversed(seq):
+        for i in range(len(seq)-1, -1, -1):
+            yield seq[i]
+
 
 class Error(BaseException):
     """Exception raised when lookup fails."""

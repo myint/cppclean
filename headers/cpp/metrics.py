@@ -23,6 +23,11 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 from cpp import keywords
 
 
+if 'set' not in dir(__builtins__):
+    # Nominal support for Python 2.3.
+    from sets import Set as frozenset
+
+
 # A set of every keyword that increases the cyclomatic complexity.
 _COMPLEXITY_KEYWORDS = \
     frozenset(keywords.CONTROL + keywords.LOOP + keywords.EXCEPTION)

@@ -49,7 +49,7 @@ class Module(object):
     def _GetExportedSymbols(self):
         if not self.ast_list:
             return {}
-        return dict((n.name, n) for n in self.ast_list if n.IsExportable())
+        return dict([(n.name, n) for n in self.ast_list if n.IsExportable()])
 
     def IsAnyPublicSymbolUsed(self, ast_list):
         """Returns a bool whether any token in ast_list uses this module."""

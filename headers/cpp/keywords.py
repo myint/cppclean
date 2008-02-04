@@ -19,6 +19,11 @@
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
+if 'set' not in dir(__builtins__):
+    # Nominal support for Python 2.3.
+    from sets import Set as set
+
+
 TYPES = 'bool char int long short double float void wchar_t unsigned signed'.split()
 TYPE_MODIFIERS = 'auto register const inline extern static virtual volatile mutable'.split()
 ACCESS = 'public protected private friend'.split()

@@ -104,7 +104,7 @@ class SymbolTableTest(unittest.TestCase):
 
         self.assertEqual(True, st.AddSymbol(name, ns_stack, node, module))
         # Verify the symbol was added properly to the symbol table namespaces.
-        self.assertTrue('foo' in st.namespaces[None])
+        self.assert_('foo' in st.namespaces[None])
         self.assertEqual((node, module), st.namespaces[None]['foo'])
 
         # Already added, verify we get false.
@@ -118,8 +118,8 @@ class SymbolTableTest(unittest.TestCase):
         name = 'foo'
         self.assertEqual(True, st.AddSymbol(name, ns_stack, node, module))
         # Verify the symbol was added properly to the symbol table namespaces.
-        self.assertTrue('ns-foo' in st.namespaces)
-        self.assertTrue('foo' in st.namespaces['ns-foo'])
+        self.assert_('ns-foo' in st.namespaces)
+        self.assert_('foo' in st.namespaces['ns-foo'])
         self.assertEqual((node, module), st.namespaces['ns-foo']['foo'])
 
         # Already added, verify we get false.
@@ -134,10 +134,10 @@ class SymbolTableTest(unittest.TestCase):
 
         self.assertEqual(True, st.AddSymbol(name, ns_stack, node, module))
         # Verify the symbol was added properly to the symbol table namespaces.
-        self.assertTrue('ns1' in st.namespaces)
-        self.assertTrue('ns2' in st.namespaces['ns1'])
-        self.assertTrue('ns3' in st.namespaces['ns1']['ns2'])
-        self.assertTrue('foo' in st.namespaces['ns1']['ns2']['ns3'])
+        self.assert_('ns1' in st.namespaces)
+        self.assert_('ns2' in st.namespaces['ns1'])
+        self.assert_('ns3' in st.namespaces['ns1']['ns2'])
+        self.assert_('foo' in st.namespaces['ns1']['ns2']['ns3'])
         self.assertEqual((node, module),
                          st.namespaces['ns1']['ns2']['ns3']['foo'])
 
@@ -145,21 +145,21 @@ class SymbolTableTest(unittest.TestCase):
         ns_stack = ['ns1']
         name = 'something'
         self.assertEqual(True, st.AddSymbol(name, ns_stack, node, module))
-        self.assertTrue('something' in st.namespaces['ns1'])
+        self.assert_('something' in st.namespaces['ns1'])
         self.assertEqual((node, module), st.namespaces['ns1']['something'])
 
         # Now add something to ns1::ns2 and verify.
         ns_stack = ['ns1', 'ns2']
         name = 'else'
         self.assertEqual(True, st.AddSymbol(name, ns_stack, node, module))
-        self.assertTrue('else' in st.namespaces['ns1']['ns2'])
+        self.assert_('else' in st.namespaces['ns1']['ns2'])
         self.assertEqual((node, module), st.namespaces['ns1']['ns2']['else'])
 
         # Now add something to the global namespace and verify.
         ns_stack = None
         name = 'global'
         self.assertEqual(True, st.AddSymbol(name, ns_stack, node, module))
-        self.assertTrue('global' in st.namespaces[None])
+        self.assert_('global' in st.namespaces[None])
         self.assertEqual((node, module), st.namespaces[None]['global'])
 
         # Verify table still has 2 elements (global namespace and ::ns1).
