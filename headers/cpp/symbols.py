@@ -160,7 +160,6 @@ class SymbolTable(object):
         # TODO(nnorwitz): verify symbol_name doesn't contain :: ?
         if namespace_stack:
             # Handle non-global symbols (ie, in some namespace).
-            assert namespace_stack, 'namespace_stack must not be empty'
             last_namespace = self.namespaces
             for namespace in namespace_stack:
                 last_namespace = last_namespace.setdefault(namespace, {})
