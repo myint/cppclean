@@ -227,11 +227,11 @@ class WarningHunter(object):
         # Find all the header files that are not used.
         for node, module in included_files.values():
             if _IsCppFile(module.filename):
-                msg = ('should not include C++ source files: %s' %
+                msg = ('should not #include C++ source files: %s' %
                        module.filename)
                 self._AddWarning(msg, node)
             if node.filename == self.filename:
-                self._AddWarning('%s includes itself' % node.filename, node)
+                self._AddWarning('%s #includes itself' % node.filename, node)
             if not module.IsAnyPublicSymbolUsed(self.ast_list):
                 msg = '%s does not need to be #included' % node.filename
                 self._AddWarning(msg, node)
@@ -260,7 +260,7 @@ class WarningHunter(object):
                     self._AddWarning(msg, node)
                 break
         else:
-            where = 'in any directly included header'
+            where = 'in any directly #included header'
             if primary_header:
                 where = ('in expected header ' + primary_header.filename +
                          ' or any other directly #included header')
