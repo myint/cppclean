@@ -277,6 +277,7 @@ class WarningHunter(object):
                     public_symbols[name] = symbol
             declared_only_symbols = dict.fromkeys(public_symbols, True)
 
+        # TODO(nnorwitz): need to handle using statements.
         for node in self.ast_list:
             # Make sure we have a function that should be exported.
             if not isinstance(node, ast.Function):
