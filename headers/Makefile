@@ -2,7 +2,7 @@
 .PHONY: test
 
 test:
-	./test.sh > /dev/null 2>&1
+	./runtests.py > /dev/null
 	cd test ; ../run.sh ast foo.h | diff - foo.h.expected
 	cd test ; ../run.sh find_warnings foo.h | diff - foo.h.expected-warnings
 	for i in 1 2 3 ; do \
