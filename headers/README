@@ -5,11 +5,13 @@ TODO:
 
 Goal:
 -----
-  <Add mission from web>
+  CppClean attempts to find problems in C++ source that slow development
+  in large code bases, for example various forms of unused code.
+  Unused code can be unused functions, methods, data members, types, etc
+  to unnecessary #include directives.  Unnecessary #includes can cause
+  considerable extra compiles increasing the edit-compile-run cycle.
 
-Point to:   http://cppclean.googlecode.com
-
-# define AST here.
+  The project home page is:   http://code.google.com/p/cppclean/
 
 
 Features:
@@ -26,6 +28,9 @@ Features:
    ie, files that rely on a transitive #include from another header
  * (planned) Unused members (private, protected, & public) methods and data
  * (planned) Store AST in a SQL database so relationships can be queried
+
+AST is Abstract Syntax Tree, a representation of parsed source code.
+http://en.wikipedia.org/wiki/Abstract_syntax_tree
 
 
 System Requirements:
@@ -50,7 +55,7 @@ How to Run:
 
   All the commands take multiple files on the command line.  Other programs
   include: find_warnings, headers, methods, and types.  Some other programs
-  are available, but used primarly for debugging.
+  are available, but used primarily for debugging.
 
   run.sh is a simple wrapper that sets PYTHONPATH to /cppclean and then
   runs the program in /cppclean/cpp/PROGRAM.py.  There is currently
