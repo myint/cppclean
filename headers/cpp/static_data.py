@@ -35,27 +35,26 @@ def _FindWarnings(filename, source, ast_list):
   def FindStatic(function_node):
     for node in function_node:
       if node.name == 'static':
-        # TODO(nnorwitz): should ignore const.
+        # TODO(nnorwitz): should ignore const.  Is static const common here?
         PrintWarning(node, function_node.name)
 
   for node in ast_list:
-    # TODO(nnorwitz): handle module statics.
     # TODO(nnorwitz): handle globals too?
     if isinstance(node, ast.VariableDeclaration):
       if ('static' in node.type_modifiers and
           'const' not in node.type_modifiers):
         PrintWarning(node, node.ToString())
-    if isinstance(node, ast.Function):
+    elif isinstance(node, ast.Function):
       if node.body:
         FindStatic(node)
     elif isinstance(node, ast.Class) and node.body:
       for node in node.body:
-        if isinstance(node, ast.Function) and node.body:
-            FindStatic(node)
         if isinstance(node, ast.VariableDeclaration):
           if ('static' in node.type_modifiers and
               'const' not in node.type_modifiers):
             PrintWarning(node, node.ToString())
+        elif isinstance(node, ast.Function) and node.body:
+            FindStatic(node)
 
 
 def main(argv):
