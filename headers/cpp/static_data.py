@@ -27,14 +27,24 @@ from cpp import utils
 
 
 def _FindWarnings(filename, source, ast_list):
+  def PrintWarning(node, name):
+    lines = metrics.Metrics(source)
+    print '%s:%d' % (filename, lines.GetLineNumber(node.start)),
+    print 'static data:', name
+
   def FindStatic(function_node):
     for node in function_node:
       if node.name == 'static':
-        lines = metrics.Metrics(source)
-        print '%s:%d' % (filename, lines.GetLineNumber(node.start)),
-        print function_node.name, 'has static data'
+        # TODO(nnorwitz): should ignore const.
+        PrintWarning(node, function_node.name)
 
   for node in ast_list:
+    # TODO(nnorwitz): handle module statics.
+    # TODO(nnorwitz): handle globals too?
+    if isinstance(node, ast.VariableDeclaration):
+      if ('static' in node.type_modifiers and
+          'const' not in node.type_modifiers):
+        PrintWarning(node, node.ToString())
     if isinstance(node, ast.Function):
       if node.body:
         FindStatic(node)
@@ -42,6 +52,10 @@ def _FindWarnings(filename, source, ast_list):
       for node in node.body:
         if isinstance(node, ast.Function) and node.body:
             FindStatic(node)
+        if isinstance(node, ast.VariableDeclaration):
+          if ('static' in node.type_modifiers and
+              'const' not in node.type_modifiers):
+            PrintWarning(node, node.ToString())
 
 
 def main(argv):

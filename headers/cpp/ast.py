@@ -304,7 +304,8 @@ class VariableDeclaration(_GenericDeclaration):
         # TODO(nnorwitz): handle namespaces, etc.
         return self.type_name == node.name
 
-    def __str__(self):
+    def ToString(self):
+        """Return a string that tries to reconstitute the variable decl."""
         modifiers = ' '.join(self.type_modifiers)
         syntax = ''
         if self.reference:
@@ -314,7 +315,10 @@ class VariableDeclaration(_GenericDeclaration):
         suffix = '%s %s%s %s' % (modifiers, self.type_name, syntax, self.name)
         if self.initial_value:
             suffix += ' = ' + self.initial_value
-        return self._StringHelper(self.__class__.__name__, suffix)
+        return suffix
+
+    def __str__(self):
+        return self._StringHelper(self.__class__.__name__, self.ToString())
 
 
 class Typedef(_GenericDeclaration):
