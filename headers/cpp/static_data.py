@@ -39,10 +39,9 @@ def _FindWarnings(filename, source, ast_list):
         PrintWarning(node, function_node.name)
 
   for node in ast_list:
-    # TODO(nnorwitz): handle globals too?
     if isinstance(node, ast.VariableDeclaration):
-      if ('static' in node.type_modifiers and
-          'const' not in node.type_modifiers):
+      # Ignore 'static' here so we can find globals too.
+      if 'const' not in node.type_modifiers:
         PrintWarning(node, node.ToString())
     elif isinstance(node, ast.Function):
       if node.body:
