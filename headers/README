@@ -1,8 +1,3 @@
-TODO:
- * Setup empty FAQ on wiki
- * Setup mailing list
- * Add Current Status to wiki
-
 Goal:
 -----
   CppClean attempts to find problems in C++ source that slow development
@@ -18,6 +13,7 @@ Features:
 ---------
  * Find and print C++ language constructs: classes, methods, functions, etc.
  * Find classes with virtual methods, no virtual destructor, and no bases
+ * Find global/static data that are potential problems when using threads
  * Unnecessary forward class declarations
  * Unnecessary function declarations
  * Undeclared function definitions
