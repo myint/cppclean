@@ -26,7 +26,7 @@ from cpp import metrics
 from cpp import utils
 
 
-def _FindWarnings(filename, source, ast_list):
+def _FindWarnings(filename, source, ast_list, static_is_optional):
   def PrintWarning(node, name):
     lines = metrics.Metrics(source)
     print '%s:%d' % (filename, lines.GetLineNumber(node.start)),
@@ -40,20 +40,16 @@ def _FindWarnings(filename, source, ast_list):
 
   for node in ast_list:
     if isinstance(node, ast.VariableDeclaration):
-      # Ignore 'static' here so we can find globals too.
-      if 'const' not in node.type_modifiers:
+      # Ignore 'static' at module scope so we can find globals too.
+      is_static = 'static' in node.type_modifiers
+      is_not_const = 'const' not in node.type_modifiers
+      if is_not_const and (static_is_optional or is_static):
         PrintWarning(node, node.ToString())
     elif isinstance(node, ast.Function):
       if node.body:
         FindStatic(node)
     elif isinstance(node, ast.Class) and node.body:
-      for node in node.body:
-        if isinstance(node, ast.VariableDeclaration):
-          if ('static' in node.type_modifiers and
-              'const' not in node.type_modifiers):
-            PrintWarning(node, node.ToString())
-        elif isinstance(node, ast.Function) and node.body:
-            FindStatic(node)
+      _FindWarnings(filename, source, node.body, False)
 
 
 def main(argv):
@@ -66,7 +62,7 @@ def main(argv):
     builder = ast.BuilderFromSource(source, filename)
     try:
       entire_ast = filter(None, builder.Generate())
-      _FindWarnings(filename, source, entire_ast)
+      _FindWarnings(filename, source, entire_ast, True)
     except KeyboardInterrupt:
       return
     except:
