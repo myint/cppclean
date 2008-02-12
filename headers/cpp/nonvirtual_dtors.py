@@ -32,7 +32,9 @@ def _FindWarnings(filename, source, ast_list):
       class_node = node
       has_virtuals = False
       for node in node.body:
-        if (isinstance(node, ast.Function) and
+        if isinstance(node, ast.Class) and node.body:
+          _FindWarnings(filename, source, node.body)
+        elif (isinstance(node, ast.Function) and
             node.modifiers & ast.FUNCTION_VIRTUAL):
             has_virtuals = True
             if node.modifiers & ast.FUNCTION_DTOR:
