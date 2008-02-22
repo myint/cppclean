@@ -33,7 +33,7 @@ def _FindWarnings(filename, source, ast_list, static_is_optional):
     print 'static data:', name
 
   def FindStatic(function_node):
-    for node in function_node:
+    for node in function_node.body:
       if node.name == 'static':
         # TODO(nnorwitz): should ignore const.  Is static const common here?
         PrintWarning(node, function_node.name)
@@ -47,7 +47,7 @@ def _FindWarnings(filename, source, ast_list, static_is_optional):
         PrintWarning(node, node.ToString())
     elif isinstance(node, ast.Function):
       if node.body:
-        FindStatic(node.body)
+        FindStatic(node)
     elif isinstance(node, ast.Class) and node.body:
       _FindWarnings(filename, source, node.body, False)
 
