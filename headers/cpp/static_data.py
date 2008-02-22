@@ -47,7 +47,7 @@ def _FindWarnings(filename, source, ast_list, static_is_optional):
         PrintWarning(node, node.ToString())
     elif isinstance(node, ast.Function):
       if node.body:
-        FindStatic(node)
+        FindStatic(node.body)
     elif isinstance(node, ast.Class) and node.body:
       _FindWarnings(filename, source, node.body, False)
 
@@ -62,12 +62,13 @@ def main(argv):
     builder = ast.BuilderFromSource(source, filename)
     try:
       entire_ast = filter(None, builder.Generate())
-      _FindWarnings(filename, source, entire_ast, True)
     except KeyboardInterrupt:
       return
     except:
       # An error message was already printed since we couldn't parse.
       pass
+    else:
+      _FindWarnings(filename, source, entire_ast, True)
 
 
 if __name__ == '__main__':
