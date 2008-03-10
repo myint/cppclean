@@ -43,11 +43,11 @@ How to Run:
   To print warnings for classes with virtual methods, no virtual destructor and
   no base classes:
 
-      /cppclean/run.sh nonvirtual_dtors file1.h file2.h file3.cc ...
+      /cppclean/run.sh nonvirtual_dtors.py file1.h file2.h file3.cc ...
 
   To print all the functions defined in header file(s):
 
-      /cppclean/run.sh functions file1.h file2.h ...
+      /cppclean/run.sh functions.py file1.h file2.h ...
 
   All the commands take multiple files on the command line.  Other programs
   include: find_warnings, headers, methods, and types.  Some other programs
