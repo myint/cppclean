@@ -5,4 +5,4 @@ shift
 
 export PYTHONPATH=${0%/*}
 
-$PYTHONPATH/cpp/$PGM.py $*
+$PYTHONPATH/cpp/$PGM $*
