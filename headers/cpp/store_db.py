@@ -191,14 +191,14 @@ class ParsedSource(object):
         for node in self.entire_ast.Generate():
             if isinstance(node, ast.Typedef):
                 name = identifiers[node.name]
-                namespace = identifers[node.namespace or _NO_NAMESPACE]
+                namespace = identifiers[node.namespace or _NO_NAMESPACE]
                 line = metrics.GetLineNumber(node.start)
                 decl = TypedefDeclaration(name, namespace, file_index, line)
                 self.typedef_declarations.append(decl)
 
             elif isinstance(node, ast.Enum):
                 name = identifiers[node.name]
-                namespace = identifers[node.namespace or _NO_NAMESPACE]
+                namespace = identifiers[node.namespace or _NO_NAMESPACE]
                 line = metrics.GetLineNumber(node.start)
                 decl = EnumDeclaration(name, namespace, file_index, line)
                 self.enum_declarations.append(decl)
@@ -208,7 +208,7 @@ class ParsedSource(object):
                 line = metrics.GetLineNumber(node.start)
                 if not node.type_name:
                     # Handle global variables.
-                    namespace = identifers[node.namespace or _NO_NAMESPACE]
+                    namespace = identifiers[node.namespace or _NO_NAMESPACE]
                     decl = GlobalVariableDeclaration(name, namespace,
                                                      file_index, line)
                     self.global_variable_declarations.append(decl)
@@ -226,18 +226,19 @@ class ParsedSource(object):
                 line = metrics.GetLineNumber(node.start)
                 if node.body:
                     name = identifiers[node.name]
-                    namespace = identifers[node.namespace or _NO_NAMESPACE]
+                    namespace = identifiers[node.namespace or _NO_NAMESPACE]
                     decl = FunctionDeclaration(name, namespace, node.modifiers,
                                len(node.parameters), file_index, line)
                     self.function_declarations.append(decl)
                 else:
                     decl = 1  # TODO(nnorwitz): get decl
-                    definition = FunctionDefinition(decl, file_index, line)
+                    definition = FunctionDefinition(decl, None, None,
+                                                    file_index, line)
                     self.function_definitions.append(definition)
 
             elif isinstance(node, ast.Class) and node.body:
                 name = identifiers[node.name]
-                namespace = identifers[node.namespace or _NO_NAMESPACE]
+                namespace = identifiers[node.namespace or _NO_NAMESPACE]
                 line = metrics.GetLineNumber(node.start)
                 decl = ClassDeclaration(name, namespace, file_index, line)
                 self.class_declarations.append(decl)
