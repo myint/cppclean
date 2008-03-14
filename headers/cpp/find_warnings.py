@@ -37,12 +37,26 @@ from cpp import symbols
 from cpp import tokenize
 from cpp import utils
 
+if 'set' not in dir(__builtins__):
+    # Nominal support for Python 2.3.
+    from sets import Set as set
+
+
+# The filename extension used for the primary header file associated w/.cc file.
+PRIMARY_HEADER_EXTENSION = '.h'
+
+# These enumerations are used to determine how an symbol/#include file is used.
+UNUSED = 0
+USES_REFERENCE = 1
+USES_DECLARATION = 2
+
 
 class Module(object):
     """Data container represting a single source file."""
 
     def __init__(self, filename, ast_list):
         self.filename = filename
+        self.normalized_filename = os.path.abspath(filename)
         self.ast_list = ast_list
         self.public_symbols = self._GetExportedSymbols()
 
@@ -51,33 +65,15 @@ class Module(object):
             return {}
         return dict([(n.name, n) for n in self.ast_list if n.IsExportable()])
 
-    def IsAnyPublicSymbolUsed(self, ast_list):
-        """Returns a bool whether any token in ast_list uses this module."""
-        def _IsSymbolUsed(symbol):
-            # TODO(nnorwitz): this doesn't handle namespaces properly.
-            for node in ast_list:
-                if node.Requires(symbol):
-                    return True
-            return False
-
-        # Special case when we don't know the answer.  Assume it's ok.
-        if self.ast_list is None:
-            return True
-
-        for symbol in self.public_symbols.itervalues():
-            if _IsSymbolUsed(symbol):
-                return True
-        return False
-
 
 def _IsHeaderFile(filename):
     base, ext = os.path.splitext(filename)
-    return ext.lower() in ('.h', '.hpp', '.h++')
+    return ext.lower() in ('.h', '.hpp', '.h++', '.hxx')
 
 
 def _IsCppFile(filename):
     base, ext = os.path.splitext(filename)
-    return ext.lower() in ('.c', '.cc', '.cpp', '.c++')
+    return ext.lower() in ('.c', '.cc', '.cpp', '.c++', '.cxx')
 
 
 class WarningHunter(object):
@@ -87,6 +83,7 @@ class WarningHunter(object):
 
     def __init__(self, filename, source, ast_list):
         self.filename = filename
+        self.normalized_filename = os.path.abspath(filename)
         self.source = source
         self.ast_list = ast_list
         self.symbol_table = symbols.SymbolTable()
@@ -96,16 +93,18 @@ class WarningHunter(object):
         if filename not in self._module_cache:
             self._module_cache[filename] = Module(filename, ast_list)
         else:
-            print 'Warning', filename, 'already in cache'
+            print 'Warning %s already in cache' % filename
+
+    def _GetLineNum(self, metrics, node):
+        return metrics.GetLineNumber(node.start)
 
     def _AddWarning(self, msg, node, filename=None):
-        source = self.metrics
         if filename is not None:
-            source = metrics.Metrics(open(filename).read())
+            src_metrics = metrics.Metrics(open(filename).read())
         else:
             filename = self.filename
-        line_num = source.GetLineNumber(node.start)
-        self.warnings.append((filename, line_num, msg))
+            src_metrics = self.metrics
+        self.warnings.append((filename, self._GetLineNum(src_metrics, node), msg))
 
     def ShowWarnings(self):
         self.warnings.sort()
@@ -125,13 +124,13 @@ class WarningHunter(object):
         for name, node in module.public_symbols.iteritems():
             self.symbol_table.AddSymbol(name, node.namespace, node, module)
 
-    def _GetHeaderFile(self, filename):
+    def _GetModule(self, filename):
         if filename in self._module_cache:
             return self._module_cache[filename]
 
-        module = Module(filename, None)
         source, actual_filename = headers.ReadSource(filename)
         if source is None:
+            module = Module(filename, None)
             print 'Unable to find', filename
         else:
             builder = ast.BuilderFromSource(source, filename)
@@ -146,31 +145,115 @@ class WarningHunter(object):
         self._module_cache[filename] = module
         return module
 
-    def _GetForwardDeclarations(self):
-        # Map header-filename: (#include AST node, ast_list_for_file)
+    def _ReadAndParseIncludes(self):
+        DECLARATION_TYPES = (ast.Class, ast.Struct, ast.Enum, ast.Union)
+
+        # Map header-filename: (#include AST node, module).
         included_files = {}
-        # Find all the forward declared types.
-        # TODO(nnorwitz): Need to handle structs too.
-        forward_declared_classes = {}
+        # Map declaration-name: AST node.
+        forward_declarations = {}
         for node in self.ast_list:
-            if isinstance(node, ast.Class) and node.IsDeclaration():
-                forward_declared_classes[node.FullName()] = node
+            # Ignore #include <> files.  Only handle #include "".
+            # Assume that <> are used for only basic C/C++ headers.
             if isinstance(node, ast.Include) and not node.system:
-                module = self._GetHeaderFile(node.filename)
-                included_files[node.filename] = node, module
+                module = self._GetModule(node.filename)
+                included_files[module.normalized_filename] = node, module
+            if isinstance(node, DECLARATION_TYPES) and node.IsDeclaration():
+                forward_declarations[node.FullName()] = node
 
-        return forward_declared_classes, included_files
+        return included_files, forward_declarations
 
-    def _GetClassesUsed(self):
+    def _VerifyIncludes(self, included_files):
+        # Read and parse all the #include'd files and warn about really
+        # stupid things that can be determined from the #include'd file name.
+        files_seen = {}
+        for filename, (node, module) in included_files.iteritems():
+            normalized_filename = module.normalized_filename
+            if _IsCppFile(filename):
+                msg = 'should not #include C++ source file: %s' % filename
+                self._AddWarning(msg, node)
+            if normalized_filename == self.normalized_filename:
+                self._AddWarning('%s #includes itself' % filename, node)
+            if normalized_filename in files_seen:
+                include_node = files_seen[normalized_filename]
+                line_num = self._GetLineNum(self.metrics, include_node)
+                msg = '%s already #included on line %d' % (filename, line_num)
+                self._AddWarning(msg, node)
+            else:
+                files_seen[normalized_filename] = node
+
+    def _VerifyIncludeFilesUsed(self, file_uses, included_files):
+        # Find all #include files that are unnecessary.
+        for include_file, use in file_uses.iteritems():
+            if use != USES_DECLARATION:
+                node, module = included_files[include_file]
+                if module.ast_list is not None:
+                    msg = module.filename + ' does not need to be #included'
+                    if use == USES_REFERENCE:
+                        msg += '.  Use references instead'
+                    self._AddWarning(msg, node)
+
+    def _VerifyForwardDeclarationsUsed(self, forward_declarations, decl_uses):
+        # Find all the forward declarations that are not used.
+        for cls in forward_declarations:
+            if decl_uses[cls] == UNUSED:
+                node = forward_declarations[cls]
+                self._AddWarning('%r not used' % cls, node)
+
+    def _DetermineUses(self, included_files, forward_declarations):
+        # Setup the use type of each symbol.
+        file_uses = dict.fromkeys(included_files, UNUSED)
+        decl_uses = dict.fromkeys(forward_declarations, UNUSED)
+        symbol_table = self.symbol_table
+
+        def _AddReference(name, namespace):
+            if name in decl_uses:
+                decl_uses[name] |= USES_REFERENCE
+
+        def _AddUse(name, namespace):
+            if isinstance(name, list):
+                # name contains a list of tokens.
+                name = ''.join([n.name for n in name])
+            if not isinstance(name, str):
+                # Happens when variables are defined with inlined types, e.g.:
+                #   enum {...} variable;
+                return
+            try:
+                file_use_node = symbol_table.LookupSymbol(name, namespace)
+            except symbols.Error:
+                # TODO(nnorwitz): symbols from the current module should be added
+                # to the symbol table and then this exception should not happen.
+                return
+            if not file_use_node:
+                print 'Could not find #include file for', name, 'in', namespace
+                return
+            # TODO(nnorwitz): do proper check for ref/pointer/symbol.
+            name = file_use_node[1].normalized_filename
+            if name in file_uses:
+                file_uses[name] |= USES_DECLARATION
+
+        def _AddVariable(node, name, namespace):
+            if not name:
+                # Assume that all the types without names are builtin.
+                return
+            if node.reference or node.pointer:
+                _AddReference(name, namespace)
+            else:
+                _AddUse(name, namespace)
+
         def _ProcessFunction(function):
             if function.return_type:
-                index = 0
-                if function.return_type[0].name in ('struct', 'class'):
-                    index = 1
-                classes_used[function.return_type[index].name] = True
-            # TODO(nnorwitz): ignoring the body for now.
+                node = ast.CreateReturnType(function.return_type)
+                # TODO(nnorwitz): the AST should convert return_type
+                # from Tokens to a Node.
+                _AddVariable(node, node.type_name, function.namespace)
+            templated_types = function.templated_types or ()
             for p in ast._SequenceToParameters(function.parameters):
-                classes_used[p.type_name] = True
+                if p.type_name not in templated_types:
+                    _AddVariable(p, p.type_name, function.namespace)
+            if function.body:
+                # TODO(nnorwitz): handle local vars and data member references.
+                pass
 
         def _ProcessTypedef(typedef):
             for token in typedef.alias:
@@ -182,68 +265,41 @@ class WarningHunter(object):
                 elif isinstance(token, ast.Union):
                     pass                # TODO(nnorwitz): impl
 
-        # TODO(nnorwitz): this needs to be recursive.
-        classes_used = {}
+        # Iterate through the source AST/tokens, marking each symbols use.
         for node in self.ast_list:
             if isinstance(node, ast.VariableDeclaration):
-                classes_used[node.type_name] = True
+                _AddVariable(node, node.type_name, node.namespace)
             elif isinstance(node, ast.Function):
                 _ProcessFunction(node)
             elif isinstance(node, ast.Typedef):
-                _ProcessTypedef(node)
+                # TODO(nnorwitz): use _ProcessTypedef(node)
+                pass
             elif isinstance(node, ast.Class) and node.body:
+                if node.bases:
+                    for base in node.bases:
+                        _AddUse(base, node.namespace)
+                # TODO(nnorwitz): handle classes recursively for inner classes.
                 for node in node.body:
-                    if (isinstance(node, ast.Function) and
-                        not (node.modifiers & ast.FUNCTION_DTOR)):
+                    if isinstance(node, ast.Function):
                         _ProcessFunction(node)
                     if isinstance(node, ast.VariableDeclaration):
-                        classes_used[node.type_name] = True
-        return classes_used
+                        _AddVariable(node, node.type_name, node.namespace)
+
+        return file_uses, decl_uses
 
     def _FindUnusedWarnings(self):
-        # NOTE(nnorwitz): this could be sped up by iterating over the
-        # file's AST and finding which symbols are used.  Then iterate
-        # over each header file and see if any of the symbols are used.
-        #
-        # This is how this method should be implemented:
-        # Read all the #includes and store them in parsed form.
-        # Keep a dict of all public identifiers from each #include
-        # Iterate through the source AST/tokens.
-        # For each initial token (ignore ->tokens), find the header
-        # that referenced it and mark in that header.  If no header, bitch.
-
-        # Finally, iterate over all the headers.  For each one that
-        # has no markings of being used, bitch.
-
-        forward_declarations, included_files = self._GetForwardDeclarations()
-        classes_used = self._GetClassesUsed()
-
-        # Find all the forward declarations that are not used.
-        for cls in forward_declarations:
-            if cls not in classes_used:
-                node = forward_declarations[cls]
-                self._AddWarning('%r not used' % cls, node)
-
-        # Find all the header files that are not used.
-        for node, module in included_files.values():
-            if _IsCppFile(module.filename):
-                msg = ('should not #include C++ source files: %s' %
-                       module.filename)
-                self._AddWarning(msg, node)
-            if node.filename == self.filename:
-                self._AddWarning('%s #includes itself' % node.filename, node)
-            if not module.IsAnyPublicSymbolUsed(self.ast_list):
-                msg = '%s does not need to be #included' % node.filename
-                self._AddWarning(msg, node)
+        included_files, forward_declarations = self._ReadAndParseIncludes()
+        file_uses, decl_uses = \
+            self._DetermineUses(included_files, forward_declarations)
+        self._VerifyIncludes(included_files)
+        self._VerifyIncludeFilesUsed(file_uses, included_files)
+        self._VerifyForwardDeclarationsUsed(forward_declarations, decl_uses)
 
     def _FindHeaderWarnings(self):
         self._FindUnusedWarnings()
         # TODO(nnorwitz): other warnings to add:
-        #   * when a symbol is used, check if it is used as a pointer
-        #     and can be forward declared rather than #include'ing the
-        #     header file.  This only applies to header files until we
-        #     track all variable accesses/derefs.
         #   * too much non-template impl in header file
+        #   * too many methods/data members
 
     def _FindPublicFunctionWarnings(self, node, name, primary_header,
                                     public_symbols, all_headers):
@@ -312,8 +368,8 @@ class WarningHunter(object):
                 self._AddWarning(msg, node, primary_header.filename)
 
     def _GetPrimaryHeader(self, included_files):
-        basename = os.path.splitext(self.filename)[0]
-        primary_header = included_files.get(basename + '.h')
+        basename = os.path.splitext(self.normalized_filename)[0]
+        primary_header = included_files.get(basename + PRIMARY_HEADER_EXTENSION)
         if not primary_header:
             primary_header = included_files.get(basename)
         if primary_header:
@@ -321,7 +377,7 @@ class WarningHunter(object):
         return None
 
     def _FindSourceWarnings(self):
-        forward_declarations, included_files = self._GetForwardDeclarations()
+        included_files, forward_declarations = self._ReadAndParseIncludes()
         if forward_declarations:
             # TODO(nnorwitz): This really isn't a problem, but might
             # be something to warn against.  I expect this will either
