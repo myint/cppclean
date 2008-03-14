@@ -21,6 +21,8 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
 # TODO:
+#  * Tokens should never be exported, need to convert to Nodes
+#    (return types, parameters, etc.)
 #  * Handle static class data for templatized classes
 #  * Handle casts (both C++ and C-style)
 #  * Handle conditions and loops (if/else, switch, for, while/do)
@@ -47,6 +49,7 @@ if 'reversed' not in dir(__builtins__):
 
 VISIBILITY_PUBLIC, VISIBILITY_PROTECTED, VISIBILITY_PRIVATE = range(3)
 
+FUNCTION_NONE = 0x00
 FUNCTION_CONST = 0x01
 FUNCTION_VIRTUAL = 0x02
 FUNCTION_PURE_VIRTUAL = 0x04
@@ -80,6 +83,13 @@ TYPE_MODIFIER_MAP = {
 
 _INTERNAL_TOKEN = 'internal'
 _NAMESPACE_POP = 'ns-pop'
+
+
+# TODO(nnorwitz): use this as a singleton for templated_types, etc
+# where we don't want to create a new empty dict each time.  It is also const.
+class _NullDict(object):
+    __contains__ = lambda self: False
+    keys = values = items = iterkeys = itervalues = iteritems = lambda self: ()
 
 
 # TODO(nnorwitz): move AST nodes into a separate module.
@@ -187,7 +197,7 @@ class Using(Node):
 
 class Parameter(Node):
     def __init__(self, start, end, name, type_name, type_modifiers,
-                 reference, pointer, default):
+                 reference, pointer, templated_types, default):
         Node.__init__(self, start, end)
         self.name = name
         self.type_name = type_name
@@ -195,12 +205,14 @@ class Parameter(Node):
         self.reference = reference
         self.pointer = pointer
         self.default = default
+        self.templated_types = templated_types
 
     def Requires(self, node):
         # TODO(nnorwitz): handle namespaces, etc.
         return self.type_name == node.name
 
     def __str__(self):
+        # TODO(nnorwitz): add templated_types.
         modifiers = ' '.join(self.type_modifiers)
         syntax = ''
         if self.reference:
@@ -251,7 +263,7 @@ def _SequenceToParameters(seq):
             # TODO(nnorwitz): handle default values.
             name, type_name, modifiers = _DeclarationToParts(type_modifiers)
             p = Parameter(first_token.start, first_token.end, name, type_name,
-                          modifiers, reference, pointer, default)
+                          modifiers, reference, pointer, None, default)
             result.append(p)
             name = type_name = ''
             type_modifiers = []
@@ -265,9 +277,22 @@ def _SequenceToParameters(seq):
             type_modifiers.append(s)
     name, type_name, modifiers = _DeclarationToParts(type_modifiers)
     p = Parameter(first_token.start, first_token.end, name, type_name,
-                  modifiers, reference, pointer, default)
+                  modifiers, reference, pointer, None, default)
     result.append(p)
     return result
+
+
+def CreateReturnType(return_type_seq):
+    start = return_type_seq[0].start
+    end = return_type_seq[-1].end
+    bogus_name = tokenize.Token(tokenize.NAME, '<return value>', 0, 0)
+    return_type_seq.append(bogus_name)
+    name, type_name, modifiers = _DeclarationToParts(return_type_seq)
+    names = [n.name for n in return_type_seq]
+    reference = '&' in names
+    pointer = '*' in names
+    return VariableDeclaration(start, end, name, type_name, modifiers,
+                               reference, pointer, None, None)
 
 
 class _GenericDeclaration(Node):
@@ -292,13 +317,14 @@ class _GenericDeclaration(Node):
 # TODO(nnorwitz): merge with Parameter in some way?
 class VariableDeclaration(_GenericDeclaration):
     def __init__(self, start, end, name, type_name, type_modifiers,
-                 reference, pointer, initial_value):
+                 reference, pointer, templated_types, initial_value):
         _GenericDeclaration.__init__(self, start, end, name, [])
         self.type_name = type_name
         self.type_modifiers = type_modifiers
         self.reference = reference
         self.pointer = pointer
         self.initial_value = initial_value
+        self.templated_types = templated_types
 
     def Requires(self, node):
         # TODO(nnorwitz): handle namespaces, etc.
@@ -312,6 +338,7 @@ class VariableDeclaration(_GenericDeclaration):
             syntax += '&'
         if self.pointer:
             syntax += '*'
+        # TODO(nnorwitz): add templated_types.
         suffix = '%s %s%s %s' % (modifiers, self.type_name, syntax, self.name)
         if self.initial_value:
             suffix += ' = ' + self.initial_value
@@ -370,10 +397,11 @@ class Enum(_NestedType):
 
 
 class Class(_GenericDeclaration):
-    def __init__(self, start, end, name, bases, body, namespace):
+    def __init__(self, start, end, name, bases, templated_types, body, namespace):
         _GenericDeclaration.__init__(self, start, end, name, namespace)
         self.bases = bases
         self.body = body
+        self.templated_types = templated_types
 
     def IsDeclaration(self):
         return self.bases is None and self.body is None
@@ -396,6 +424,7 @@ class Class(_GenericDeclaration):
         return False
 
     def __str__(self):
+        # TODO(nnorwitz): add templated_types.
         suffix = '%s, %s, %s' % (self.name, self.bases, self.body)
         return self._TypeStringHelper(suffix)
 
@@ -406,7 +435,7 @@ class Struct(Class):
 
 class Function(_GenericDeclaration):
     def __init__(self, start, end, name, return_type, parameters,
-                 modifiers, body, namespace):
+                 modifiers, templated_types, body, namespace):
         _GenericDeclaration.__init__(self, start, end, name, namespace)
         if not return_type:
             return_type = None
@@ -414,6 +443,7 @@ class Function(_GenericDeclaration):
         self.parameters = parameters
         self.modifiers = modifiers
         self.body = body
+        self.templated_types = templated_types
 
     def IsDeclaration(self):
         return self.body is None
@@ -438,6 +468,7 @@ class Function(_GenericDeclaration):
         return False
 
     def __str__(self):
+        # TODO(nnorwitz): add templated_types.
         suffix = ('%s %s(%s), 0x%02x, %s' %
                   (self.return_type, self.name, self.parameters,
                    self.modifiers, self.body))
@@ -446,9 +477,9 @@ class Function(_GenericDeclaration):
 
 class Method(Function):
     def __init__(self, start, end, name, in_class, return_type, parameters,
-                 modifiers, body, namespace):
+                 modifiers, templated_types, body, namespace):
         Function.__init__(self, start, end, name, return_type, parameters,
-                          modifiers, body, namespace)
+                          modifiers, templated_types, body, namespace)
         # TODO(nnorwitz): in_class could also be a namespace which can
         # mess up finding functions properly.
         self.in_class = in_class
@@ -501,12 +532,12 @@ class AstBuilder(object):
                 raise
 
     def _CreateVariable(self, pos_token, name, type_name, type_modifiers,
-                        ref_pointer_name_seq, value=None):
+                        ref_pointer_name_seq, templated_types, value=None):
         reference = '&' in ref_pointer_name_seq
         pointer = '*' in ref_pointer_name_seq
-        Var = VariableDeclaration
-        return Var(pos_token.start, pos_token.end, name, type_name,
-                   type_modifiers, reference, pointer, value)
+        VarDecl = VariableDeclaration
+        return VarDecl(pos_token.start, pos_token.end, name, type_name,
+                       type_modifiers, reference, pointer, templated_types, value)
 
     def _GenerateOne(self, token):
         if token.token_type == tokenize.NAME:
@@ -521,7 +552,7 @@ class AstBuilder(object):
                 next = self._GetNextToken()
                 self._AddBackToken(next)
                 if next.token_type == tokenize.SYNTAX and next.name == '(':
-                    return self._GetMethod([token], FUNCTION_CTOR)
+                    return self._GetMethod([token], FUNCTION_CTOR, None, True)
                 # Fall through--handle like any other method.
 
             # Handle data or function declaration/definition.
@@ -555,7 +586,7 @@ class AstBuilder(object):
                       _DeclarationToParts(temp_tokens)
                 t0 = temp_tokens[0]
                 return self._CreateVariable(t0, name, type_name, modifiers,
-                                            names)
+                                            names, None)
             if last_token.name == '{':
                 self._AddBackTokens(temp_tokens[1:])
                 self._AddBackToken(last_token)
@@ -566,14 +597,14 @@ class AstBuilder(object):
                     # TODO(nnorwitz): handle the declaration.
                     return None
                 return method()
-            return self._GetMethod(temp_tokens, 0, False)
+            return self._GetMethod(temp_tokens, 0, None, False)
         elif token.token_type == tokenize.SYNTAX:
             if token.name == '~' and self.in_class:
                 # Must be a dtor (probably not in method body).
                 token = self._GetNextToken()
                 if (token.token_type == tokenize.NAME and
                     token.name == self.in_class):
-                    return self._GetMethod([token], FUNCTION_DTOR)
+                    return self._GetMethod([token], FUNCTION_DTOR, None, True)
             # TODO(nnorwitz): handle a lot more syntax.
         elif token.token_type == tokenize.PREPROCESSOR:
             # TODO(nnorwitz): handle more preprocessor directives.
@@ -702,12 +733,14 @@ class AstBuilder(object):
             next_token = self._GetNextToken()
         return tokens, next_token
 
-    def GetMethod(self, modifiers=0):
+    def GetMethod(self, modifiers, templated_types):
         return_type_and_name = self._GetTokensUpTo(tokenize.SYNTAX, '(')
         assert len(return_type_and_name) >= 1
-        return self._GetMethod(return_type_and_name, modifiers, False)
+        return self._GetMethod(return_type_and_name, modifiers, templated_types,
+                               False)
 
-    def _GetMethod(self, return_type_and_name, modifiers, get_paren=True):
+    def _GetMethod(self, return_type_and_name, modifiers, templated_types,
+                   get_paren):
         template_portion = None
         if get_paren:
             token = self._GetNextToken()
@@ -784,7 +817,7 @@ class AstBuilder(object):
             while token.name != ';' and token.name != '{':
                 token = self._GetNextToken()
 
-        # Handle pointer to functions that are really data but looked
+        # Handle pointer to functions that are really data but look
         # like method declarations.
         if token.name == '(':
             if parameters[0].name == '*':
@@ -799,7 +832,7 @@ class AstBuilder(object):
                 assert token.token_type == tokenize.SYNTAX, token
                 assert token.name == ';', token
                 return self._CreateVariable(indices, name.name, indices.name,
-                                            modifiers, '')
+                                            modifiers, '', None)
             # At this point, we got something like:
             #  return_type (type::*name_)(params);
             # This is a data member called name_ that is a function pointer.
@@ -811,7 +844,7 @@ class AstBuilder(object):
             real_name = parameters[-1]
             modifiers = [p.name for p in self._GetParameters()]
             return self._CreateVariable(indices, real_name.name, indices.name,
-                                        modifiers, '')
+                                        modifiers, '', None)
 
         if token.name == '{':
             body = list(self.GetScope())
@@ -827,7 +860,7 @@ class AstBuilder(object):
             assert token.name == ';', (token, return_type_and_name, parameters)
 
         # Looks like we got a method, not a function.
-        if return_type and return_type[-1].name == '::':
+        if len(return_type) > 2 and return_type[-1].name == '::':
             # Assumes that function names aren't defined with :: as prefix.
             index = len(return_type) - 1
             # Strip off class name(s) and store that separately.
@@ -837,10 +870,11 @@ class AstBuilder(object):
             in_class = return_type[index::2]
             del return_type[index:]
             return Method(indices.start, indices.end, name.name, in_class, 
-                          return_type, parameters, modifiers, body,
-                          self.namespace_stack)
+                          return_type, parameters, modifiers, templated_types,
+                          body, self.namespace_stack)
         return Function(indices.start, indices.end, name.name, return_type,
-                        parameters, modifiers, body, self.namespace_stack)
+                        parameters, modifiers, templated_types, body,
+                        self.namespace_stack)
 
     def handle_bool(self):
         pass
@@ -906,7 +940,7 @@ class AstBuilder(object):
 
         # Must be variable declaration using the type prefixed with keyword.
         assert token.token_type == tokenize.NAME, token
-        return self._CreateVariable(token, token.name, name, [], '')
+        return self._CreateVariable(token, token.name, name, [], '', None)
 
     def handle_struct(self):
         # Special case the handling typedef/aliasing of structs here.
@@ -930,19 +964,19 @@ class AstBuilder(object):
                     type_and_name = [struct]
                     type_and_name.extend(name_tokens)
                     type_and_name.extend((var_token, next_token))
-                    return self._GetMethod(type_and_name, 0, False)
+                    return self._GetMethod(type_and_name, 0, None, False)
                 assert temp.name == ';', (temp, name_tokens, var_token)
             if is_syntax or (is_variable and not self._handling_typedef):
                 modifiers = ['struct']
                 type_name = ''.join([t.name for t in name_tokens])
                 position = name_tokens[0]
                 return self._CreateVariable(position, variable.name, type_name,
-                                            modifiers, var_token.name)
+                                            modifiers, var_token.name, None)
             name_tokens.extend((var_token, next_token))
             self._AddBackTokens(name_tokens)
         else:
             self._AddBackToken(var_token)
-        return self._GetClass(Struct, VISIBILITY_PUBLIC)
+        return self._GetClass(Struct, VISIBILITY_PUBLIC, None)
 
     def handle_union(self):
         return self._GetNestedType(Union)
@@ -974,11 +1008,12 @@ class AstBuilder(object):
         # What follows must be a method.
         token = self._GetNextToken()
         if token.token_type == tokenize.SYNTAX and token.name == '~':
-            return self.GetMethod(FUNCTION_VIRTUAL + FUNCTION_DTOR)
+            return self.GetMethod(FUNCTION_VIRTUAL + FUNCTION_DTOR, None)
         assert token.token_type == tokenize.NAME or token.name == '::', token
         return_type_and_name = self._GetTokensUpTo(tokenize.SYNTAX, '(')
         return_type_and_name.insert(0, token)
-        return self._GetMethod(return_type_and_name, FUNCTION_VIRTUAL, False)
+        return self._GetMethod(return_type_and_name, FUNCTION_VIRTUAL,
+                               None, False)
 
     def handle_volatile(self):
         pass
@@ -1066,18 +1101,39 @@ class AstBuilder(object):
     def handle_typename(self):
         pass  # Not needed yet.
 
+    def _GetTemplatedTypes(self):
+        result = {}
+        tokens = list(self._GetMatchingChar('<', '>'))
+        len_tokens = len(tokens)
+        i = 0
+        while i < len_tokens:
+            key = tokens[i].name
+            i += 1
+            if keywords.IsKeyword(key):
+                continue
+            value = None
+            if i < len_tokens:
+                if tokens[i].name == '=':
+                    i += 1
+                    assert i < len_tokens, '%s %s' % (i, tokens)
+                    value = tokens[i]
+                else:
+                    assert tokens[i].name == ',', '%s %s' % (i, tokens)
+            result[key] = value
+        return result
+
     def handle_template(self):
         token = self._GetNextToken()
         assert token.token_type == tokenize.SYNTAX, token
         assert token.name == '<', token
-        template_params = list(self._GetMatchingChar('<', '>'))
+        templated_types = self._GetTemplatedTypes()
         # TODO(nnorwitz): for now, just ignore the template params.
         token = self._GetNextToken()
         if token.token_type == tokenize.NAME:
             if token.name == 'class':
-                return self._GetClass(Class, VISIBILITY_PRIVATE)
+                return self._GetClass(Class, VISIBILITY_PRIVATE, templated_types)
             elif token.name == 'struct':
-                return self._GetClass(Struct, VISIBILITY_PUBLIC)
+                return self._GetClass(Struct, VISIBILITY_PUBLIC, templated_types)
             elif token.name == 'friend':
                 return self.handle_friend()
         self._AddBackToken(token)
@@ -1085,7 +1141,7 @@ class AstBuilder(object):
         tokens.append(last)
         self._AddBackTokens(tokens)
         if last.name == '(':
-            return self.GetMethod()
+            return self.GetMethod(FUNCTION_NONE, templated_types)
         # Must be a variable definition.
         return None
 
@@ -1099,9 +1155,9 @@ class AstBuilder(object):
         pass  # Not needed yet.
 
     def handle_class(self):
-        return self._GetClass(Class, VISIBILITY_PRIVATE)
+        return self._GetClass(Class, VISIBILITY_PRIVATE, None)
 
-    def _GetClass(self, class_type, visibility):
+    def _GetClass(self, class_type, visibility, templated_types):
         class_name = None
         class_token = self._GetNextToken()
         if class_token.token_type != tokenize.NAME:
@@ -1116,7 +1172,7 @@ class AstBuilder(object):
             if token.name == ';':
                 # Forward declaration.
                 return class_type(class_token.start, class_token.end,
-                                  class_name, None, None,
+                                  class_name, None, templated_types, None,
                                   self.namespace_stack)
             if token.name in '*&':
                 # Inline forward declaration.  Could be method or data.
@@ -1127,12 +1183,12 @@ class AstBuilder(object):
                     modifiers = ['class']
                     return self._CreateVariable(class_token, name_token.name,
                                                 class_name,
-                                                modifiers, token.name)
+                                                modifiers, token.name, None)
                 else:
                     # Assume this is a method.
                     tokens = (class_token, token, name_token, next_token)
                     self._AddBackTokens(tokens)
-                    return self.GetMethod()
+                    return self.GetMethod(FUNCTION_NONE, None)
             if token.name == ':':
                 # Get base classes.
                 bases = []
@@ -1170,20 +1226,20 @@ class AstBuilder(object):
                     assert token.name == ';', token
                 else:
                     new_class = class_type(class_token.start, class_token.end,
-                                           class_name,
-                                           bases, body, self.namespace_stack)
+                                           class_name, bases, None,
+                                           body, self.namespace_stack)
 
                     modifiers = []
                     return self._CreateVariable(class_token,
                                                 token.name, new_class,
-                                                modifiers, token.name)
+                                                modifiers, token.name, None)
         else:
             if not self._handling_typedef:
                 self.HandleError('non-typedef token', token)
             self._AddBackToken(token)
 
         return class_type(class_token.start, class_token.end, class_name,
-                          bases, body, self.namespace_stack)
+                          bases, None, body, self.namespace_stack)
 
     def handle_namespace(self):
         token = self._GetNextToken()
@@ -1217,7 +1273,7 @@ class AstBuilder(object):
         # Nothing much to do.
         # TODO(nnorwitz): maybe verify the method name == class name.
         # This must be a ctor.
-        return self.GetMethod(FUNCTION_CTOR)
+        return self.GetMethod(FUNCTION_CTOR, None)
 
     def handle_this(self):
         pass  # Nothing to do.
