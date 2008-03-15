@@ -214,7 +214,7 @@ class WarningHunter(object):
             if isinstance(name, list):
                 # name contains a list of tokens.
                 name = ''.join([n.name for n in name])
-            if not isinstance(name, str):
+            elif not isinstance(name, str):
                 # Happens when variables are defined with inlined types, e.g.:
                 #   enum {...} variable;
                 return
@@ -266,24 +266,21 @@ class WarningHunter(object):
                     pass                # TODO(nnorwitz): impl
 
         # Iterate through the source AST/tokens, marking each symbols use.
-        for node in self.ast_list:
-            if isinstance(node, ast.VariableDeclaration):
-                _AddVariable(node, node.type_name, node.namespace)
-            elif isinstance(node, ast.Function):
-                _ProcessFunction(node)
-            elif isinstance(node, ast.Typedef):
-                # TODO(nnorwitz): use _ProcessTypedef(node)
-                pass
-            elif isinstance(node, ast.Class) and node.body:
-                if node.bases:
-                    for base in node.bases:
-                        _AddUse(base, node.namespace)
-                # TODO(nnorwitz): handle classes recursively for inner classes.
-                for node in node.body:
-                    if isinstance(node, ast.Function):
-                        _ProcessFunction(node)
-                    if isinstance(node, ast.VariableDeclaration):
-                        _AddVariable(node, node.type_name, node.namespace)
+        ast_seq = [self.ast_list]
+        while ast_seq:
+            for node in ast_seq.pop():
+                if isinstance(node, ast.VariableDeclaration):
+                    _AddVariable(node, node.type_name, node.namespace)
+                elif isinstance(node, ast.Function):
+                    _ProcessFunction(node)
+                elif isinstance(node, ast.Typedef):
+                    # TODO(nnorwitz): use _ProcessTypedef(node)
+                    pass
+                elif isinstance(node, ast.Class) and node.body:
+                    ast_seq.append(node.body)
+                    if node.bases:
+                        for base in node.bases:
+                            _AddUse(base, node.namespace)
 
         return file_uses, decl_uses
 
