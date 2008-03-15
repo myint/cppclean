@@ -250,7 +250,15 @@ class WarningHunter(object):
             templated_types = function.templated_types or ()
             for p in ast._SequenceToParameters(function.parameters):
                 if p.type_name not in templated_types:
-                    _AddVariable(p, p.type_name, function.namespace)
+                    if function.body and p.name and p.type_name:
+                        # Assume that if the the function has a body and a name
+                        # the parameter type is really used.
+                        # NOTE(nnorwitz): this is over-aggressive. It would be
+                        # better to iterate through the body and determine
+                        # actual uses based on local vars and data members used.
+                        _AddUse(p.type_name, function.namespace)
+                    else:
+                        _AddVariable(p, p.type_name, function.namespace)
             if function.body:
                 # TODO(nnorwitz): handle local vars and data member references.
                 pass
