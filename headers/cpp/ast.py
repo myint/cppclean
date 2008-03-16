@@ -497,8 +497,7 @@ class AstBuilder(object):
         self.in_class = in_class
         self.visibility = visibility
         self.in_function = False
-        self.current_start = None
-        self.current_end = None
+        self.current_token = None
         # Keep the state whether we are currently handling a typedef or not.
         self._handling_typedef = False
 
@@ -514,8 +513,7 @@ class AstBuilder(object):
                 break
 
             # Get the next token.
-            self.current_start = token.start
-            self.current_end = token.end
+            self.current_token = token
 
             # Dispatch on the next token type.
             if token.token_type == _INTERNAL_TOKEN:
@@ -1305,7 +1303,7 @@ class AstBuilder(object):
     def handle_return(self):
         tokens = self._GetTokensUpTo(tokenize.SYNTAX, ';')
         if not tokens:
-            return Return(self.current_start, self.current_end, None)
+            return Return(self.current_token.start, self.current_token.end, None)
         return Return(tokens[0].start, tokens[0].end, tokens)
 
     def handle_goto(self):
