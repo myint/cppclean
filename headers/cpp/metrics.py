@@ -30,7 +30,7 @@ if 'set' not in dir(__builtins__):
 
 # A set of every keyword that increases the cyclomatic complexity.
 _COMPLEXITY_KEYWORDS = \
-    frozenset(keywords.CONTROL + keywords.LOOP + keywords.EXCEPTION)
+    frozenset(keywords.CONTROL | keywords.LOOP | keywords.EXCEPTION)
 
 
 class Metrics(object):

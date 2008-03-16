@@ -24,20 +24,20 @@ if 'set' not in dir(__builtins__):
     from sets import Set as set
 
 
-TYPES = 'bool char int long short double float void wchar_t unsigned signed'.split()
-TYPE_MODIFIERS = 'auto register const inline extern static virtual volatile mutable'.split()
-ACCESS = 'public protected private friend'.split()
+TYPES = set('bool char int long short double float void wchar_t unsigned signed'.split())
+TYPE_MODIFIERS = set('auto register const inline extern static virtual volatile mutable'.split())
+ACCESS = set('public protected private friend'.split())
 
-CASTS = 'static_cast const_cast dynamic_cast reinterpret_cast'.split()
+CASTS = set('static_cast const_cast dynamic_cast reinterpret_cast'.split())
 
-OTHERS = 'true false asm class namespace using explicit this operator sizeof'.split()
-OTHER_TYPES = 'new delete typedef struct union enum typeid typename template'.split()
+OTHERS = set('true false asm class namespace using explicit this operator sizeof'.split())
+OTHER_TYPES = set('new delete typedef struct union enum typeid typename template'.split())
 
-CONTROL = 'case switch default if else return goto'.split()
-EXCEPTION = 'try catch throw'.split()
-LOOP = 'while do for break continue'.split()
+CONTROL = set('case switch default if else return goto'.split())
+EXCEPTION = set('try catch throw'.split())
+LOOP = set('while do for break continue'.split())
 
-ALL = set(TYPES + TYPE_MODIFIERS + ACCESS + CASTS + OTHERS + OTHER_TYPES + CONTROL + EXCEPTION + LOOP)
+ALL = TYPES | TYPE_MODIFIERS | ACCESS | CASTS | OTHERS | OTHER_TYPES | CONTROL | EXCEPTION | LOOP
 
 
 def IsKeyword(token):
