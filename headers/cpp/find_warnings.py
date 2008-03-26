@@ -140,6 +140,7 @@ class WarningHunter(object):
                 sys.exit(1)
             except:
                 print 'Exception while processing', filename
+                module = Module(filename, None)
             else:
                 self._UpdateSymbolTable(module)
         self._module_cache[filename] = module
