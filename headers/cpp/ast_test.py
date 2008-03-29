@@ -153,7 +153,7 @@ class AstBuilder_GetClassTest(unittest.TestCase):
     pass  # TODO(nnorwitz): implement.
 
 
-class AstBuilderTest(unittest.TestCase):
+class AstBuilderIntegrationTest(unittest.TestCase):
     """Unlike the other test cases in this file, this test case is
     meant to be an integration test.  It doesn't test any individual
     method.  It tests whole code blocks.
@@ -171,11 +171,12 @@ class AstBuilderTest(unittest.TestCase):
         self.assertEqual(1, len(nodes))
         self.assertEqual(Class('Foo', body=[]), nodes[0])
 
-    def testClass_InNamespace(self):
+    def testClass_InNamespaceSingle(self):
         nodes = list(MakeBuilder('namespace N { class Foo; }').Generate())
         self.assertEqual(1, len(nodes))
         self.assertEqual(Class('Foo', namespace=['N']), nodes[0])
 
+    def testClass_InNamespaceMultiple(self):
         code = 'namespace A { namespace B { namespace C { class Foo; }}}'
         nodes = list(MakeBuilder(code).Generate())
         self.assertEqual(1, len(nodes))
