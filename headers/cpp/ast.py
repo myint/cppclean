@@ -1155,6 +1155,28 @@ class AstBuilder(object):
     def handle_class(self):
         return self._GetClass(Class, VISIBILITY_PRIVATE, None)
 
+    def _GetBases(self):
+        # Get base classes.
+        bases = []
+        while 1:
+            token = self._GetNextToken()
+            assert token.token_type == tokenize.NAME, token
+            # TODO(nnorwitz): store kind of inheritance...maybe.
+            if token.name not in ('public', 'protected', 'private'):
+                # If inheritance type is not specified, it is private.
+                # Just put the token back so we can form a name.
+                # TODO(nnorwitz): it would be good to warn about this.
+                self._AddBackToken(token)
+            base, next_token = self.GetName()
+            bases.append(base)
+            assert next_token.token_type == tokenize.SYNTAX, next_token
+            if next_token.name == '{':
+                token = next_token
+                break
+            # Support multiple inheritance.
+            assert next_token.name == ',', next_token
+        return bases, token
+
     def _GetClass(self, class_type, visibility, templated_types):
         class_name = None
         class_token = self._GetNextToken()
@@ -1188,25 +1210,7 @@ class AstBuilder(object):
                     self._AddBackTokens(tokens)
                     return self.GetMethod(FUNCTION_NONE, None)
             if token.name == ':':
-                # Get base classes.
-                bases = []
-                while 1:
-                    token = self._GetNextToken()
-                    assert token.token_type == tokenize.NAME, token
-                    # TODO(nnorwitz): store kind of inheritance...maybe.
-                    if token.name not in ('public', 'protected', 'private'):
-                        # If inheritance type is not specified, it is private.
-                        # Just put the token back so we can form a name.
-                        # TODO(nnorwitz): it would be good to warn about this.
-                        self._AddBackToken(token)
-                    base, next_token = self.GetName()
-                    bases.append(base)
-                    assert next_token.token_type == tokenize.SYNTAX, next_token
-                    if next_token.name == '{':
-                        token = next_token
-                        break
-                    # Support multiple inheritance.
-                    assert next_token.name == ',', next_token
+                bases, token = self._GetBases()
 
         body = None
         if token.token_type == tokenize.SYNTAX and token.name == '{':
