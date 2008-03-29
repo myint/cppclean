@@ -680,6 +680,7 @@ class AstBuilder(object):
                         break
             yield token
             token = self._GetNextToken()
+        yield token
 
     def _GetParameters(self):
         return self._GetMatchingChar('(', ')')
@@ -747,10 +748,6 @@ class AstBuilder(object):
                 # Handle templatized dtors.
                 template_portion = [token]
                 template_portion.extend(self._GetMatchingChar('<', '>'))
-                tn = template_portion[-1]
-                closing_template = tokenize.Token(tokenize.SYNTAX, '>',
-                                                  tn.end+1, tn.end+2)
-                template_portion.append(closing_template)
                 token = self._GetNextToken()
             assert token.token_type == tokenize.SYNTAX, token
             assert token.name == '(', token
@@ -775,12 +772,14 @@ class AstBuilder(object):
         if name.name == self.in_class and not modifiers:
             modifiers |= FUNCTION_CTOR
         parameters = list(self._GetParameters())
+        del parameters[-1]              # Remove trailing ')'.
 
         # Handling operator() is especially weird.
         if name.name == 'operator' and not parameters:
             token = self._GetNextToken()
             assert token.name == '(', token
             parameters = list(self._GetParameters())
+            del parameters[-1]          # Remove trailing ')'.
 
         token = self._GetNextToken()
         while token.token_type == tokenize.NAME:
@@ -825,6 +824,7 @@ class AstBuilder(object):
                 modifiers = [p.name for p in parameters]
                 # Already at the ( to open the parameter list.
                 function_parameters = list(self._GetMatchingChar('(', ')'))
+                del function_parameters[-1]  # Remove trailing ')'.
                 # TODO(nnorwitz): store the function_parameters.
                 token = self._GetNextToken()
                 assert token.token_type == tokenize.SYNTAX, token
@@ -841,11 +841,13 @@ class AstBuilder(object):
             # Just put in something so we don't crash and can move on.
             real_name = parameters[-1]
             modifiers = [p.name for p in self._GetParameters()]
+            del modifiers[-1]           # Remove trailing ')'.
             return self._CreateVariable(indices, real_name.name, indices.name,
                                         modifiers, '', None)
 
         if token.name == '{':
             body = list(self.GetScope())
+            del body[-1]                # Remove trailing '}'.
         else:
             body = None
             if token.name == '=':
@@ -925,6 +927,7 @@ class AstBuilder(object):
 
         # Must be the type declaration.
         fields = list(self._GetMatchingChar('{', '}'))
+        del fields[-1]                  # Remove trailing '}'.
         if token.token_type == tokenize.SYNTAX and token.name == '{':
             next = self._GetNextToken()
             new_type = ctor(token.start, token.end, name, fields,
@@ -1102,7 +1105,7 @@ class AstBuilder(object):
     def _GetTemplatedTypes(self):
         result = {}
         tokens = list(self._GetMatchingChar('<', '>'))
-        len_tokens = len(tokens)
+        len_tokens = len(tokens) - 1    # Ignore trailing '>'.
         i = 0
         while i < len_tokens:
             key = tokens[i].name
@@ -1259,6 +1262,7 @@ class AstBuilder(object):
         else:
             assert token.name == '{', token
             tokens = list(self.GetScope())
+            del tokens[-1]              # Remove trailing '}'.
             # Handle namespace with nothing in it.
             self._AddBackTokens(tokens)
         token = tokenize.Token(_INTERNAL_TOKEN, _NAMESPACE_POP, None, None)
