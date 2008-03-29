@@ -62,29 +62,29 @@ def Class(name, start=0, end=0, bases=None, body=None, templated_types=None,
     return ast.Class(start, end, name, bases, templated_types, body, namespace)
 
 
-class AstTest(unittest.TestCase):
+class AstBuilder_ConvertBaseTokensToAstTest(unittest.TestCase):
 
-    def test_ConvertBaseTokensToAST_Simple(self):
+    def testSimple(self):
         builder = MakeBuilder('Bar')
         result = builder._ConvertBaseTokensToAST(builder.tokens)
         self.assertEqual(1, len(result))
         self.assertEqual(Class('Bar'), result[0])
 
-    def test_ConvertBaseTokensToAST_Template(self):
+    def testTemplate(self):
         builder = MakeBuilder('Bar<Foo>')
         result = builder._ConvertBaseTokensToAST(builder.tokens)
         self.assertEqual(1, len(result))
         self.assertEqual(Class('Bar', templated_types=[Class('Foo')]),
                          result[0])
 
-    def test_ConvertBaseTokensToAST_TemplateWithMultipleArgs(self):
+    def testTemplateWithMultipleArgs(self):
         builder = MakeBuilder('Bar<Foo, Blah, Bling>')
         result = builder._ConvertBaseTokensToAST(builder.tokens)
         self.assertEqual(1, len(result))
         types = [Class('Foo'), Class('Blah'), Class('Bling')]
         self.assertEqual(Class('Bar', templated_types=types), result[0])
 
-    def test_ConvertBaseTokensToAST_TemplateWithMultipleTemplateArgsStart(self):
+    def testTemplateWithMultipleTemplateArgsStart(self):
         builder = MakeBuilder('Bar<Foo<x>, Blah, Bling>')
         result = builder._ConvertBaseTokensToAST(builder.tokens)
         self.assertEqual(1, len(result))
@@ -96,7 +96,7 @@ class AstTest(unittest.TestCase):
         self.assertEqual(types[2], result[0].templated_types[2])
         self.assertEqual(Class('Bar', templated_types=types), result[0])
 
-    def test_ConvertBaseTokensToAST_TemplateWithMultipleTemplateArgsMid(self):
+    def testTemplateWithMultipleTemplateArgsMid(self):
         builder = MakeBuilder('Bar<Foo, Blah<x>, Bling>')
         result = builder._ConvertBaseTokensToAST(builder.tokens)
         self.assertEqual(1, len(result))
@@ -105,7 +105,7 @@ class AstTest(unittest.TestCase):
                  Class('Bling')]
         self.assertEqual(Class('Bar', templated_types=types), result[0])
 
-    def test_ConvertBaseTokensToAST_TemplateWithMultipleTemplateArgsEnd(self):
+    def testTemplateWithMultipleTemplateArgsEnd(self):
         builder = MakeBuilder('Bar<Foo, Blah, Bling<x> >')
         result = builder._ConvertBaseTokensToAST(builder.tokens)
         self.assertEqual(1, len(result))
@@ -117,7 +117,7 @@ class AstTest(unittest.TestCase):
 
 
 def test_main():
-    test_support.run_unittest(AstTest)
+    test_support.run_unittest(AstBuilder_ConvertBaseTokensToAstTest)
 
 
 if __name__ == '__main__':
