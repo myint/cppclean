@@ -62,6 +62,34 @@ def Class(name, start=0, end=0, bases=None, body=None, templated_types=None,
     return ast.Class(start, end, name, bases, templated_types, body, namespace)
 
 
+class _SequenceToParametersTest(unittest.TestCase):
+    pass  # TODO(nnorwitz): implement.
+
+
+class AstBuilder_GetVarTokensUpToTest(unittest.TestCase):
+    pass  # TODO(nnorwitz): implement.
+
+
+class AstBuilder_SkipIf0BlocksTest(unittest.TestCase):
+    pass  # TODO(nnorwitz): implement.
+
+
+class AstBuilder_GetMatchingCharTest(unittest.TestCase):
+    pass  # TODO(nnorwitz): implement.
+
+
+class AstBuilderGetNameTest(unittest.TestCase):
+    pass  # TODO(nnorwitz): implement.
+
+
+class AstBuilder_GetNestedTypesTest(unittest.TestCase):
+    pass  # TODO(nnorwitz): implement.
+
+
+class AstBuilder_GetTemplatedTypesTest(unittest.TestCase):
+    pass  # TODO(nnorwitz): implement.
+
+
 class AstBuilder_ConvertBaseTokensToAstTest(unittest.TestCase):
 
     def testSimple(self):
@@ -115,9 +143,18 @@ class AstBuilder_ConvertBaseTokensToAstTest(unittest.TestCase):
         self.assertEqual(Class('Bar', templated_types=types), result[0])
 
 
+class AstBuilder_GetBasesTest(unittest.TestCase):
+    pass  # TODO(nnorwitz): implement.
+
+
+class AstBuilder_GetClassTest(unittest.TestCase):
+    pass  # TODO(nnorwitz): implement.
+
 
 def test_main():
-    test_support.run_unittest(AstBuilder_ConvertBaseTokensToAstTest)
+    tests = [t for t in globals().values()
+             if isinstance(t, type) and issubclass(t, unittest.TestCase)]
+    test_support.run_unittest(*tests)
 
 
 if __name__ == '__main__':
