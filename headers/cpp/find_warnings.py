@@ -104,7 +104,8 @@ class WarningHunter(object):
         else:
             filename = self.filename
             src_metrics = self.metrics
-        self.warnings.append((filename, self._GetLineNum(src_metrics, node), msg))
+        line_number = self._GetLineNum(src_metrics, node)
+        self.warnings.append((filename, line_number, msg))
 
     def ShowWarnings(self):
         self.warnings.sort()
@@ -194,12 +195,17 @@ class WarningHunter(object):
                         msg += '.  Use references instead'
                     self._AddWarning(msg, node)
 
-    def _VerifyForwardDeclarationsUsed(self, forward_declarations, decl_uses):
+    def _VerifyForwardDeclarationsUsed(self, forward_declarations, decl_uses,
+                                       file_uses):
         # Find all the forward declarations that are not used.
         for cls in forward_declarations:
             if decl_uses[cls] == UNUSED:
                 node = forward_declarations[cls]
-                self._AddWarning('%r not used' % cls, node)
+                if cls in file_uses:
+                    msg = '%r forward declared, but needs to be #included' % cls
+                else:
+                    msg = '%r not used' % cls
+                self._AddWarning(msg, node)
 
     def _DetermineUses(self, included_files, forward_declarations):
         # Setup the use type of each symbol.
@@ -222,8 +228,12 @@ class WarningHunter(object):
             try:
                 file_use_node = symbol_table.LookupSymbol(name, namespace)
             except symbols.Error:
-                # TODO(nnorwitz): symbols from the current module should be added
-                # to the symbol table and then this exception should not happen.
+                # TODO(nnorwitz): symbols from the current module
+                # should be added to the symbol table and then this
+                # exception should not happen...unless the code relies
+                # on another header for proper compilation.
+                # Store the use since we might really need to #include it.
+                file_uses[name] = file_uses.get(name, 0) | USES_DECLARATION
                 return
             if not file_use_node:
                 print 'Could not find #include file for', name, 'in', namespace
@@ -274,6 +284,12 @@ class WarningHunter(object):
                 elif isinstance(token, ast.Union):
                     pass                # TODO(nnorwitz): impl
 
+        def _AddTemplateUse(types, namespace):
+            if types:
+                for cls in types:
+                    _AddUse(cls.name, namespace)
+                    _AddTemplateUse(cls.templated_types, namespace)
+
         # Iterate through the source AST/tokens, marking each symbols use.
         ast_seq = [self.ast_list]
         while ast_seq:
@@ -285,11 +301,10 @@ class WarningHunter(object):
                 elif isinstance(node, ast.Typedef):
                     # TODO(nnorwitz): use _ProcessTypedef(node)
                     pass
-                elif isinstance(node, ast.Class) and node.body:
-                    ast_seq.append(node.body)
-                    if node.bases:
-                        for base in node.bases:
-                            _AddUse(base, node.namespace)
+                elif isinstance(node, ast.Class) and node.body is not None:
+                    if node.body:
+                        ast_seq.append(node.body)
+                    _AddTemplateUse(node.bases, node.namespace)
 
         return file_uses, decl_uses
 
@@ -299,7 +314,8 @@ class WarningHunter(object):
             self._DetermineUses(included_files, forward_declarations)
         self._VerifyIncludes(included_files)
         self._VerifyIncludeFilesUsed(file_uses, included_files)
-        self._VerifyForwardDeclarationsUsed(forward_declarations, decl_uses)
+        self._VerifyForwardDeclarationsUsed(forward_declarations, decl_uses,
+                                            file_uses)
 
     def _FindHeaderWarnings(self):
         self._FindUnusedWarnings()
