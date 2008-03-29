@@ -424,8 +424,11 @@ class Class(_GenericDeclaration):
         return False
 
     def __str__(self):
-        # TODO(nnorwitz): add templated_types.
-        suffix = '%s, %s, %s' % (self.name, self.bases, self.body)
+        name = self.name
+        templates = ''
+        if self.templated_types:
+            name += '<%s>' % self.templated_types
+        suffix = '%s, %s, %s' % (name, self.bases, self.body)
         return self._TypeStringHelper(suffix)
 
 
@@ -1158,6 +1161,59 @@ class AstBuilder(object):
     def handle_class(self):
         return self._GetClass(Class, VISIBILITY_PRIVATE, None)
 
+    def _ConvertBaseTokensToAST(self, base_tokens):
+        """Convert [Token,...] to [Class(...), ] useful for base classes.
+        For example, code like class Foo : public Bar<x, y> { ... };
+        the "Bar<x, y>" portion gets converted to an AST.
+
+        Returns:
+          [Class(...), ...]
+        """
+        result = []
+
+        def AddClass(name_tokens, templated_types):
+            name = ''.join([t.name for t in name_tokens])
+            result.append(Class(name_tokens[0].start, name_tokens[-1].end,
+                                name, None, templated_types, None, ()))
+
+        def GetTemplateEnd(start):
+            count = 1
+            end = start
+            while 1:
+                token = base_tokens[end]
+                end += 1
+                if token.name == '<':
+                    count += 1
+                elif token.name == '>':
+                    count -= 1
+                    if count == 0:
+                        break
+            return base_tokens[start:end-1], end
+
+        start = i = 0
+        end = len(base_tokens)
+        while i < end:
+            token = base_tokens[i]
+            if token.name == '<':
+                name_tokens = base_tokens[start:i]
+                new_tokens, new_end = GetTemplateEnd(i+1)
+                AddClass(name_tokens,
+                         self._ConvertBaseTokensToAST(new_tokens))
+                # If there is a comma after the template, we need to consume
+                # that here otherwise it becomes part of the name.
+                start = i = new_end
+                if i < end and base_tokens[i].name == ',':
+                    start = i = i + 1
+            elif token.name == ',':
+                AddClass(base_tokens[start:i], None)
+                start = i + 1
+            i += 1
+
+        if start < end:
+            # No '<' in the tokens, just a simple name and no template.
+            AddClass(base_tokens[start:], None)
+        return result
+
     def _GetBases(self):
         # Get base classes.
         bases = []
@@ -1171,7 +1227,9 @@ class AstBuilder(object):
                 # TODO(nnorwitz): it would be good to warn about this.
                 self._AddBackToken(token)
             base, next_token = self.GetName()
-            bases.append(base)
+            bases_ast = self._ConvertBaseTokensToAST(base)
+            assert len(bases_ast) == 1, bases_ast
+            bases.append(bases_ast[0])
             assert next_token.token_type == tokenize.SYNTAX, next_token
             if next_token.name == '{':
                 token = next_token
