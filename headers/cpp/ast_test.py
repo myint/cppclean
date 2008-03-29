@@ -89,7 +89,33 @@ class AstBuilder_GetNestedTypesTest(unittest.TestCase):
 
 
 class AstBuilder_GetTemplatedTypesTest(unittest.TestCase):
-    pass  # TODO(nnorwitz): implement.
+
+    def testSimple(self):
+        builder = MakeBuilder('T> class')
+        result = builder._GetTemplatedTypes()
+        self.assertEqual(1, len(result))
+        self.assertEqual(None, result['T'])
+
+    def testMultiple(self):
+        builder = MakeBuilder('T, U> class')
+        result = builder._GetTemplatedTypes()
+        self.assertEqual(2, len(result))
+        self.assertEqual(None, result['T'])
+        self.assertEqual(None, result['U'])
+
+    def testMultipleWithTypename(self):
+        builder = MakeBuilder('typename T, typename U> class')
+        result = builder._GetTemplatedTypes()
+        self.assertEqual(2, len(result))
+        self.assertEqual(None, result['T'])
+        self.assertEqual(None, result['U'])
+
+    def testMultipleWithTypenameAndDefaults(self):
+        builder = MakeBuilder('typename T=XX, typename U=YY> class')
+        result = builder._GetTemplatedTypes()
+        self.assertEqual(2, len(result))
+        self.assertEqual('XX', result['T'].name)
+        self.assertEqual('YY', result['U'].name)
 
 
 class AstBuilder_ConvertBaseTokensToAstTest(unittest.TestCase):

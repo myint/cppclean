@@ -1113,16 +1113,18 @@ class AstBuilder(object):
         while i < len_tokens:
             key = tokens[i].name
             i += 1
-            if keywords.IsKeyword(key):
+            if keywords.IsKeyword(key) or key == ',':
                 continue
             value = None
             if i < len_tokens:
-                if tokens[i].name == '=':
-                    i += 1
+                i += 1
+                if tokens[i-1].name == '=':
+                    # TODO(nnorwitz): handle names with :: in them.
                     assert i < len_tokens, '%s %s' % (i, tokens)
                     value = tokens[i]
+                    i += 1
                 else:
-                    assert tokens[i].name == ',', '%s %s' % (i, tokens)
+                    assert tokens[i-1].name == ',', '%s %s' % (i, tokens)
             result[key] = value
         return result
 
