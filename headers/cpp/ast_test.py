@@ -47,18 +47,20 @@ def _InstallGenericEqual(cls, attrs):
 
 def _InstallEqualMethods():
     """Install __eq__ methods on the appropriate objects used for testing."""
-    _InstallGenericEqual(ast.Class, 'name bases templated_types')
+    _InstallGenericEqual(ast.Class, 'name bases templated_types namespace')
 _InstallEqualMethods()
 
 
 def MakeBuilder(code_string):
     """Convenience function to make an AstBuilder from a code snippet.."""
-    tokens = list(tokenize.GetTokens(code_string + '\n'))
+    tokens = tokenize.GetTokens(code_string + '\n')
     return ast.AstBuilder(tokens, '<test>')
 
 
 def Class(name, start=0, end=0, bases=None, body=None, templated_types=None,
-          namespace=()):
+          namespace=None):
+    if namespace is None:
+        namespace = []
     return ast.Class(start, end, name, bases, templated_types, body, namespace)
 
 
@@ -94,27 +96,27 @@ class AstBuilder_ConvertBaseTokensToAstTest(unittest.TestCase):
 
     def testSimple(self):
         builder = MakeBuilder('Bar')
-        result = builder._ConvertBaseTokensToAST(builder.tokens)
+        result = builder._ConvertBaseTokensToAST(list(builder.tokens))
         self.assertEqual(1, len(result))
         self.assertEqual(Class('Bar'), result[0])
 
     def testTemplate(self):
         builder = MakeBuilder('Bar<Foo>')
-        result = builder._ConvertBaseTokensToAST(builder.tokens)
+        result = builder._ConvertBaseTokensToAST(list(builder.tokens))
         self.assertEqual(1, len(result))
         self.assertEqual(Class('Bar', templated_types=[Class('Foo')]),
                          result[0])
 
     def testTemplateWithMultipleArgs(self):
         builder = MakeBuilder('Bar<Foo, Blah, Bling>')
-        result = builder._ConvertBaseTokensToAST(builder.tokens)
+        result = builder._ConvertBaseTokensToAST(list(builder.tokens))
         self.assertEqual(1, len(result))
         types = [Class('Foo'), Class('Blah'), Class('Bling')]
         self.assertEqual(Class('Bar', templated_types=types), result[0])
 
     def testTemplateWithMultipleTemplateArgsStart(self):
         builder = MakeBuilder('Bar<Foo<x>, Blah, Bling>')
-        result = builder._ConvertBaseTokensToAST(builder.tokens)
+        result = builder._ConvertBaseTokensToAST(list(builder.tokens))
         self.assertEqual(1, len(result))
         types = [Class('Foo', templated_types=[Class('x')]),
                  Class('Blah'),
@@ -126,7 +128,7 @@ class AstBuilder_ConvertBaseTokensToAstTest(unittest.TestCase):
 
     def testTemplateWithMultipleTemplateArgsMid(self):
         builder = MakeBuilder('Bar<Foo, Blah<x>, Bling>')
-        result = builder._ConvertBaseTokensToAST(builder.tokens)
+        result = builder._ConvertBaseTokensToAST(list(builder.tokens))
         self.assertEqual(1, len(result))
         types = [Class('Foo'),
                  Class('Blah', templated_types=[Class('x')]),
@@ -135,7 +137,7 @@ class AstBuilder_ConvertBaseTokensToAstTest(unittest.TestCase):
 
     def testTemplateWithMultipleTemplateArgsEnd(self):
         builder = MakeBuilder('Bar<Foo, Blah, Bling<x> >')
-        result = builder._ConvertBaseTokensToAST(builder.tokens)
+        result = builder._ConvertBaseTokensToAST(list(builder.tokens))
         self.assertEqual(1, len(result))
         types = [Class('Foo'),
                  Class('Blah'),
@@ -149,6 +151,51 @@ class AstBuilder_GetBasesTest(unittest.TestCase):
 
 class AstBuilder_GetClassTest(unittest.TestCase):
     pass  # TODO(nnorwitz): implement.
+
+
+class AstBuilderTest(unittest.TestCase):
+    """Unlike the other test cases in this file, this test case is
+    meant to be an integration test.  It doesn't test any individual
+    method.  It tests whole code blocks.
+    """
+
+    # TODO(nnorwitz): add lots more tests.
+
+    def testClass_ForwardDeclaration(self):
+        nodes = list(MakeBuilder('class Foo;').Generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Class('Foo', body=None), nodes[0])
+
+    def testClass_EmptyBody(self):
+        nodes = list(MakeBuilder('class Foo {};').Generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Class('Foo', body=[]), nodes[0])
+
+    def testClass_InNamespace(self):
+        nodes = list(MakeBuilder('namespace N { class Foo; }').Generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Class('Foo', namespace=['N']), nodes[0])
+
+        code = 'namespace A { namespace B { namespace C { class Foo; }}}'
+        nodes = list(MakeBuilder(code).Generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Class('Foo', namespace=['A', 'B', 'C']), nodes[0])
+
+    def testClass_InAnonymousNamespaceSingle(self):
+        nodes = list(MakeBuilder('namespace { class Foo; }').Generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Class('Foo', namespace=[None]), nodes[0])
+
+    def testClass_InAnonymousNamespaceMultiple(self):
+        code = 'namespace A { namespace { namespace B { class Foo; }}}'
+        nodes = list(MakeBuilder(code).Generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Class('Foo', namespace=['A', None, 'B']), nodes[0])
+
+    def testClass_NoAnonymousNamespace(self):
+        nodes = list(MakeBuilder('class Foo;').Generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Class('Foo', namespace=[]), nodes[0])
 
 
 def test_main():

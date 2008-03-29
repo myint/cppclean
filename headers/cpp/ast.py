@@ -1174,7 +1174,7 @@ class AstBuilder(object):
         def AddClass(name_tokens, templated_types):
             name = ''.join([t.name for t in name_tokens])
             result.append(Class(name_tokens[0].start, name_tokens[-1].end,
-                                name, None, templated_types, None, ()))
+                                name, None, templated_types, None, []))
 
         def GetTemplateEnd(start):
             count = 1
