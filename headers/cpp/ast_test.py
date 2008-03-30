@@ -47,6 +47,7 @@ def _InstallGenericEqual(cls, attrs):
 
 def _InstallEqualMethods():
     """Install __eq__ methods on the appropriate objects used for testing."""
+    _InstallGenericEqual(tokenize.Token, 'name')
     _InstallGenericEqual(ast.Class, 'name bases templated_types namespace')
     _InstallGenericEqual(ast.Type, ('name templated_types modifiers '
                                     'reference pointer array'))
@@ -60,6 +61,10 @@ def GetTokens(code_string):
 def MakeBuilder(code_string):
     """Convenience function to make an AstBuilder from a code snippet.."""
     return ast.AstBuilder(GetTokens(code_string), '<test>')
+
+
+def Token(name, start=0, end=0, token_type=tokenize.NAME):
+    return tokenize.Token(token_type, name, start, end)
 
 
 def Class(name, start=0, end=0, bases=None, body=None, templated_types=None,
@@ -243,15 +248,19 @@ class TypeConverter_SequenceToParametersTest(unittest.TestCase):
         self.assertEqual('bar', results[1].name)
 
     # TODO(nnorwitz): enable test.
-    def _testSimpleWithInitializers(self):
+    def testSimpleWithInitializers(self):
         tokens = GetTokens('Fool* data = NULL')
         results = self.converter.SequenceToParameters(list(tokens))
         self.assertEqual(1, len(results))
 
+        self.assertEqual([], results[0].type.modifiers)
+        self.assertEqual('Fool', results[0].type.name)
+        self.assertEqual([], results[0].type.templated_types)
+        self.assertEqual(True, results[0].type.pointer)
+        self.assertEqual(False, results[0].type.reference)
+        self.assertEqual(False, results[0].type.array)
         self.assertEqual('data', results[0].name)
-        self.assertEqual('Fool', results[0].type_name)
-        self.assertEqual([], results[0].templated_types)
-        self.assertEqual([], results[0].modifiers)
+        self.assertEqual([Token('NULL')], results[0].default)
 
 
 class TypeConverter_ConvertBaseTokensToAstTest(unittest.TestCase):

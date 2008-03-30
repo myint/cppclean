@@ -544,24 +544,31 @@ class TypeConverter(object):
         name = type_name = ''
         type_modifiers = []
         pointer = reference = array = False
-        first_token = default = None
+        first_token = None
+        default = []
+
+        def AddParameter(end_token):
+            if default:
+                del default[0]  # Remove flag.
+            name, type_name, templated_types, modifiers = \
+                  self.DeclarationToParts(type_modifiers, True)
+            parameter_type = Type(first_token.start, first_token.end,
+                                  type_name, templated_types, modifiers,
+                                  reference, pointer, array)
+            p = Parameter(first_token.start, first_token.end, name,
+                          parameter_type, default)
+            result.append(p)
+
         for s in seq:
             if not first_token:
                 first_token = s
             if s.name == ',':
-                # TODO(nnorwitz): handle default values.
-                name, type_name, templated_types, modifiers = \
-                      self.DeclarationToParts(type_modifiers, True)
-                parameter_type = Type(first_token.start, first_token.end,
-                                      type_name, templated_types, modifiers,
-                                      reference, pointer, array)
-                p = Parameter(first_token.start, first_token.end, name,
-                              parameter_type, default)
-                result.append(p)
+                AddParameter(s)
                 name = type_name = ''
                 type_modifiers = []
                 pointer = reference = array = False
-                first_token = default = None
+                first_token = None
+                default = []
             elif s.name == '*':
                 pointer = True
             elif s.name == '&':
@@ -570,16 +577,14 @@ class TypeConverter(object):
                 array = True
             elif s.name == ']':
                 pass  # Just don't add to type_modifiers.
+            elif s.name == '=':
+                # Got a default value.  Add any value (None) as a flag.
+                default.append(None)
+            elif default:
+                default.append(s)
             else:
                 type_modifiers.append(s)
-        name, type_name, templated_types, modifiers = \
-              self.DeclarationToParts(type_modifiers, True)
-        parameter_type = Type(first_token.start, first_token.end,
-                              type_name, templated_types, modifiers,
-                              reference, pointer, array)
-        p = Parameter(first_token.start, first_token.end, name,
-                      parameter_type, default)
-        result.append(p)
+        AddParameter(s)
         return result
 
     def CreateReturnType(self, return_type_seq):
