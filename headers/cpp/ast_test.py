@@ -48,6 +48,8 @@ def _InstallGenericEqual(cls, attrs):
 def _InstallEqualMethods():
     """Install __eq__ methods on the appropriate objects used for testing."""
     _InstallGenericEqual(ast.Class, 'name bases templated_types namespace')
+    _InstallGenericEqual(ast.Type, ('name templated_types modifiers '
+                                    'reference pointer array'))
 _InstallEqualMethods()
 
 
@@ -65,6 +67,16 @@ def Class(name, start=0, end=0, bases=None, body=None, templated_types=None,
     if namespace is None:
         namespace = []
     return ast.Class(start, end, name, bases, templated_types, body, namespace)
+
+
+def Type(name, start=0, end=0, templated_types=None, modifiers=None,
+          reference=False, pointer=False, array=False):
+    if templated_types is None:
+        templated_types = []
+    if modifiers is None:
+        modifiers = []
+    return ast.Type(start, end, name, templated_types, modifiers,
+                     reference, pointer, array)
 
 
 class TypeConverter_DeclarationToPartsTest(unittest.TestCase):
@@ -241,6 +253,47 @@ class TypeConverter_ConvertBaseTokensToAstTest(unittest.TestCase):
                  Class('Blah'),
                  Class('Bling', templated_types=[Class('x')])]
         self.assertEqual(Class('Bar', templated_types=types), result[0])
+
+
+class TypeConverter_CreateReturnTypeTest(unittest.TestCase):
+
+    def setUp(self):
+        self.converter = ast.TypeConverter([])
+
+    def testEmpty(self):
+        self.assertEqual(None, self.converter.CreateReturnType(None))
+        self.assertEqual(None, self.converter.CreateReturnType([]))
+
+    def testSimple(self):
+        tokens = GetTokens('Bar')
+        result = self.converter.CreateReturnType(list(tokens))
+        self.assertEqual(Type('Bar'), result)
+
+    # TODO(nnorwitz): enable test.
+    def _testArray(self):
+        tokens = GetTokens('Bar[]')
+        result = self.converter.CreateReturnType(list(tokens))
+        self.assertEqual(Type('Bar', array=True), result)
+
+    def testConstPointer(self):
+        tokens = GetTokens('const Bar*')
+        result = self.converter.CreateReturnType(list(tokens))
+        self.assertEqual(Type('Bar', modifiers=['const'], pointer=True),
+                         result)
+
+    def testConstClassPointer(self):
+        tokens = GetTokens('const class Bar*')
+        result = self.converter.CreateReturnType(list(tokens))
+        modifiers = ['const', 'class']
+        self.assertEqual(Type('Bar', modifiers=modifiers, pointer=True),
+                         result)
+
+    # TODO(nnorwitz): enable test.
+    def _testTemplate(self):
+        tokens = GetTokens('const pair<int, NS::Foo>*')
+        result = self.converter.CreateReturnType(list(tokens))
+        self.assertEqual(Type('Bar', modifiers=['const'], pointer=True),
+                         result)
 
 
 class AstBuilder_GetVarTokensUpToTest(unittest.TestCase):
