@@ -254,12 +254,13 @@ class WarningHunter(object):
 
         def _ProcessFunction(function):
             if function.return_type:
-                node = ast.CreateReturnType(function.return_type)
                 # TODO(nnorwitz): the AST should convert return_type
                 # from Tokens to a Node.
+                node = ast.TypeConverter([]).CreateReturnType(function.return_type)
                 _AddVariable(node, node.type_name, function.namespace)
             templated_types = function.templated_types or ()
-            for p in ast._SequenceToParameters(function.parameters):
+            # TODO(nnorwitz): the AST should convert parameters.
+            for p in ast.TypeConverter([]).SequenceToParameters(function.parameters):
                 if p.type_name not in templated_types:
                     if function.body and p.name and p.type_name:
                         # Assume that if the the function has a body and a name
@@ -292,7 +293,6 @@ class WarningHunter(object):
                         # Special case templated classes that end w/_ptr.
                         # These are things like auto_ptr which do
                         # not require the class definition, only decl.
-                        print cls
                         for tt in cls.templated_types:
                             _AddReference(tt.name, namespace)
                     else:

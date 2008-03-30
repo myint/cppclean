@@ -69,10 +69,13 @@ def Class(name, start=0, end=0, bases=None, body=None, templated_types=None,
 
 class _DeclarationToPartsTest(unittest.TestCase):
 
+    def setUp(self):
+        self.converter = ast.TypeConverter([])
+
     def testSimple(self):
         tokens = GetTokens('Fool data')
         name, type_name, templated_types, modifiers = \
-              ast._DeclarationToParts(list(tokens), True)
+              self.converter.DeclarationToParts(list(tokens), True)
         self.assertEqual('data', name)
         self.assertEqual('Fool', type_name)
         self.assertEqual([], templated_types)
@@ -81,7 +84,7 @@ class _DeclarationToPartsTest(unittest.TestCase):
     def testSimpleModifiers(self):
         tokens = GetTokens('const volatile Fool data')
         name, type_name, templated_types, modifiers = \
-              ast._DeclarationToParts(list(tokens), True)
+              self.converter.DeclarationToParts(list(tokens), True)
         self.assertEqual('data', name)
         self.assertEqual('Fool', type_name)
         self.assertEqual([], templated_types)
@@ -91,7 +94,7 @@ class _DeclarationToPartsTest(unittest.TestCase):
     def _testSimpleArray(self):
         tokens = GetTokens('Fool[] data')
         name, type_name, templated_types, modifiers = \
-              ast._DeclarationToParts(list(tokens), True)
+              self.converter.DeclarationToParts(list(tokens), True)
         self.assertEqual('data', name)
         self.assertEqual('Fool', type_name)
         self.assertEqual([], templated_types)
@@ -101,7 +104,7 @@ class _DeclarationToPartsTest(unittest.TestCase):
     def _testSimpleTemplate(self):
         tokens = GetTokens('Fool<tt> data')
         name, type_name, templated_types, modifiers = \
-              ast._DeclarationToParts(list(tokens), True)
+              self.converter.DeclarationToParts(list(tokens), True)
         self.assertEqual('data', name)
         self.assertEqual('Fool', type_name)
         self.assertEqual([Class('tt')], templated_types)
@@ -111,10 +114,13 @@ class _DeclarationToPartsTest(unittest.TestCase):
 class _SequenceToParametersTest(unittest.TestCase):
     pass  # TODO(nnorwitz): implement.
 
+    def setUp(self):
+        self.converter = ast.TypeConverter([])
+
     def testSimpleWithInitializers(self):
         return              # TODO(nnorwitz): test some API with this.
         tokens = GetTokens('Fool data[] = { NULL, }')
-        #results = ast._SequenceToParameters(list(tokens))
+        #results = self.converter.SequenceToParameters(list(tokens))
         self.assertEqual(1, len(results))
         
         self.assertEqual('data', name)
@@ -175,29 +181,32 @@ class AstBuilder_GetTemplatedTypesTest(unittest.TestCase):
 
 class _ConvertBaseTokensToAstTest(unittest.TestCase):
 
+    def setUp(self):
+        self.converter = ast.TypeConverter([])
+
     def testSimple(self):
         tokens = GetTokens('Bar')
-        result = ast._ConvertBaseTokensToAST(list(tokens))
+        result = self.converter.ConvertBaseTokensToAST(list(tokens))
         self.assertEqual(1, len(result))
         self.assertEqual(Class('Bar'), result[0])
 
     def testTemplate(self):
         tokens = GetTokens('Bar<Foo>')
-        result = ast._ConvertBaseTokensToAST(list(tokens))
+        result = self.converter.ConvertBaseTokensToAST(list(tokens))
         self.assertEqual(1, len(result))
         self.assertEqual(Class('Bar', templated_types=[Class('Foo')]),
                          result[0])
 
     def testTemplateWithMultipleArgs(self):
         tokens = GetTokens('Bar<Foo, Blah, Bling>')
-        result = ast._ConvertBaseTokensToAST(list(tokens))
+        result = self.converter.ConvertBaseTokensToAST(list(tokens))
         self.assertEqual(1, len(result))
         types = [Class('Foo'), Class('Blah'), Class('Bling')]
         self.assertEqual(Class('Bar', templated_types=types), result[0])
 
     def testTemplateWithMultipleTemplateArgsStart(self):
         tokens = GetTokens('Bar<Foo<x>, Blah, Bling>')
-        result = ast._ConvertBaseTokensToAST(list(tokens))
+        result = self.converter.ConvertBaseTokensToAST(list(tokens))
         self.assertEqual(1, len(result))
         types = [Class('Foo', templated_types=[Class('x')]),
                  Class('Blah'),
@@ -209,7 +218,7 @@ class _ConvertBaseTokensToAstTest(unittest.TestCase):
 
     def testTemplateWithMultipleTemplateArgsMid(self):
         tokens = GetTokens('Bar<Foo, Blah<x>, Bling>')
-        result = ast._ConvertBaseTokensToAST(list(tokens))
+        result = self.converter.ConvertBaseTokensToAST(list(tokens))
         self.assertEqual(1, len(result))
         types = [Class('Foo'),
                  Class('Blah', templated_types=[Class('x')]),
@@ -218,7 +227,7 @@ class _ConvertBaseTokensToAstTest(unittest.TestCase):
 
     def testTemplateWithMultipleTemplateArgsEnd(self):
         tokens = GetTokens('Bar<Foo, Blah, Bling<x> >')
-        result = ast._ConvertBaseTokensToAST(list(tokens))
+        result = self.converter.ConvertBaseTokensToAST(list(tokens))
         self.assertEqual(1, len(result))
         types = [Class('Foo'),
                  Class('Blah'),
