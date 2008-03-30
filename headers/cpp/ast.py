@@ -976,7 +976,7 @@ class AstBuilder(object):
             index -= 1
             in_class = return_type[index::2]
             del return_type[index:]
-            return Method(indices.start, indices.end, name.name, in_class, 
+            return Method(indices.start, indices.end, name.name, in_class,
                           return_type, parameters, modifiers, templated_types,
                           body, self.namespace_stack)
         return Function(indices.start, indices.end, name.name, return_type,

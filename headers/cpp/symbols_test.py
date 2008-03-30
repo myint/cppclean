@@ -94,7 +94,7 @@ class SymbolTableTest(unittest.TestCase):
 
         # Adding again should return False.
         self.assertEqual(False, st._Add(symbol_name, namespace, node, module))
-            
+
     def testAddSymbolInGlobalNamespace(self):
         st = symbols.SymbolTable()
         node = object()

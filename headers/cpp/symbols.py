@@ -144,7 +144,7 @@ class SymbolTable(object):
         result = symbol_name in namespace
         namespace[symbol_name] = node, module
         return not result
-            
+
     def AddSymbol(self, symbol_name, namespace_stack, node, module):
         """Adds symbol_name defined in namespace_stack to the symbol table.
 
