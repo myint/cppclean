@@ -130,8 +130,8 @@ class TypeConverter_SequenceToParametersTest(unittest.TestCase):
         self.assertEqual(False, results[0].type.reference)
         self.assertEqual('data', results[0].name)
 
-        self.assertEqual(['int'], results[1].type.modifiers)
-        self.assertEqual('', results[1].type.name)
+        self.assertEqual([], results[1].type.modifiers)
+        self.assertEqual('int', results[1].type.name)
         self.assertEqual([], results[1].type.templated_types)
         self.assertEqual(False, results[1].type.pointer)
         self.assertEqual(False, results[1].type.reference)
@@ -157,8 +157,8 @@ class TypeConverter_SequenceToParametersTest(unittest.TestCase):
         self.assertEqual(False, results[0].type.reference)
         self.assertEqual('data', results[0].name)
 
-        self.assertEqual(['int'], results[1].type.modifiers)
-        self.assertEqual('', results[1].type.name)
+        self.assertEqual([], results[1].type.modifiers)
+        self.assertEqual('int', results[1].type.name)
         self.assertEqual([], results[1].type.templated_types)
         self.assertEqual(False, results[1].type.pointer)
         self.assertEqual(False, results[1].type.reference)

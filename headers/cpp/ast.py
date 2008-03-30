@@ -422,9 +422,8 @@ class Type(_GenericDeclaration):
         """
         _GenericDeclaration.__init__(self, start, end, name, [])
         self.templated_types = templated_types
-        # TODO(nnorwitz): enable this and fix the test.
-##         if not name and modifiers:
-##             self.name = modifiers.pop(0)
+        if not name and modifiers:
+            self.name = modifiers.pop()
         self.modifiers = modifiers
         self.reference = reference
         self.pointer = pointer
