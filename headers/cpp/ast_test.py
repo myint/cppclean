@@ -112,17 +112,28 @@ class TypeConverter_DeclarationToPartsTest(unittest.TestCase):
 
 
 class TypeConverter_SequenceToParametersTest(unittest.TestCase):
-    pass  # TODO(nnorwitz): implement.
 
     def setUp(self):
         self.converter = ast.TypeConverter([])
 
-    def testSimple(self):
+    def testReallySimple(self):
+        tokens = GetTokens('int bar')
+        results = self.converter.SequenceToParameters(list(tokens))
+        self.assertEqual(1, len(results))
+
+        self.assertEqual([], results[0].type.modifiers)
+        self.assertEqual('int', results[0].type.name)
+        self.assertEqual([], results[0].type.templated_types)
+        self.assertEqual(False, results[0].type.pointer)
+        self.assertEqual(False, results[0].type.reference)
+        self.assertEqual('bar', results[0].name)
+
+    def testMultipleArgs(self):
         # TODO(nnorwitz): fix arrays so they work.
         tokens = GetTokens('const volatile Fool* data, int bar, enum X foo')
         results = self.converter.SequenceToParameters(list(tokens))
         self.assertEqual(3, len(results))
-        
+
         self.assertEqual(['const', 'volatile'], results[0].type.modifiers)
         self.assertEqual('Fool', results[0].type.name)
         self.assertEqual([], results[0].type.templated_types)
@@ -149,7 +160,7 @@ class TypeConverter_SequenceToParametersTest(unittest.TestCase):
         tokens = GetTokens('pair<int, int> data, int bar')
         results = self.converter.SequenceToParameters(list(tokens))
         self.assertEqual(2, len(results), repr(results))
-        
+
         self.assertEqual([], results[0].type.modifiers)
         self.assertEqual('pair', results[0].type.name)
         self.assertEqual(['int', 'int'], results[0].type.templated_types)
@@ -169,7 +180,7 @@ class TypeConverter_SequenceToParametersTest(unittest.TestCase):
         tokens = GetTokens('Fool* data = NULL')
         results = self.converter.SequenceToParameters(list(tokens))
         self.assertEqual(1, len(results))
-        
+
         self.assertEqual('data', results[0].name)
         self.assertEqual('Fool', results[0].type_name)
         self.assertEqual([], results[0].templated_types)
