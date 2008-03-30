@@ -359,7 +359,6 @@ class Class(_GenericDeclaration):
 
     def __str__(self):
         name = self.name
-        templates = ''
         if self.templated_types:
             name += '<%s>' % self.templated_types
         suffix = '%s, %s, %s' % (name, self.bases, self.body)
@@ -376,6 +375,9 @@ class Function(_GenericDeclaration):
         _GenericDeclaration.__init__(self, start, end, name, namespace)
         if not return_type:
             return_type = None
+        else:
+            converter = TypeConverter(namespace)
+            return_type = converter.CreateReturnType(return_type)
         self.return_type = return_type
         self.parameters = parameters
         self.modifiers = modifiers
@@ -389,10 +391,8 @@ class Function(_GenericDeclaration):
         return self.body is not None
 
     def IsExportable(self):
-        if self.return_type:
-            for t in self.return_type:
-                if t.name == 'static':
-                    return False
+        if self.return_type and 'static' in self.return_type.modifiers:
+            return False
         return None not in self.namespace
 
     def Requires(self, node):
@@ -420,6 +420,54 @@ class Method(Function):
         # TODO(nnorwitz): in_class could also be a namespace which can
         # mess up finding functions properly.
         self.in_class = in_class
+
+
+class Type(_GenericDeclaration):
+    """Type used for any variable (eg class, primitive, struct, etc)."""
+
+    def __init__(self, start, end, name, templated_types, modifiers,
+                 reference, pointer, array):
+        """
+        Args:
+          name: str name of main type
+          templated_types: [Class (Type?)] template type info between <>
+          modifiers: [str] type modifiers (keywords) eg, const, mutable, etc.
+          reference, pointer, array: bools
+        """
+        _GenericDeclaration.__init__(self, start, end, name, [])
+        self.templated_types = templated_types
+        self.modifiers = modifiers
+        self.reference = reference
+        self.pointer = pointer
+        self.array = array
+
+    def __str__(self):
+        prefix = ''
+        if self.modifiers:
+            prefix = ' '.join(self.modifiers) + ' '
+        name = self.name
+        if self.templated_types:
+            name += '<%s>' % self.templated_types
+        suffix = prefix + name
+        syntax = ''
+        if self.reference:
+            suffix += '&'
+        if self.pointer:
+            suffix += '*'
+        if self.array:
+            suffix += '[]'
+        return self._TypeStringHelper(suffix)
+
+    # By definition, Is* are always False.  A Type can only exist in
+    # some sort of variable declaration, parameter, or return value.
+    def IsDeclaration(self):
+        return False
+
+    def IsDefinition(self):
+        return False
+
+    def IsExportable(self):
+        return False
 
 
 class TypeConverter(object):
@@ -542,13 +590,14 @@ class TypeConverter(object):
     def CreateReturnType(self, return_type_seq):
         start = return_type_seq[0].start
         end = return_type_seq[-1].end
-        name, type_name, templated_types, modifiers = \
-              self.DeclarationToParts(return_type_seq, False)
+        _, name, templated_types, modifiers = \
+           self.DeclarationToParts(return_type_seq, False)
         names = [n.name for n in return_type_seq]
         reference = '&' in names
         pointer = '*' in names
-        return VariableDeclaration(start, end, name, type_name, modifiers,
-                                   reference, pointer, templated_types, None)
+        array = '[' in names
+        return Type(start, end, name, templated_types, modifiers,
+                    reference, pointer, array)
 
 
 class AstBuilder(object):

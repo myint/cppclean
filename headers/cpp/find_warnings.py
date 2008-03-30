@@ -254,10 +254,8 @@ class WarningHunter(object):
 
         def _ProcessFunction(function):
             if function.return_type:
-                # TODO(nnorwitz): the AST should convert return_type
-                # from Tokens to a Node.
-                node = ast.TypeConverter([]).CreateReturnType(function.return_type)
-                _AddVariable(node, node.type_name, function.namespace)
+                return_type = function.return_type
+                _AddVariable(return_type, return_type.name, function.namespace)
             templated_types = function.templated_types or ()
             # TODO(nnorwitz): the AST should convert parameters.
             for p in ast.TypeConverter([]).SequenceToParameters(function.parameters):
