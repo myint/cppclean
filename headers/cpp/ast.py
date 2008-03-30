@@ -527,7 +527,7 @@ class TypeConverter(object):
                 # TODO(nnorwitz): we really need to keep the templated name
                 # separately so we know to keep the header that included it.
                 type_name.pop()
-            elif p.name not in ('*', '&', '>'):
+            elif p.name not in ('*', '&', '>', '[', ']'):
                 # Ensure that names have a space between them.
                 if (type_name and type_name[-1].token_type == tokenize.NAME and
                     p.token_type == tokenize.NAME):
