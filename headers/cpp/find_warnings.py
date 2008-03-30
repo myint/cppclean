@@ -257,8 +257,7 @@ class WarningHunter(object):
                 return_type = function.return_type
                 _AddVariable(return_type, return_type.name, function.namespace)
             templated_types = function.templated_types or ()
-            # TODO(nnorwitz): the AST should convert parameters.
-            for p in ast.TypeConverter([]).SequenceToParameters(function.parameters):
+            for p in function.parameters:
                 if p.type_name not in templated_types:
                     if function.body and p.name and p.type_name:
                         # Assume that if the the function has a body and a name

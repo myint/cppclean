@@ -373,13 +373,9 @@ class Function(_GenericDeclaration):
     def __init__(self, start, end, name, return_type, parameters,
                  modifiers, templated_types, body, namespace):
         _GenericDeclaration.__init__(self, start, end, name, namespace)
-        if not return_type:
-            return_type = None
-        else:
-            converter = TypeConverter(namespace)
-            return_type = converter.CreateReturnType(return_type)
-        self.return_type = return_type
-        self.parameters = parameters
+        converter = TypeConverter(namespace)
+        self.return_type = converter.CreateReturnType(return_type)
+        self.parameters = converter.SequenceToParameters(parameters)
         self.modifiers = modifiers
         self.body = body
         self.templated_types = templated_types
@@ -588,6 +584,8 @@ class TypeConverter(object):
         return result
 
     def CreateReturnType(self, return_type_seq):
+        if not return_type_seq:
+            return None
         start = return_type_seq[0].start
         end = return_type_seq[-1].end
         _, name, templated_types, modifiers = \
