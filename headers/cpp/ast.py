@@ -547,7 +547,7 @@ class TypeConverter(object):
         first_token = None
         default = []
 
-        def AddParameter(end_token):
+        def AddParameter():
             if default:
                 del default[0]  # Remove flag.
             name, type_name, templated_types, modifiers = \
@@ -563,7 +563,7 @@ class TypeConverter(object):
             if not first_token:
                 first_token = s
             if s.name == ',':
-                AddParameter(s)
+                AddParameter()
                 name = type_name = ''
                 type_modifiers = []
                 pointer = reference = array = False
@@ -584,7 +584,7 @@ class TypeConverter(object):
                 default.append(s)
             else:
                 type_modifiers.append(s)
-        AddParameter(s)
+        AddParameter()
         return result
 
     def CreateReturnType(self, return_type_seq):
