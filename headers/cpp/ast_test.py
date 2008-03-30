@@ -247,7 +247,6 @@ class TypeConverter_SequenceToParametersTest(unittest.TestCase):
         self.assertEqual(False, results[1].type.reference)
         self.assertEqual('bar', results[1].name)
 
-    # TODO(nnorwitz): enable test.
     def testSimpleWithInitializers(self):
         tokens = GetTokens('Fool* data = NULL')
         results = self.converter.SequenceToParameters(list(tokens))
