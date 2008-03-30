@@ -67,7 +67,7 @@ def Class(name, start=0, end=0, bases=None, body=None, templated_types=None,
     return ast.Class(start, end, name, bases, templated_types, body, namespace)
 
 
-class _DeclarationToPartsTest(unittest.TestCase):
+class TypeConverter_DeclarationToPartsTest(unittest.TestCase):
 
     def setUp(self):
         self.converter = ast.TypeConverter([])
@@ -111,75 +111,72 @@ class _DeclarationToPartsTest(unittest.TestCase):
         self.assertEqual([], modifiers)
 
 
-class _SequenceToParametersTest(unittest.TestCase):
+class TypeConverter_SequenceToParametersTest(unittest.TestCase):
     pass  # TODO(nnorwitz): implement.
 
     def setUp(self):
         self.converter = ast.TypeConverter([])
 
-    def testSimpleWithInitializers(self):
-        return              # TODO(nnorwitz): test some API with this.
-        tokens = GetTokens('Fool data[] = { NULL, }')
-        #results = self.converter.SequenceToParameters(list(tokens))
+    def testSimple(self):
+        # TODO(nnorwitz): fix arrays so they work.
+        tokens = GetTokens('const volatile Fool* data, int bar, enum X foo')
+        results = self.converter.SequenceToParameters(list(tokens))
+        self.assertEqual(3, len(results))
+        
+        self.assertEqual(['const', 'volatile'], results[0].type.modifiers)
+        self.assertEqual('Fool', results[0].type.name)
+        self.assertEqual([], results[0].type.templated_types)
+        self.assertEqual(True, results[0].type.pointer)
+        self.assertEqual(False, results[0].type.reference)
+        self.assertEqual('data', results[0].name)
+
+        self.assertEqual(['int'], results[1].type.modifiers)
+        self.assertEqual('', results[1].type.name)
+        self.assertEqual([], results[1].type.templated_types)
+        self.assertEqual(False, results[1].type.pointer)
+        self.assertEqual(False, results[1].type.reference)
+        self.assertEqual('bar', results[1].name)
+
+        self.assertEqual(['enum'], results[2].type.modifiers)
+        self.assertEqual('X', results[2].type.name)
+        self.assertEqual([], results[2].type.templated_types)
+        self.assertEqual(False, results[2].type.pointer)
+        self.assertEqual(False, results[2].type.reference)
+        self.assertEqual('foo', results[2].name)
+
+    # TODO(nnorwitz): enable test.
+    def _testSimpleTemplateBegin(self):
+        tokens = GetTokens('pair<int, int> data, int bar')
+        results = self.converter.SequenceToParameters(list(tokens))
+        self.assertEqual(2, len(results), repr(results))
+        
+        self.assertEqual([], results[0].type.modifiers)
+        self.assertEqual('pair', results[0].type.name)
+        self.assertEqual(['int', 'int'], results[0].type.templated_types)
+        self.assertEqual(False, results[0].type.pointer)
+        self.assertEqual(False, results[0].type.reference)
+        self.assertEqual('data', results[0].name)
+
+        self.assertEqual(['int'], results[1].type.modifiers)
+        self.assertEqual('', results[1].type.name)
+        self.assertEqual([], results[1].type.templated_types)
+        self.assertEqual(False, results[1].type.pointer)
+        self.assertEqual(False, results[1].type.reference)
+        self.assertEqual('bar', results[1].name)
+
+    # TODO(nnorwitz): enable test.
+    def _testSimpleWithInitializers(self):
+        tokens = GetTokens('Fool* data = NULL')
+        results = self.converter.SequenceToParameters(list(tokens))
         self.assertEqual(1, len(results))
         
-        self.assertEqual('data', name)
-        self.assertEqual('Fool', type_name)
-        self.assertEqual([], templated_types)
-        self.assertEqual([], modifiers)
+        self.assertEqual('data', results[0].name)
+        self.assertEqual('Fool', results[0].type_name)
+        self.assertEqual([], results[0].templated_types)
+        self.assertEqual([], results[0].modifiers)
 
 
-class AstBuilder_GetVarTokensUpToTest(unittest.TestCase):
-    pass  # TODO(nnorwitz): implement.
-
-
-class AstBuilder_SkipIf0BlocksTest(unittest.TestCase):
-    pass  # TODO(nnorwitz): implement.
-
-
-class AstBuilder_GetMatchingCharTest(unittest.TestCase):
-    pass  # TODO(nnorwitz): implement.
-
-
-class AstBuilderGetNameTest(unittest.TestCase):
-    pass  # TODO(nnorwitz): implement.
-
-
-class AstBuilder_GetNestedTypesTest(unittest.TestCase):
-    pass  # TODO(nnorwitz): implement.
-
-
-class AstBuilder_GetTemplatedTypesTest(unittest.TestCase):
-
-    def testSimple(self):
-        builder = MakeBuilder('T> class')
-        result = builder._GetTemplatedTypes()
-        self.assertEqual(1, len(result))
-        self.assertEqual(None, result['T'])
-
-    def testMultiple(self):
-        builder = MakeBuilder('T, U> class')
-        result = builder._GetTemplatedTypes()
-        self.assertEqual(2, len(result))
-        self.assertEqual(None, result['T'])
-        self.assertEqual(None, result['U'])
-
-    def testMultipleWithTypename(self):
-        builder = MakeBuilder('typename T, typename U> class')
-        result = builder._GetTemplatedTypes()
-        self.assertEqual(2, len(result))
-        self.assertEqual(None, result['T'])
-        self.assertEqual(None, result['U'])
-
-    def testMultipleWithTypenameAndDefaults(self):
-        builder = MakeBuilder('typename T=XX, typename U=YY> class')
-        result = builder._GetTemplatedTypes()
-        self.assertEqual(2, len(result))
-        self.assertEqual('XX', result['T'].name)
-        self.assertEqual('YY', result['U'].name)
-
-
-class _ConvertBaseTokensToAstTest(unittest.TestCase):
+class TypeConverter_ConvertBaseTokensToAstTest(unittest.TestCase):
 
     def setUp(self):
         self.converter = ast.TypeConverter([])
@@ -233,6 +230,56 @@ class _ConvertBaseTokensToAstTest(unittest.TestCase):
                  Class('Blah'),
                  Class('Bling', templated_types=[Class('x')])]
         self.assertEqual(Class('Bar', templated_types=types), result[0])
+
+
+class AstBuilder_GetVarTokensUpToTest(unittest.TestCase):
+    pass  # TODO(nnorwitz): implement.
+
+
+class AstBuilder_SkipIf0BlocksTest(unittest.TestCase):
+    pass  # TODO(nnorwitz): implement.
+
+
+class AstBuilder_GetMatchingCharTest(unittest.TestCase):
+    pass  # TODO(nnorwitz): implement.
+
+
+class AstBuilderGetNameTest(unittest.TestCase):
+    pass  # TODO(nnorwitz): implement.
+
+
+class AstBuilder_GetNestedTypesTest(unittest.TestCase):
+    pass  # TODO(nnorwitz): implement.
+
+
+class AstBuilder_GetTemplatedTypesTest(unittest.TestCase):
+
+    def testSimple(self):
+        builder = MakeBuilder('T> class')
+        result = builder._GetTemplatedTypes()
+        self.assertEqual(1, len(result))
+        self.assertEqual(None, result['T'])
+
+    def testMultiple(self):
+        builder = MakeBuilder('T, U> class')
+        result = builder._GetTemplatedTypes()
+        self.assertEqual(2, len(result))
+        self.assertEqual(None, result['T'])
+        self.assertEqual(None, result['U'])
+
+    def testMultipleWithTypename(self):
+        builder = MakeBuilder('typename T, typename U> class')
+        result = builder._GetTemplatedTypes()
+        self.assertEqual(2, len(result))
+        self.assertEqual(None, result['T'])
+        self.assertEqual(None, result['U'])
+
+    def testMultipleWithTypenameAndDefaults(self):
+        builder = MakeBuilder('typename T=XX, typename U=YY> class')
+        result = builder._GetTemplatedTypes()
+        self.assertEqual(2, len(result))
+        self.assertEqual('XX', result['T'].name)
+        self.assertEqual('YY', result['U'].name)
 
 
 class AstBuilder_GetBasesTest(unittest.TestCase):

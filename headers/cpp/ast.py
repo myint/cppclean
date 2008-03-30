@@ -200,28 +200,18 @@ class Parameter(Node):
                  reference, pointer, templated_types, default):
         Node.__init__(self, start, end)
         self.name = name
-        self.type_name = type_name
-        self.type_modifiers = type_modifiers
-        self.reference = reference
-        self.pointer = pointer
+        array = False                   # TODO(nnorwitz): implement.
+        self.type = Type(start, end, type_name, templated_types,
+                         type_modifiers, reference, pointer, array)
         self.default = default
-        self.templated_types = templated_types
 
     def Requires(self, node):
         # TODO(nnorwitz): handle namespaces, etc.
-        return self.type_name == node.name
+        return self.type.name == node.name
 
     def __str__(self):
-        modifiers = ' '.join(self.type_modifiers)
-        syntax = ''
-        if self.reference:
-            syntax += '&'
-        if self.pointer:
-            syntax += '*'
-        name = self.type_name
-        if self.templated_types:
-            name += '<%s>' % self.templated_types
-        suffix = '%s %s%s %s' % (modifiers, name, syntax, self.name)
+        name = str(self.type)
+        suffix = '%s %s' % (name, self.name)
         if self.default:
             suffix += ' = ' + self.default
         return self._StringHelper(self.__class__.__name__, suffix)
@@ -432,6 +422,9 @@ class Type(_GenericDeclaration):
         """
         _GenericDeclaration.__init__(self, start, end, name, [])
         self.templated_types = templated_types
+        # TODO(nnorwitz): enable this and fix the test.
+##         if not name and modifiers:
+##             self.name = modifiers.pop(0)
         self.modifiers = modifiers
         self.reference = reference
         self.pointer = pointer
