@@ -212,21 +212,78 @@ class Parameter(Node):
         return self.type_name == node.name
 
     def __str__(self):
-        # TODO(nnorwitz): add templated_types.
         modifiers = ' '.join(self.type_modifiers)
         syntax = ''
         if self.reference:
             syntax += '&'
         if self.pointer:
             syntax += '*'
-        suffix = '%s %s%s %s' % (modifiers, self.type_name, syntax, self.name)
+        name = self.type_name
+        if self.templated_types:
+            name += '<%s>' % self.templated_types
+        suffix = '%s %s%s %s' % (modifiers, name, syntax, self.name)
         if self.default:
             suffix += ' = ' + self.default
         return self._StringHelper(self.__class__.__name__, suffix)
 
 
-def _DeclarationToParts(parts):
-    name = parts.pop()
+def _ConvertBaseTokensToAST(base_tokens):
+    """Convert [Token,...] to [Class(...), ] useful for base classes.
+    For example, code like class Foo : public Bar<x, y> { ... };
+    the "Bar<x, y>" portion gets converted to an AST.
+
+    Returns:
+      [Class(...), ...]
+    """
+    result = []
+
+    def AddClass(name_tokens, templated_types):
+        name = ''.join([t.name for t in name_tokens])
+        result.append(Class(name_tokens[0].start, name_tokens[-1].end,
+                            name, None, templated_types, None, []))
+
+    def GetTemplateEnd(start):
+        count = 1
+        end = start
+        while 1:
+            token = base_tokens[end]
+            end += 1
+            if token.name == '<':
+                count += 1
+            elif token.name == '>':
+                count -= 1
+                if count == 0:
+                    break
+        return base_tokens[start:end-1], end
+
+    start = i = 0
+    end = len(base_tokens)
+    while i < end:
+        token = base_tokens[i]
+        if token.name == '<':
+            name_tokens = base_tokens[start:i]
+            new_tokens, new_end = GetTemplateEnd(i+1)
+            AddClass(name_tokens, _ConvertBaseTokensToAST(new_tokens))
+            # If there is a comma after the template, we need to consume
+            # that here otherwise it becomes part of the name.
+            start = i = new_end
+            if i < end and base_tokens[i].name == ',':
+                start = i = i + 1
+        elif token.name == ',':
+            AddClass(base_tokens[start:i], None)
+            start = i + 1
+        i += 1
+
+    if start < end:
+        # No '<' in the tokens, just a simple name and no template.
+        AddClass(base_tokens[start:], None)
+    return result
+
+
+def _DeclarationToParts(parts, needs_name):
+    name = None
+    if needs_name:
+        name = parts.pop().name
     modifiers = []
     type_name = []
     for p in parts:
@@ -244,7 +301,7 @@ def _DeclarationToParts(parts):
                 type_name.append(tokenize.Token(tokenize.SYNTAX, ' ', 0, 0))
             type_name.append(p)
     type_name = ''.join([t.name for t in type_name])
-    return name.name, type_name, modifiers
+    return name, type_name, [], modifiers
 
 
 def _SequenceToParameters(seq):
@@ -261,9 +318,11 @@ def _SequenceToParameters(seq):
             first_token = s
         if s.name == ',':
             # TODO(nnorwitz): handle default values.
-            name, type_name, modifiers = _DeclarationToParts(type_modifiers)
+            name, type_name, templated_types, modifiers = \
+                  _DeclarationToParts(type_modifiers, True)
             p = Parameter(first_token.start, first_token.end, name, type_name,
-                          modifiers, reference, pointer, None, default)
+                          modifiers, reference, pointer, templated_types,
+                          default)
             result.append(p)
             name = type_name = ''
             type_modifiers = []
@@ -275,9 +334,10 @@ def _SequenceToParameters(seq):
             reference = True
         else:
             type_modifiers.append(s)
-    name, type_name, modifiers = _DeclarationToParts(type_modifiers)
+    name, type_name, templated_types, modifiers = \
+          _DeclarationToParts(type_modifiers, True)
     p = Parameter(first_token.start, first_token.end, name, type_name,
-                  modifiers, reference, pointer, None, default)
+                  modifiers, reference, pointer, templated_types, default)
     result.append(p)
     return result
 
@@ -285,14 +345,13 @@ def _SequenceToParameters(seq):
 def CreateReturnType(return_type_seq):
     start = return_type_seq[0].start
     end = return_type_seq[-1].end
-    bogus_name = tokenize.Token(tokenize.NAME, '<return value>', 0, 0)
-    return_type_seq.append(bogus_name)
-    name, type_name, modifiers = _DeclarationToParts(return_type_seq)
+    name, type_name, templated_types, modifiers = \
+          _DeclarationToParts(return_type_seq, False)
     names = [n.name for n in return_type_seq]
     reference = '&' in names
     pointer = '*' in names
     return VariableDeclaration(start, end, name, type_name, modifiers,
-                               reference, pointer, None, None)
+                               reference, pointer, templated_types, None)
 
 
 class _GenericDeclaration(Node):
@@ -338,8 +397,10 @@ class VariableDeclaration(_GenericDeclaration):
             syntax += '&'
         if self.pointer:
             syntax += '*'
-        # TODO(nnorwitz): add templated_types.
-        suffix = '%s %s%s %s' % (modifiers, self.type_name, syntax, self.name)
+        name = self.type_name
+        if self.templated_types:
+            name += '<%s>' % self.templated_types
+        suffix = '%s %s%s %s' % (modifiers, name, syntax, self.name)
         if self.initial_value:
             suffix += ' = ' + self.initial_value
         return suffix
@@ -583,11 +644,11 @@ class AstBuilder(object):
             if last_token.name == ';':
                 # Handle data, this isn't a method.
                 names = [t.name for t in temp_tokens]
-                name, type_name, modifiers = \
-                      _DeclarationToParts(temp_tokens)
+                name, type_name, templated_types, modifiers = \
+                      _DeclarationToParts(temp_tokens, True)
                 t0 = temp_tokens[0]
                 return self._CreateVariable(t0, name, type_name, modifiers,
-                                            names, None)
+                                            names, templated_types)
             if last_token.name == '{':
                 self._AddBackTokens(temp_tokens[1:])
                 self._AddBackToken(last_token)
@@ -1163,59 +1224,6 @@ class AstBuilder(object):
     def handle_class(self):
         return self._GetClass(Class, VISIBILITY_PRIVATE, None)
 
-    def _ConvertBaseTokensToAST(self, base_tokens):
-        """Convert [Token,...] to [Class(...), ] useful for base classes.
-        For example, code like class Foo : public Bar<x, y> { ... };
-        the "Bar<x, y>" portion gets converted to an AST.
-
-        Returns:
-          [Class(...), ...]
-        """
-        result = []
-
-        def AddClass(name_tokens, templated_types):
-            name = ''.join([t.name for t in name_tokens])
-            result.append(Class(name_tokens[0].start, name_tokens[-1].end,
-                                name, None, templated_types, None, []))
-
-        def GetTemplateEnd(start):
-            count = 1
-            end = start
-            while 1:
-                token = base_tokens[end]
-                end += 1
-                if token.name == '<':
-                    count += 1
-                elif token.name == '>':
-                    count -= 1
-                    if count == 0:
-                        break
-            return base_tokens[start:end-1], end
-
-        start = i = 0
-        end = len(base_tokens)
-        while i < end:
-            token = base_tokens[i]
-            if token.name == '<':
-                name_tokens = base_tokens[start:i]
-                new_tokens, new_end = GetTemplateEnd(i+1)
-                AddClass(name_tokens,
-                         self._ConvertBaseTokensToAST(new_tokens))
-                # If there is a comma after the template, we need to consume
-                # that here otherwise it becomes part of the name.
-                start = i = new_end
-                if i < end and base_tokens[i].name == ',':
-                    start = i = i + 1
-            elif token.name == ',':
-                AddClass(base_tokens[start:i], None)
-                start = i + 1
-            i += 1
-
-        if start < end:
-            # No '<' in the tokens, just a simple name and no template.
-            AddClass(base_tokens[start:], None)
-        return result
-
     def _GetBases(self):
         # Get base classes.
         bases = []
@@ -1229,7 +1237,7 @@ class AstBuilder(object):
                 # TODO(nnorwitz): it would be good to warn about this.
                 self._AddBackToken(token)
             base, next_token = self.GetName()
-            bases_ast = self._ConvertBaseTokensToAST(base)
+            bases_ast = _ConvertBaseTokensToAST(base)
             assert len(bases_ast) == 1, bases_ast
             bases.append(bases_ast[0])
             assert next_token.token_type == tokenize.SYNTAX, next_token

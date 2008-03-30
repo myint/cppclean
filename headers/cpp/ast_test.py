@@ -51,10 +51,12 @@ def _InstallEqualMethods():
 _InstallEqualMethods()
 
 
+def GetTokens(code_string):
+    return tokenize.GetTokens(code_string + '\n')
+
 def MakeBuilder(code_string):
     """Convenience function to make an AstBuilder from a code snippet.."""
-    tokens = tokenize.GetTokens(code_string + '\n')
-    return ast.AstBuilder(tokens, '<test>')
+    return ast.AstBuilder(GetTokens(code_string), '<test>')
 
 
 def Class(name, start=0, end=0, bases=None, body=None, templated_types=None,
@@ -118,31 +120,31 @@ class AstBuilder_GetTemplatedTypesTest(unittest.TestCase):
         self.assertEqual('YY', result['U'].name)
 
 
-class AstBuilder_ConvertBaseTokensToAstTest(unittest.TestCase):
+class _ConvertBaseTokensToAstTest(unittest.TestCase):
 
     def testSimple(self):
-        builder = MakeBuilder('Bar')
-        result = builder._ConvertBaseTokensToAST(list(builder.tokens))
+        tokens = GetTokens('Bar')
+        result = ast._ConvertBaseTokensToAST(list(tokens))
         self.assertEqual(1, len(result))
         self.assertEqual(Class('Bar'), result[0])
 
     def testTemplate(self):
-        builder = MakeBuilder('Bar<Foo>')
-        result = builder._ConvertBaseTokensToAST(list(builder.tokens))
+        tokens = GetTokens('Bar<Foo>')
+        result = ast._ConvertBaseTokensToAST(list(tokens))
         self.assertEqual(1, len(result))
         self.assertEqual(Class('Bar', templated_types=[Class('Foo')]),
                          result[0])
 
     def testTemplateWithMultipleArgs(self):
-        builder = MakeBuilder('Bar<Foo, Blah, Bling>')
-        result = builder._ConvertBaseTokensToAST(list(builder.tokens))
+        tokens = GetTokens('Bar<Foo, Blah, Bling>')
+        result = ast._ConvertBaseTokensToAST(list(tokens))
         self.assertEqual(1, len(result))
         types = [Class('Foo'), Class('Blah'), Class('Bling')]
         self.assertEqual(Class('Bar', templated_types=types), result[0])
 
     def testTemplateWithMultipleTemplateArgsStart(self):
-        builder = MakeBuilder('Bar<Foo<x>, Blah, Bling>')
-        result = builder._ConvertBaseTokensToAST(list(builder.tokens))
+        tokens = GetTokens('Bar<Foo<x>, Blah, Bling>')
+        result = ast._ConvertBaseTokensToAST(list(tokens))
         self.assertEqual(1, len(result))
         types = [Class('Foo', templated_types=[Class('x')]),
                  Class('Blah'),
@@ -153,8 +155,8 @@ class AstBuilder_ConvertBaseTokensToAstTest(unittest.TestCase):
         self.assertEqual(Class('Bar', templated_types=types), result[0])
 
     def testTemplateWithMultipleTemplateArgsMid(self):
-        builder = MakeBuilder('Bar<Foo, Blah<x>, Bling>')
-        result = builder._ConvertBaseTokensToAST(list(builder.tokens))
+        tokens = GetTokens('Bar<Foo, Blah<x>, Bling>')
+        result = ast._ConvertBaseTokensToAST(list(tokens))
         self.assertEqual(1, len(result))
         types = [Class('Foo'),
                  Class('Blah', templated_types=[Class('x')]),
@@ -162,8 +164,8 @@ class AstBuilder_ConvertBaseTokensToAstTest(unittest.TestCase):
         self.assertEqual(Class('Bar', templated_types=types), result[0])
 
     def testTemplateWithMultipleTemplateArgsEnd(self):
-        builder = MakeBuilder('Bar<Foo, Blah, Bling<x> >')
-        result = builder._ConvertBaseTokensToAST(list(builder.tokens))
+        tokens = GetTokens('Bar<Foo, Blah, Bling<x> >')
+        result = ast._ConvertBaseTokensToAST(list(tokens))
         self.assertEqual(1, len(result))
         types = [Class('Foo'),
                  Class('Blah'),
