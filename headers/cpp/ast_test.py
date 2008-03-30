@@ -107,8 +107,7 @@ class TypeConverter_DeclarationToPartsTest(unittest.TestCase):
         self.assertEqual([], templated_types)
         self.assertEqual(['const', 'volatile'], modifiers)
 
-    # TODO(nnorwitz): enable test.
-    def _testSimpleArray(self):
+    def testSimpleArray(self):
         tokens = GetTokens('Fool[] data')
         name, type_name, templated_types, modifiers, default = \
               self.converter.DeclarationToParts(list(tokens), True)
@@ -332,8 +331,7 @@ class TypeConverter_CreateReturnTypeTest(unittest.TestCase):
         result = self.converter.CreateReturnType(list(tokens))
         self.assertEqual(Type('Bar'), result)
 
-    # TODO(nnorwitz): enable test.
-    def _testArray(self):
+    def testArray(self):
         tokens = GetTokens('Bar[]')
         result = self.converter.CreateReturnType(list(tokens))
         self.assertEqual(Type('Bar', array=True), result)

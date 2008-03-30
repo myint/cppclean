@@ -299,9 +299,9 @@ class WarningHunter(object):
         while ast_seq:
             for node in ast_seq.pop():
                 if isinstance(node, ast.VariableDeclaration):
-                    _AddVariable(node, node.type_name, node.namespace)
-                    _AddTemplateUse(node.type_name,
-                                    node.templated_types, node.namespace)
+                    _AddVariable(node.type, node.type.name, node.namespace)
+                    _AddTemplateUse(node.type.name,
+                                    node.type.templated_types, node.namespace)
                 elif isinstance(node, ast.Function):
                     _ProcessFunction(node)
                 elif isinstance(node, ast.Typedef):

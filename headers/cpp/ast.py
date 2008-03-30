@@ -235,32 +235,18 @@ class _GenericDeclaration(Node):
 
 # TODO(nnorwitz): merge with Parameter in some way?
 class VariableDeclaration(_GenericDeclaration):
-    def __init__(self, start, end, name, type_name, type_modifiers,
-                 reference, pointer, templated_types, initial_value):
+    def __init__(self, start, end, name, var_type, initial_value):
         _GenericDeclaration.__init__(self, start, end, name, [])
-        self.type_name = type_name
-        self.type_modifiers = type_modifiers
-        self.reference = reference
-        self.pointer = pointer
-        self.templated_types = templated_types
+        self.type = var_type
         self.initial_value = initial_value
 
     def Requires(self, node):
         # TODO(nnorwitz): handle namespaces, etc.
-        return self.type_name == node.name
+        return self.type.name == node.name
 
     def ToString(self):
         """Return a string that tries to reconstitute the variable decl."""
-        modifiers = ' '.join(self.type_modifiers)
-        syntax = ''
-        if self.reference:
-            syntax += '&'
-        if self.pointer:
-            syntax += '*'
-        name = self.type_name
-        if self.templated_types:
-            name += '<%s>' % self.templated_types
-        suffix = '%s %s%s %s' % (modifiers, name, syntax, self.name)
+        suffix = '%s %s' % (self.type, self.name)
         if self.initial_value:
             suffix += ' = ' + self.initial_value
         return suffix
@@ -430,7 +416,7 @@ class Type(_GenericDeclaration):
         prefix = ''
         if self.modifiers:
             prefix = ' '.join(self.modifiers) + ' '
-        name = self.name
+        name = str(self.name)
         if self.templated_types:
             name += '<%s>' % self.templated_types
         suffix = prefix + name
@@ -529,8 +515,18 @@ class TypeConverter(object):
         name = None
         default = []
         if needs_name:
-            # TODO(nnorwitz): handle = here and set default properly.
-            name = parts.pop().name
+            # Handle default (initial) values properly.
+            for i, t in enumerate(parts):
+                if t.name == '=':
+                    default = parts[i+1:]
+                    name = parts[i-1].name
+                    if name == ']' and parts[i-2].name == '[':
+                        name = parts[i-3].name
+                        i -= 1
+                    parts = parts[:i-1]
+                    break
+            else:
+                name = parts.pop().name
         modifiers = []
         type_name = []
         templated_types = []
@@ -544,6 +540,8 @@ class TypeConverter(object):
                 templated_tokens, new_end = self._GetTemplateEnd(parts, i+1)
                 templated_types = self.ToType(templated_tokens)
                 i += new_end - 1
+            elif p.name in ('[', ']', '='):
+                pass                    # These are handled elsewhere.
             elif p.name not in ('*', '&', '>'):
                 # Ensure that names have a space between them.
                 if (type_name and type_name[-1].token_type == tokenize.NAME and
@@ -679,9 +677,12 @@ class AstBuilder(object):
                         ref_pointer_name_seq, templated_types, value=None):
         reference = '&' in ref_pointer_name_seq
         pointer = '*' in ref_pointer_name_seq
-        VarDecl = VariableDeclaration
-        return VarDecl(pos_token.start, pos_token.end, name, type_name,
-                       type_modifiers, reference, pointer, templated_types, value)
+        array = '[' in ref_pointer_name_seq
+        var_type = Type(pos_token.start, pos_token.end, type_name,
+                        templated_types, type_modifiers,
+                        reference, pointer, array)
+        return VariableDeclaration(pos_token.start, pos_token.end,
+                                   name, var_type, value)
 
     def _GenerateOne(self, token):
         if token.token_type == tokenize.NAME:
