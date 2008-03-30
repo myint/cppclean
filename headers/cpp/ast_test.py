@@ -128,14 +128,14 @@ class TypeConverter_DeclarationToPartsTest(unittest.TestCase):
         self.assertEqual([], modifiers)
 
 
-class TypeConverter_SequenceToParametersTest(unittest.TestCase):
+class TypeConverter_ToParametersTest(unittest.TestCase):
 
     def setUp(self):
         self.converter = ast.TypeConverter([])
 
     def testReallySimple(self):
         tokens = GetTokens('int bar')
-        results = self.converter.SequenceToParameters(list(tokens))
+        results = self.converter.ToParameters(list(tokens))
         self.assertEqual(1, len(results))
 
         self.assertEqual([], results[0].type.modifiers)
@@ -148,7 +148,7 @@ class TypeConverter_SequenceToParametersTest(unittest.TestCase):
 
     def testArray(self):
         tokens = GetTokens('int[] bar')
-        results = self.converter.SequenceToParameters(list(tokens))
+        results = self.converter.ToParameters(list(tokens))
         self.assertEqual(1, len(results))
 
         self.assertEqual([], results[0].type.modifiers)
@@ -162,7 +162,7 @@ class TypeConverter_SequenceToParametersTest(unittest.TestCase):
     def testArrayPointerReference(self):
         params = 'const int[] bar, mutable char* foo, volatile Bar& babar'
         tokens = GetTokens(params)
-        results = self.converter.SequenceToParameters(list(tokens))
+        results = self.converter.ToParameters(list(tokens))
         self.assertEqual(3, len(results))
 
         self.assertEqual(['const'], results[0].type.modifiers)
@@ -191,7 +191,7 @@ class TypeConverter_SequenceToParametersTest(unittest.TestCase):
 
     def testArrayWithClass(self):
         tokens = GetTokens('Bar[] bar')
-        results = self.converter.SequenceToParameters(list(tokens))
+        results = self.converter.ToParameters(list(tokens))
         self.assertEqual(1, len(results))
 
         self.assertEqual([], results[0].type.modifiers)
@@ -204,7 +204,7 @@ class TypeConverter_SequenceToParametersTest(unittest.TestCase):
 
     def testMultipleArgs(self):
         tokens = GetTokens('const volatile Fool* data, int bar, enum X foo')
-        results = self.converter.SequenceToParameters(list(tokens))
+        results = self.converter.ToParameters(list(tokens))
         self.assertEqual(3, len(results))
 
         self.assertEqual(['const', 'volatile'], results[0].type.modifiers)
@@ -231,7 +231,7 @@ class TypeConverter_SequenceToParametersTest(unittest.TestCase):
     # TODO(nnorwitz): enable test.
     def _testSimpleTemplateBegin(self):
         tokens = GetTokens('pair<int, int> data, int bar')
-        results = self.converter.SequenceToParameters(list(tokens))
+        results = self.converter.ToParameters(list(tokens))
         self.assertEqual(2, len(results), repr(results))
 
         self.assertEqual([], results[0].type.modifiers)
@@ -250,7 +250,7 @@ class TypeConverter_SequenceToParametersTest(unittest.TestCase):
 
     def testSimpleWithInitializers(self):
         tokens = GetTokens('Fool* data = NULL')
-        results = self.converter.SequenceToParameters(list(tokens))
+        results = self.converter.ToParameters(list(tokens))
         self.assertEqual(1, len(results))
 
         self.assertEqual([], results[0].type.modifiers)
@@ -263,34 +263,34 @@ class TypeConverter_SequenceToParametersTest(unittest.TestCase):
         self.assertEqual([Token('NULL')], results[0].default)
 
 
-class TypeConverter_ConvertBaseTokensToAstTest(unittest.TestCase):
+class TypeConverter_ToTypeTest(unittest.TestCase):
 
     def setUp(self):
         self.converter = ast.TypeConverter([])
 
     def testSimple(self):
         tokens = GetTokens('Bar')
-        result = self.converter.TokensToType(list(tokens))
+        result = self.converter.ToType(list(tokens))
         self.assertEqual(1, len(result))
         self.assertEqual(Class('Bar'), result[0])
 
     def testTemplate(self):
         tokens = GetTokens('Bar<Foo>')
-        result = self.converter.TokensToType(list(tokens))
+        result = self.converter.ToType(list(tokens))
         self.assertEqual(1, len(result))
         self.assertEqual(Class('Bar', templated_types=[Class('Foo')]),
                          result[0])
 
     def testTemplateWithMultipleArgs(self):
         tokens = GetTokens('Bar<Foo, Blah, Bling>')
-        result = self.converter.TokensToType(list(tokens))
+        result = self.converter.ToType(list(tokens))
         self.assertEqual(1, len(result))
         types = [Class('Foo'), Class('Blah'), Class('Bling')]
         self.assertEqual(Class('Bar', templated_types=types), result[0])
 
     def testTemplateWithMultipleTemplateArgsStart(self):
         tokens = GetTokens('Bar<Foo<x>, Blah, Bling>')
-        result = self.converter.TokensToType(list(tokens))
+        result = self.converter.ToType(list(tokens))
         self.assertEqual(1, len(result))
         types = [Class('Foo', templated_types=[Class('x')]),
                  Class('Blah'),
@@ -302,7 +302,7 @@ class TypeConverter_ConvertBaseTokensToAstTest(unittest.TestCase):
 
     def testTemplateWithMultipleTemplateArgsMid(self):
         tokens = GetTokens('Bar<Foo, Blah<x>, Bling>')
-        result = self.converter.TokensToType(list(tokens))
+        result = self.converter.ToType(list(tokens))
         self.assertEqual(1, len(result))
         types = [Class('Foo'),
                  Class('Blah', templated_types=[Class('x')]),
@@ -311,7 +311,7 @@ class TypeConverter_ConvertBaseTokensToAstTest(unittest.TestCase):
 
     def testTemplateWithMultipleTemplateArgsEnd(self):
         tokens = GetTokens('Bar<Foo, Blah, Bling<x> >')
-        result = self.converter.TokensToType(list(tokens))
+        result = self.converter.ToType(list(tokens))
         self.assertEqual(1, len(result))
         types = [Class('Foo'),
                  Class('Blah'),

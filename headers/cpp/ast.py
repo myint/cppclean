@@ -362,7 +362,7 @@ class Function(_GenericDeclaration):
         _GenericDeclaration.__init__(self, start, end, name, namespace)
         converter = TypeConverter(namespace)
         self.return_type = converter.CreateReturnType(return_type)
-        self.parameters = converter.SequenceToParameters(parameters)
+        self.parameters = converter.ToParameters(parameters)
         self.modifiers = modifiers
         self.body = body
         self.templated_types = templated_types
@@ -460,7 +460,7 @@ class TypeConverter(object):
     def __init__(self, namespace_stack):
         self.namespace_stack = namespace_stack
 
-    def TokensToType(self, base_tokens):
+    def ToType(self, tokens):
         """Convert [Token,...] to [Class(...), ] useful for base classes.
         For example, code like class Foo : public Bar<x, y> { ... };
         the "Bar<x, y>" portion gets converted to an AST.
@@ -480,7 +480,7 @@ class TypeConverter(object):
             count = 1
             end = start
             while 1:
-                token = base_tokens[end]
+                token = tokens[end]
                 end += 1
                 if token.name == '<':
                     count += 1
@@ -488,29 +488,29 @@ class TypeConverter(object):
                     count -= 1
                     if count == 0:
                         break
-            return base_tokens[start:end-1], end
+            return tokens[start:end-1], end
 
         start = i = 0
-        end = len(base_tokens)
+        end = len(tokens)
         while i < end:
-            token = base_tokens[i]
+            token = tokens[i]
             if token.name == '<':
-                name_tokens = base_tokens[start:i]
+                name_tokens = tokens[start:i]
                 new_tokens, new_end = GetTemplateEnd(i+1)
-                AddClass(name_tokens, self.TokensToType(new_tokens))
+                AddClass(name_tokens, self.ToType(new_tokens))
                 # If there is a comma after the template, we need to consume
                 # that here otherwise it becomes part of the name.
                 start = i = new_end
-                if i < end and base_tokens[i].name == ',':
+                if i < end and tokens[i].name == ',':
                     start = i = i + 1
             elif token.name == ',':
-                AddClass(base_tokens[start:i], None)
+                AddClass(tokens[start:i], None)
                 start = i + 1
             i += 1
 
         if start < end:
             # No '<' in the tokens, just a simple name and no template.
-            AddClass(base_tokens[start:], None)
+            AddClass(tokens[start:], None)
         return result
 
     def DeclarationToParts(self, parts, needs_name):
@@ -536,8 +536,8 @@ class TypeConverter(object):
         type_name = ''.join([t.name for t in type_name])
         return name, type_name, [], modifiers
 
-    def SequenceToParameters(self, seq):
-        if not seq:
+    def ToParameters(self, tokens):
+        if not tokens:
             return []
 
         result = []
@@ -559,7 +559,7 @@ class TypeConverter(object):
                           parameter_type, default)
             result.append(p)
 
-        for s in seq:
+        for s in tokens:
             if not first_token:
                 first_token = s
             if s.name == ',':
@@ -1292,7 +1292,7 @@ class AstBuilder(object):
                 # TODO(nnorwitz): it would be good to warn about this.
                 self._AddBackToken(token)
             base, next_token = self.GetName()
-            bases_ast = self.converter.TokensToType(base)
+            bases_ast = self.converter.ToType(base)
             assert len(bases_ast) == 1, bases_ast
             bases.append(bases_ast[0])
             assert next_token.token_type == tokenize.SYNTAX, next_token
