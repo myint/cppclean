@@ -282,18 +282,17 @@ class WarningHunter(object):
                 elif isinstance(token, ast.Union):
                     pass                # TODO(nnorwitz): impl
 
-        def _AddTemplateUse(types, namespace):
+        def _AddTemplateUse(name, types, namespace):
             if types:
                 for cls in types:
-                    _AddUse(cls.name, namespace)
-                    if cls.name.endswith('_ptr'):
+                    if name.endswith('_ptr'):
                         # Special case templated classes that end w/_ptr.
                         # These are things like auto_ptr which do
                         # not require the class definition, only decl.
-                        for tt in cls.templated_types:
-                            _AddReference(tt.name, namespace)
+                        _AddReference(cls.name, namespace)
                     else:
-                        _AddTemplateUse(cls.templated_types, namespace)
+                        _AddUse(cls.name, namespace)
+                    _AddTemplateUse(cls.name, cls.templated_types, namespace)
 
         # Iterate through the source AST/tokens, marking each symbols use.
         ast_seq = [self.ast_list]
@@ -301,7 +300,8 @@ class WarningHunter(object):
             for node in ast_seq.pop():
                 if isinstance(node, ast.VariableDeclaration):
                     _AddVariable(node, node.type_name, node.namespace)
-                    _AddTemplateUse(node.templated_types, node.namespace)
+                    _AddTemplateUse(node.type_name,
+                                    node.templated_types, node.namespace)
                 elif isinstance(node, ast.Function):
                     _ProcessFunction(node)
                 elif isinstance(node, ast.Typedef):
@@ -310,7 +310,7 @@ class WarningHunter(object):
                 elif isinstance(node, ast.Class) and node.body is not None:
                     if node.body:
                         ast_seq.append(node.body)
-                    _AddTemplateUse(node.bases, node.namespace)
+                    _AddTemplateUse('', node.bases, node.namespace)
 
         return file_uses, decl_uses
 

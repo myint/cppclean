@@ -91,7 +91,7 @@ class TypeConverter_DeclarationToPartsTest(unittest.TestCase):
 
     def testSimple(self):
         tokens = GetTokens('Fool data')
-        name, type_name, templated_types, modifiers = \
+        name, type_name, templated_types, modifiers, default = \
               self.converter.DeclarationToParts(list(tokens), True)
         self.assertEqual('data', name)
         self.assertEqual('Fool', type_name)
@@ -100,7 +100,7 @@ class TypeConverter_DeclarationToPartsTest(unittest.TestCase):
 
     def testSimpleModifiers(self):
         tokens = GetTokens('const volatile Fool data')
-        name, type_name, templated_types, modifiers = \
+        name, type_name, templated_types, modifiers, default = \
               self.converter.DeclarationToParts(list(tokens), True)
         self.assertEqual('data', name)
         self.assertEqual('Fool', type_name)
@@ -110,21 +110,20 @@ class TypeConverter_DeclarationToPartsTest(unittest.TestCase):
     # TODO(nnorwitz): enable test.
     def _testSimpleArray(self):
         tokens = GetTokens('Fool[] data')
-        name, type_name, templated_types, modifiers = \
+        name, type_name, templated_types, modifiers, default = \
               self.converter.DeclarationToParts(list(tokens), True)
         self.assertEqual('data', name)
         self.assertEqual('Fool', type_name)
         self.assertEqual([], templated_types)
         self.assertEqual([], modifiers)
 
-    # TODO(nnorwitz): enable test.
-    def _testSimpleTemplate(self):
+    def testSimpleTemplate(self):
         tokens = GetTokens('Fool<tt> data')
-        name, type_name, templated_types, modifiers = \
+        name, type_name, templated_types, modifiers, default = \
               self.converter.DeclarationToParts(list(tokens), True)
         self.assertEqual('data', name)
         self.assertEqual('Fool', type_name)
-        self.assertEqual([Class('tt')], templated_types)
+        self.assertEqual([Type('tt')], templated_types)
         self.assertEqual([], modifiers)
 
 
@@ -228,15 +227,15 @@ class TypeConverter_ToParametersTest(unittest.TestCase):
         self.assertEqual(False, results[2].type.reference)
         self.assertEqual('foo', results[2].name)
 
-    # TODO(nnorwitz): enable test.
-    def _testSimpleTemplateBegin(self):
+    def testSimpleTemplateBegin(self):
         tokens = GetTokens('pair<int, int> data, int bar')
         results = self.converter.ToParameters(list(tokens))
         self.assertEqual(2, len(results), repr(results))
 
         self.assertEqual([], results[0].type.modifiers)
         self.assertEqual('pair', results[0].type.name)
-        self.assertEqual(['int', 'int'], results[0].type.templated_types)
+        self.assertEqual([Type('int'), Type('int')],
+                         results[0].type.templated_types)
         self.assertEqual(False, results[0].type.pointer)
         self.assertEqual(False, results[0].type.reference)
         self.assertEqual('data', results[0].name)
@@ -272,51 +271,51 @@ class TypeConverter_ToTypeTest(unittest.TestCase):
         tokens = GetTokens('Bar')
         result = self.converter.ToType(list(tokens))
         self.assertEqual(1, len(result))
-        self.assertEqual(Class('Bar'), result[0])
+        self.assertEqual(Type('Bar'), result[0])
 
     def testTemplate(self):
         tokens = GetTokens('Bar<Foo>')
         result = self.converter.ToType(list(tokens))
         self.assertEqual(1, len(result))
-        self.assertEqual(Class('Bar', templated_types=[Class('Foo')]),
+        self.assertEqual(Type('Bar', templated_types=[Type('Foo')]),
                          result[0])
 
     def testTemplateWithMultipleArgs(self):
         tokens = GetTokens('Bar<Foo, Blah, Bling>')
         result = self.converter.ToType(list(tokens))
         self.assertEqual(1, len(result))
-        types = [Class('Foo'), Class('Blah'), Class('Bling')]
-        self.assertEqual(Class('Bar', templated_types=types), result[0])
+        types = [Type('Foo'), Type('Blah'), Type('Bling')]
+        self.assertEqual(Type('Bar', templated_types=types), result[0])
 
     def testTemplateWithMultipleTemplateArgsStart(self):
         tokens = GetTokens('Bar<Foo<x>, Blah, Bling>')
         result = self.converter.ToType(list(tokens))
         self.assertEqual(1, len(result))
-        types = [Class('Foo', templated_types=[Class('x')]),
-                 Class('Blah'),
-                 Class('Bling')]
+        types = [Type('Foo', templated_types=[Type('x')]),
+                 Type('Blah'),
+                 Type('Bling')]
         self.assertEqual(types[0], result[0].templated_types[0])
         self.assertEqual(types[1], result[0].templated_types[1])
         self.assertEqual(types[2], result[0].templated_types[2])
-        self.assertEqual(Class('Bar', templated_types=types), result[0])
+        self.assertEqual(Type('Bar', templated_types=types), result[0])
 
     def testTemplateWithMultipleTemplateArgsMid(self):
         tokens = GetTokens('Bar<Foo, Blah<x>, Bling>')
         result = self.converter.ToType(list(tokens))
         self.assertEqual(1, len(result))
-        types = [Class('Foo'),
-                 Class('Blah', templated_types=[Class('x')]),
-                 Class('Bling')]
-        self.assertEqual(Class('Bar', templated_types=types), result[0])
+        types = [Type('Foo'),
+                 Type('Blah', templated_types=[Type('x')]),
+                 Type('Bling')]
+        self.assertEqual(Type('Bar', templated_types=types), result[0])
 
     def testTemplateWithMultipleTemplateArgsEnd(self):
         tokens = GetTokens('Bar<Foo, Blah, Bling<x> >')
         result = self.converter.ToType(list(tokens))
         self.assertEqual(1, len(result))
-        types = [Class('Foo'),
-                 Class('Blah'),
-                 Class('Bling', templated_types=[Class('x')])]
-        self.assertEqual(Class('Bar', templated_types=types), result[0])
+        types = [Type('Foo'),
+                 Type('Blah'),
+                 Type('Bling', templated_types=[Type('x')])]
+        self.assertEqual(Type('Bar', templated_types=types), result[0])
 
 
 class TypeConverter_CreateReturnTypeTest(unittest.TestCase):
@@ -352,11 +351,12 @@ class TypeConverter_CreateReturnTypeTest(unittest.TestCase):
         self.assertEqual(Type('Bar', modifiers=modifiers, pointer=True),
                          result)
 
-    # TODO(nnorwitz): enable test.
-    def _testTemplate(self):
+    def testTemplate(self):
         tokens = GetTokens('const pair<int, NS::Foo>*')
         result = self.converter.CreateReturnType(list(tokens))
-        self.assertEqual(Type('Bar', modifiers=['const'], pointer=True),
+        templated_types = [Type('int'), Type('NS::Foo')]
+        self.assertEqual(Type('pair', modifiers=['const'],
+                              templated_types=templated_types, pointer=True),
                          result)
 
 
