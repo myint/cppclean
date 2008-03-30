@@ -196,13 +196,10 @@ class Using(Node):
 
 
 class Parameter(Node):
-    def __init__(self, start, end, name, type_name, type_modifiers,
-                 reference, pointer, templated_types, default):
+    def __init__(self, start, end, name, parameter_type, default):
         Node.__init__(self, start, end)
         self.name = name
-        array = False                   # TODO(nnorwitz): implement.
-        self.type = Type(start, end, type_name, templated_types,
-                         type_modifiers, reference, pointer, array)
+        self.type = parameter_type
         self.default = default
 
     def Requires(self, node):
@@ -546,6 +543,7 @@ class TypeConverter(object):
         name = type_name = ''
         type_modifiers = []
         pointer = reference = False
+        array = False                   # TODO(nnorwitz): implement.
         first_token = default = None
         for s in seq:
             if not first_token:
@@ -554,9 +552,11 @@ class TypeConverter(object):
                 # TODO(nnorwitz): handle default values.
                 name, type_name, templated_types, modifiers = \
                       self.DeclarationToParts(type_modifiers, True)
+                parameter_type = Type(first_token.start, first_token.end,
+                                      type_name, templated_types, modifiers,
+                                      reference, pointer, array)
                 p = Parameter(first_token.start, first_token.end, name,
-                              type_name, modifiers, reference, pointer,
-                              templated_types, default)
+                              parameter_type, default)
                 result.append(p)
                 name = type_name = ''
                 type_modifiers = []
@@ -570,8 +570,11 @@ class TypeConverter(object):
                 type_modifiers.append(s)
         name, type_name, templated_types, modifiers = \
               self.DeclarationToParts(type_modifiers, True)
-        p = Parameter(first_token.start, first_token.end, name, type_name,
-                      modifiers, reference, pointer, templated_types, default)
+        parameter_type = Type(first_token.start, first_token.end,
+                              type_name, templated_types, modifiers,
+                              reference, pointer, array)
+        p = Parameter(first_token.start, first_token.end, name,
+                      parameter_type, default)
         result.append(p)
         return result
 
