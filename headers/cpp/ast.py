@@ -460,7 +460,7 @@ class TypeConverter(object):
     def __init__(self, namespace_stack):
         self.namespace_stack = namespace_stack
 
-    def ConvertBaseTokensToAST(self, base_tokens):
+    def TokensToType(self, base_tokens):
         """Convert [Token,...] to [Class(...), ] useful for base classes.
         For example, code like class Foo : public Bar<x, y> { ... };
         the "Bar<x, y>" portion gets converted to an AST.
@@ -470,6 +470,7 @@ class TypeConverter(object):
         """
         result = []
 
+        # TODO(nnorwitz): change Class -> Type.
         def AddClass(name_tokens, templated_types):
             name = ''.join([t.name for t in name_tokens])
             result.append(Class(name_tokens[0].start, name_tokens[-1].end,
@@ -496,7 +497,7 @@ class TypeConverter(object):
             if token.name == '<':
                 name_tokens = base_tokens[start:i]
                 new_tokens, new_end = GetTemplateEnd(i+1)
-                AddClass(name_tokens, self.ConvertBaseTokensToAST(new_tokens))
+                AddClass(name_tokens, self.TokensToType(new_tokens))
                 # If there is a comma after the template, we need to consume
                 # that here otherwise it becomes part of the name.
                 start = i = new_end
@@ -542,8 +543,7 @@ class TypeConverter(object):
         result = []
         name = type_name = ''
         type_modifiers = []
-        pointer = reference = False
-        array = False                   # TODO(nnorwitz): implement.
+        pointer = reference = array = False
         first_token = default = None
         for s in seq:
             if not first_token:
@@ -566,6 +566,10 @@ class TypeConverter(object):
                 pointer = True
             elif s.name == '&':
                 reference = True
+            elif s.name == '[':
+                array = True
+            elif s.name == ']':
+                pass  # Just don't add to type_modifiers.
             else:
                 type_modifiers.append(s)
         name, type_name, templated_types, modifiers = \
@@ -1283,7 +1287,7 @@ class AstBuilder(object):
                 # TODO(nnorwitz): it would be good to warn about this.
                 self._AddBackToken(token)
             base, next_token = self.GetName()
-            bases_ast = self.converter.ConvertBaseTokensToAST(base)
+            bases_ast = self.converter.TokensToType(base)
             assert len(bases_ast) == 1, bases_ast
             bases.append(bases_ast[0])
             assert next_token.token_type == tokenize.SYNTAX, next_token

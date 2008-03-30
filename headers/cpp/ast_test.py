@@ -138,10 +138,36 @@ class TypeConverter_SequenceToParametersTest(unittest.TestCase):
         self.assertEqual([], results[0].type.templated_types)
         self.assertEqual(False, results[0].type.pointer)
         self.assertEqual(False, results[0].type.reference)
+        self.assertEqual(False, results[0].type.array)
+        self.assertEqual('bar', results[0].name)
+
+    def testArray(self):
+        tokens = GetTokens('int[] bar')
+        results = self.converter.SequenceToParameters(list(tokens))
+        self.assertEqual(1, len(results))
+
+        self.assertEqual([], results[0].type.modifiers, results[0].type.__dict__)
+        self.assertEqual('int', results[0].type.name)
+        self.assertEqual([], results[0].type.templated_types)
+        self.assertEqual(False, results[0].type.pointer)
+        self.assertEqual(False, results[0].type.reference)
+        self.assertEqual(True, results[0].type.array)
+        self.assertEqual('bar', results[0].name)
+
+    def testArrayWithClass(self):
+        tokens = GetTokens('Bar[] bar')
+        results = self.converter.SequenceToParameters(list(tokens))
+        self.assertEqual(1, len(results))
+
+        self.assertEqual([], results[0].type.modifiers)
+        self.assertEqual('Bar', results[0].type.name)
+        self.assertEqual([], results[0].type.templated_types)
+        self.assertEqual(False, results[0].type.pointer)
+        self.assertEqual(False, results[0].type.reference)
+        self.assertEqual(True, results[0].type.array)
         self.assertEqual('bar', results[0].name)
 
     def testMultipleArgs(self):
-        # TODO(nnorwitz): fix arrays so they work.
         tokens = GetTokens('const volatile Fool* data, int bar, enum X foo')
         results = self.converter.SequenceToParameters(list(tokens))
         self.assertEqual(3, len(results))
@@ -206,27 +232,27 @@ class TypeConverter_ConvertBaseTokensToAstTest(unittest.TestCase):
 
     def testSimple(self):
         tokens = GetTokens('Bar')
-        result = self.converter.ConvertBaseTokensToAST(list(tokens))
+        result = self.converter.TokensToType(list(tokens))
         self.assertEqual(1, len(result))
         self.assertEqual(Class('Bar'), result[0])
 
     def testTemplate(self):
         tokens = GetTokens('Bar<Foo>')
-        result = self.converter.ConvertBaseTokensToAST(list(tokens))
+        result = self.converter.TokensToType(list(tokens))
         self.assertEqual(1, len(result))
         self.assertEqual(Class('Bar', templated_types=[Class('Foo')]),
                          result[0])
 
     def testTemplateWithMultipleArgs(self):
         tokens = GetTokens('Bar<Foo, Blah, Bling>')
-        result = self.converter.ConvertBaseTokensToAST(list(tokens))
+        result = self.converter.TokensToType(list(tokens))
         self.assertEqual(1, len(result))
         types = [Class('Foo'), Class('Blah'), Class('Bling')]
         self.assertEqual(Class('Bar', templated_types=types), result[0])
 
     def testTemplateWithMultipleTemplateArgsStart(self):
         tokens = GetTokens('Bar<Foo<x>, Blah, Bling>')
-        result = self.converter.ConvertBaseTokensToAST(list(tokens))
+        result = self.converter.TokensToType(list(tokens))
         self.assertEqual(1, len(result))
         types = [Class('Foo', templated_types=[Class('x')]),
                  Class('Blah'),
@@ -238,7 +264,7 @@ class TypeConverter_ConvertBaseTokensToAstTest(unittest.TestCase):
 
     def testTemplateWithMultipleTemplateArgsMid(self):
         tokens = GetTokens('Bar<Foo, Blah<x>, Bling>')
-        result = self.converter.ConvertBaseTokensToAST(list(tokens))
+        result = self.converter.TokensToType(list(tokens))
         self.assertEqual(1, len(result))
         types = [Class('Foo'),
                  Class('Blah', templated_types=[Class('x')]),
@@ -247,7 +273,7 @@ class TypeConverter_ConvertBaseTokensToAstTest(unittest.TestCase):
 
     def testTemplateWithMultipleTemplateArgsEnd(self):
         tokens = GetTokens('Bar<Foo, Blah, Bling<x> >')
-        result = self.converter.ConvertBaseTokensToAST(list(tokens))
+        result = self.converter.TokensToType(list(tokens))
         self.assertEqual(1, len(result))
         types = [Class('Foo'),
                  Class('Blah'),
