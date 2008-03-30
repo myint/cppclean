@@ -54,6 +54,7 @@ _InstallEqualMethods()
 def GetTokens(code_string):
     return tokenize.GetTokens(code_string + '\n')
 
+
 def MakeBuilder(code_string):
     """Convenience function to make an AstBuilder from a code snippet.."""
     return ast.AstBuilder(GetTokens(code_string), '<test>')
@@ -66,8 +67,60 @@ def Class(name, start=0, end=0, bases=None, body=None, templated_types=None,
     return ast.Class(start, end, name, bases, templated_types, body, namespace)
 
 
+class _DeclarationToPartsTest(unittest.TestCase):
+
+    def testSimple(self):
+        tokens = GetTokens('Fool data')
+        name, type_name, templated_types, modifiers = \
+              ast._DeclarationToParts(list(tokens), True)
+        self.assertEqual('data', name)
+        self.assertEqual('Fool', type_name)
+        self.assertEqual([], templated_types)
+        self.assertEqual([], modifiers)
+
+    def testSimpleModifiers(self):
+        tokens = GetTokens('const volatile Fool data')
+        name, type_name, templated_types, modifiers = \
+              ast._DeclarationToParts(list(tokens), True)
+        self.assertEqual('data', name)
+        self.assertEqual('Fool', type_name)
+        self.assertEqual([], templated_types)
+        self.assertEqual(['const', 'volatile'], modifiers)
+
+    # TODO(nnorwitz): enable test.
+    def _testSimpleArray(self):
+        tokens = GetTokens('Fool[] data')
+        name, type_name, templated_types, modifiers = \
+              ast._DeclarationToParts(list(tokens), True)
+        self.assertEqual('data', name)
+        self.assertEqual('Fool', type_name)
+        self.assertEqual([], templated_types)
+        self.assertEqual([], modifiers)
+
+    # TODO(nnorwitz): enable test.
+    def _testSimpleTemplate(self):
+        tokens = GetTokens('Fool<tt> data')
+        name, type_name, templated_types, modifiers = \
+              ast._DeclarationToParts(list(tokens), True)
+        self.assertEqual('data', name)
+        self.assertEqual('Fool', type_name)
+        self.assertEqual([Class('tt')], templated_types)
+        self.assertEqual([], modifiers)
+
+
 class _SequenceToParametersTest(unittest.TestCase):
     pass  # TODO(nnorwitz): implement.
+
+    def testSimpleWithInitializers(self):
+        return              # TODO(nnorwitz): test some API with this.
+        tokens = GetTokens('Fool data[] = { NULL, }')
+        #results = ast._SequenceToParameters(list(tokens))
+        self.assertEqual(1, len(results))
+        
+        self.assertEqual('data', name)
+        self.assertEqual('Fool', type_name)
+        self.assertEqual([], templated_types)
+        self.assertEqual([], modifiers)
 
 
 class AstBuilder_GetVarTokensUpToTest(unittest.TestCase):

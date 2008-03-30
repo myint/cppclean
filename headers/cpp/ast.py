@@ -382,8 +382,8 @@ class VariableDeclaration(_GenericDeclaration):
         self.type_modifiers = type_modifiers
         self.reference = reference
         self.pointer = pointer
-        self.initial_value = initial_value
         self.templated_types = templated_types
+        self.initial_value = initial_value
 
     def Requires(self, node):
         # TODO(nnorwitz): handle namespaces, etc.
