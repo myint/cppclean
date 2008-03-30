@@ -288,7 +288,15 @@ class WarningHunter(object):
             if types:
                 for cls in types:
                     _AddUse(cls.name, namespace)
-                    _AddTemplateUse(cls.templated_types, namespace)
+                    if cls.name.endswith('_ptr'):
+                        # Special case templated classes that end w/_ptr.
+                        # These are things like auto_ptr which do
+                        # not require the class definition, only decl.
+                        print cls
+                        for tt in cls.templated_types:
+                            _AddReference(tt.name, namespace)
+                    else:
+                        _AddTemplateUse(cls.templated_types, namespace)
 
         # Iterate through the source AST/tokens, marking each symbols use.
         ast_seq = [self.ast_list]
@@ -296,6 +304,7 @@ class WarningHunter(object):
             for node in ast_seq.pop():
                 if isinstance(node, ast.VariableDeclaration):
                     _AddVariable(node, node.type_name, node.namespace)
+                    _AddTemplateUse(node.templated_types, node.namespace)
                 elif isinstance(node, ast.Function):
                     _ProcessFunction(node)
                 elif isinstance(node, ast.Typedef):
