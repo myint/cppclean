@@ -160,7 +160,8 @@ class TypeConverter_SequenceToParametersTest(unittest.TestCase):
         self.assertEqual('bar', results[0].name)
 
     def testArrayPointerReference(self):
-        tokens = GetTokens('const int[] bar, mutable char* foo, volatile Bar& babar')
+        params = 'const int[] bar, mutable char* foo, volatile Bar& babar'
+        tokens = GetTokens(params)
         results = self.converter.SequenceToParameters(list(tokens))
         self.assertEqual(3, len(results))
 
