@@ -146,13 +146,42 @@ class TypeConverter_SequenceToParametersTest(unittest.TestCase):
         results = self.converter.SequenceToParameters(list(tokens))
         self.assertEqual(1, len(results))
 
-        self.assertEqual([], results[0].type.modifiers, results[0].type.__dict__)
+        self.assertEqual([], results[0].type.modifiers)
         self.assertEqual('int', results[0].type.name)
         self.assertEqual([], results[0].type.templated_types)
         self.assertEqual(False, results[0].type.pointer)
         self.assertEqual(False, results[0].type.reference)
         self.assertEqual(True, results[0].type.array)
         self.assertEqual('bar', results[0].name)
+
+    def testArrayPointerReference(self):
+        tokens = GetTokens('const int[] bar, mutable char* foo, volatile Bar& babar')
+        results = self.converter.SequenceToParameters(list(tokens))
+        self.assertEqual(3, len(results))
+
+        self.assertEqual(['const'], results[0].type.modifiers)
+        self.assertEqual('int', results[0].type.name)
+        self.assertEqual([], results[0].type.templated_types)
+        self.assertEqual(False, results[0].type.pointer)
+        self.assertEqual(False, results[0].type.reference)
+        self.assertEqual(True, results[0].type.array)
+        self.assertEqual('bar', results[0].name)
+
+        self.assertEqual(['mutable'], results[1].type.modifiers)
+        self.assertEqual('char', results[1].type.name)
+        self.assertEqual([], results[1].type.templated_types)
+        self.assertEqual(True, results[1].type.pointer)
+        self.assertEqual(False, results[1].type.reference)
+        self.assertEqual(False, results[1].type.array)
+        self.assertEqual('foo', results[1].name)
+
+        self.assertEqual(['volatile'], results[2].type.modifiers)
+        self.assertEqual('Bar', results[2].type.name)
+        self.assertEqual([], results[2].type.templated_types)
+        self.assertEqual(False, results[2].type.pointer)
+        self.assertEqual(True, results[2].type.reference)
+        self.assertEqual(False, results[2].type.array)
+        self.assertEqual('babar', results[2].name)
 
     def testArrayWithClass(self):
         tokens = GetTokens('Bar[] bar')

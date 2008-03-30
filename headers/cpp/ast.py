@@ -560,7 +560,7 @@ class TypeConverter(object):
                 result.append(p)
                 name = type_name = ''
                 type_modifiers = []
-                pointer = reference = False
+                pointer = reference = array = False
                 first_token = default = None
             elif s.name == '*':
                 pointer = True
