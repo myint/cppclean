@@ -210,7 +210,7 @@ class Parameter(Node):
         name = str(self.type)
         suffix = '%s %s' % (name, self.name)
         if self.default:
-            suffix += ' = ' + self.default
+            suffix += ' = ' + ''.join([d.name for d in self.default])
         return self._StringHelper(self.__class__.__name__, suffix)
 
 
@@ -566,7 +566,7 @@ class TypeConverter(object):
         def AddParameter():
             if default:
                 del default[0]  # Remove flag.
-            name, type_name, templated_types, modifiers, default_value = \
+            name, type_name, templated_types, modifiers, unused_default = \
                   self.DeclarationToParts(type_modifiers, True)
             parameter_type = Type(first_token.start, first_token.end,
                                   type_name, templated_types, modifiers,

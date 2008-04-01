@@ -261,3 +261,5 @@ template<class T> class TemplateCtorDtor {
 
 template <typename Type>
 Type* Singleton<Type>::instance_ = NULL;
+
+int CreateFakeResults(bool add, float score = 0.5);
