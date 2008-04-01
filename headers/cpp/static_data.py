@@ -41,10 +41,10 @@ def _FindWarnings(filename, source, ast_list, static_is_optional):
   for node in ast_list:
     if isinstance(node, ast.VariableDeclaration):
       # Ignore 'static' at module scope so we can find globals too.
-      is_static = 'static' in node.type_modifiers
-      is_not_const = 'const' not in node.type_modifiers
+      is_static = 'static' in node.type.modifiers
+      is_not_const = 'const' not in node.type.modifiers
       if is_not_const and (static_is_optional or is_static):
-        PrintWarning(node, node.ToString())
+        PrintWarning(node, node.name)
     elif isinstance(node, ast.Function):
       if node.body:
         FindStatic(node)
