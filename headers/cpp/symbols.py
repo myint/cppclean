@@ -52,7 +52,7 @@ class SymbolTable(object):
         self.namespaces = {None: {}}
 
     def _LookupNamespace(self, symbol, namespace, kind):
-        """Helper for LookupSymbol that only looks up global variables.
+        """Helper for LookupSymbol that only looks up variables in a namespace.
 
         Args:
           symbol: Symbol
@@ -60,14 +60,14 @@ class SymbolTable(object):
           kind: 'kind of namespace for error message'
         """
         for namespace_part in symbol.parts:
-            if not isinstance(namespace, dict):
-                raise Error('%s found non-namespace entry before %s' %
-                            (symbol.name, namespace_part))
             namespace = namespace.get(namespace_part)
             if namespace is None:
                 raise Error('%s not found in %snamespace at %s' %
                             (symbol.name, kind, namespace_part))
             result = namespace
+            if not isinstance(namespace, dict):
+                # Occurs when a component is not a namespace.
+                break
         return result
 
     def _LookupGlobal(self, symbol):
@@ -81,7 +81,17 @@ class SymbolTable(object):
         if len(symbol.parts) == 1:
             # If there is only one part, look in globals.
             namespace = self.namespaces[None]
-        return self._LookupNamespace(symbol, namespace, 'global ')
+        try:
+            # Try to do a normal, global namespace lookup.
+            return self._LookupNamespace(symbol, namespace, 'global ')
+        except Error, orig_exc:
+            try:
+                # The normal lookup can fail if all of the parts aren't
+                # namespaces.  This happens with OuterClass::Inner.
+                namespace = self.namespaces[None]
+                return self._LookupNamespace(symbol, namespace, 'global ')
+            except Error, unused_exc:
+                raise orig_exc
 
     def _LookupInAllNamespaces(self, symbol):
         """Helper for LookupSymbol that looks for symbols in all namespaces.
