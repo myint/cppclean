@@ -92,8 +92,6 @@ class WarningHunter(object):
         self.warnings = []
         if filename not in self._module_cache:
             self._module_cache[filename] = Module(filename, ast_list)
-        else:
-            print 'Warning %s already in cache' % filename
 
     def _GetLineNum(self, metrics, node):
         return metrics.GetLineNumber(node.start)
