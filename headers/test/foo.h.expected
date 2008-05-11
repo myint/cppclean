@@ -75,3 +75,4 @@ Class(3878, 3890, StructMethod, None, [Function(3895, 3900, Type(3895, 3908, str
 Class(3944, 3960, TemplateCtorDtor, None, [Function(3974, 3990, None TemplateCtorDtor([Parameter(3994, 3995, Type(3994, 3995, T*) ptr)]), 0x08, None), Function(4006, 4022, None TemplateCtorDtor([]), 0x10, None)])
 VariableDeclaration(4058, 4062, Type(4058, 4062, Type Singleton<[Type(4074, 4078, Type)]>*) instance_ = NULL)
 Function(4100, 4103, Type(4100, 4103, int) CreateFakeResults([Parameter(4122, 4126, Type(4122, 4126, bool) add), Parameter(4132, 4137, Type(4132, 4137, float) score = 0.5)]), 0x00, None)
+Function(4153, 4156, Type(4153, 4177, map<[Type(4157, 4163, string), Type(4165, 4175, const Flag*)]>) ReturnFlags([]), 0x00, None)

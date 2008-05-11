@@ -91,7 +91,7 @@ class TypeConverter_DeclarationToPartsTest(unittest.TestCase):
 
     def testSimple(self):
         tokens = GetTokens('Fool data')
-        name, type_name, templated_types, modifiers, default = \
+        name, type_name, templated_types, modifiers, default, other_tokens = \
               self.converter.DeclarationToParts(list(tokens), True)
         self.assertEqual('data', name)
         self.assertEqual('Fool', type_name)
@@ -100,7 +100,7 @@ class TypeConverter_DeclarationToPartsTest(unittest.TestCase):
 
     def testSimpleModifiers(self):
         tokens = GetTokens('const volatile Fool data')
-        name, type_name, templated_types, modifiers, default = \
+        name, type_name, templated_types, modifiers, default, other_tokens = \
               self.converter.DeclarationToParts(list(tokens), True)
         self.assertEqual('data', name)
         self.assertEqual('Fool', type_name)
@@ -109,7 +109,7 @@ class TypeConverter_DeclarationToPartsTest(unittest.TestCase):
 
     def testSimpleArray(self):
         tokens = GetTokens('Fool[] data')
-        name, type_name, templated_types, modifiers, default = \
+        name, type_name, templated_types, modifiers, default, other_tokens = \
               self.converter.DeclarationToParts(list(tokens), True)
         self.assertEqual('data', name)
         self.assertEqual('Fool', type_name)
@@ -118,7 +118,7 @@ class TypeConverter_DeclarationToPartsTest(unittest.TestCase):
 
     def testSimpleTemplate(self):
         tokens = GetTokens('Fool<tt> data')
-        name, type_name, templated_types, modifiers, default = \
+        name, type_name, templated_types, modifiers, default, other_tokens = \
               self.converter.DeclarationToParts(list(tokens), True)
         self.assertEqual('data', name)
         self.assertEqual('Fool', type_name)

@@ -475,8 +475,15 @@ class TypeConverter(object):
         reference = pointer = array = False
 
         def AddType(templated_types):
-            name = ''.join([t.name for t in name_tokens])
+            # Partition tokens into name and modifier tokens.
+            names = []
             modifiers = []
+            for t in name_tokens:
+                if keywords.IsKeyword(t.name):
+                    modifiers.append(t.name)
+                else:
+                    names.append(t.name)
+            name = ''.join(names)
             result.append(Type(name_tokens[0].start, name_tokens[-1].end,
                                name, templated_types, modifiers,
                                reference, pointer, array))
@@ -513,10 +520,10 @@ class TypeConverter(object):
             AddType([])
         return result
 
-    def DeclarationToParts(self, parts, needs_name):
+    def DeclarationToParts(self, parts, needs_name_removed):
         name = None
         default = []
-        if needs_name:
+        if needs_name_removed:
             # Handle default (initial) values properly.
             for i, t in enumerate(parts):
                 if t.name == '=':
@@ -531,6 +538,7 @@ class TypeConverter(object):
                 name = parts.pop().name
         modifiers = []
         type_name = []
+        other_tokens = []
         templated_types = []
         i = 0
         end = len(parts)
@@ -541,18 +549,25 @@ class TypeConverter(object):
             elif p.name == '<':
                 templated_tokens, new_end = self._GetTemplateEnd(parts, i+1)
                 templated_types = self.ToType(templated_tokens)
-                i += new_end - 1
+                i = new_end - 1
+                # Don't add a spurious :: to data members being initialized.
+                next_index = i + 1
+                if next_index < end and parts[next_index].name == '::':
+                    i += 1
             elif p.name in ('[', ']', '='):
-                pass                    # These are handled elsewhere.
+                # These are handled elsewhere.
+                other_tokens.append(p)
             elif p.name not in ('*', '&', '>'):
                 # Ensure that names have a space between them.
                 if (type_name and type_name[-1].token_type == tokenize.NAME and
                     p.token_type == tokenize.NAME):
                     type_name.append(tokenize.Token(tokenize.SYNTAX, ' ', 0, 0))
                 type_name.append(p)
+            else:
+                other_tokens.append(p)
             i += 1
         type_name = ''.join([t.name for t in type_name])
-        return name, type_name, templated_types, modifiers, default
+        return name, type_name, templated_types, modifiers, default, other_tokens
 
     def ToParameters(self, tokens):
         if not tokens:
@@ -568,7 +583,7 @@ class TypeConverter(object):
         def AddParameter():
             if default:
                 del default[0]  # Remove flag.
-            name, type_name, templated_types, modifiers, unused_default = \
+            name, type_name, templated_types, modifiers, unused_default, unused_other_tokens = \
                   self.DeclarationToParts(type_modifiers, True)
             parameter_type = Type(first_token.start, first_token.end,
                                   type_name, templated_types, modifiers,
@@ -619,9 +634,9 @@ class TypeConverter(object):
             return None
         start = return_type_seq[0].start
         end = return_type_seq[-1].end
-        _, name, templated_types, modifiers, default = \
+        _, name, templated_types, modifiers, default, other_tokens = \
            self.DeclarationToParts(return_type_seq, False)
-        names = [n.name for n in return_type_seq]
+        names = [n.name for n in other_tokens]
         reference = '&' in names
         pointer = '*' in names
         array = '[' in names
@@ -729,7 +744,7 @@ class AstBuilder(object):
             if last_token.name == ';':
                 # Handle data, this isn't a method.
                 names = [t.name for t in temp_tokens]
-                name, type_name, templated_types, modifiers, default = \
+                name, type_name, templated_types, modifiers, default, unused_other_tokens = \
                       self.converter.DeclarationToParts(temp_tokens, True)
                 t0 = temp_tokens[0]
                 default = ''.join([t.name for t in default])
