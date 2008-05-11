@@ -183,7 +183,9 @@ class Delete(Expr):
 
 
 class Friend(Expr):
-    pass
+    def __init__(self, start, end, expr, namespace):
+        Expr.__init__(self, start, end, expr)
+        self.namespace = namespace[:]
 
 
 class Using(Node):
@@ -1185,7 +1187,8 @@ class AstBuilder(object):
     def handle_friend(self):
         tokens = self._GetTokensUpTo(tokenize.SYNTAX, ';')
         assert tokens
-        return Friend(tokens[0].start, tokens[0].end, tokens)
+        t0 = tokens[0]
+        return Friend(t0.start, t0.end, tokens, self.namespace_stack)
 
     def handle_static_cast(self):
         pass

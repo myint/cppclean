@@ -225,7 +225,7 @@ class WarningHunter(object):
         def _AddUse(name, namespace):
             if isinstance(name, list):
                 # name contains a list of tokens.
-                name = ''.join([n.name for n in name])
+                name = '::'.join([n.name for n in name])
             elif not isinstance(name, str):
                 # Happens when variables are defined with inlined types, e.g.:
                 #   enum {...} variable;
@@ -256,6 +256,9 @@ class WarningHunter(object):
                 _AddReference(name, namespace)
             else:
                 _AddUse(name, namespace)
+            # This needs to recurse when the node is a templated type.
+            for n in node.templated_types or ():
+                _AddVariable(n, n.name, namespace)
 
         def _ProcessFunction(function):
             if function.return_type:
@@ -312,6 +315,10 @@ class WarningHunter(object):
                 elif isinstance(node, ast.Typedef):
                     # TODO(nnorwitz): use _ProcessTypedef(node)
                     pass
+                elif isinstance(node, ast.Friend):
+                    if node.expr and node.expr[0].name == 'class':
+                        name = ''.join([n.name for n in node.expr[1:]])
+                        _AddReference(name, node.namespace)
                 elif isinstance(node, ast.Class) and node.body is not None:
                     if node.body:
                         ast_seq.append(node.body)
