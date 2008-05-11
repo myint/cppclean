@@ -127,7 +127,12 @@ class WarningHunter(object):
 
     def _GetModule(self, filename):
         if filename in self._module_cache:
-            return self._module_cache[filename]
+            # The cache survives across all instances, but the symbol table
+            # is per instance, so we need to make sure the symbol table
+            # is updated even if the module was in the cache.
+            module = self._module_cache[filename]
+            self._UpdateSymbolTable(module)
+            return module
 
         source, actual_filename = headers.ReadSource(filename)
         if source is None:
@@ -328,6 +333,7 @@ class WarningHunter(object):
         # TODO(nnorwitz): other warnings to add:
         #   * too much non-template impl in header file
         #   * too many methods/data members
+        #   * missing include for classes used for inheritenace
 
     def _FindPublicFunctionWarnings(self, node, name, primary_header,
                                     public_symbols, all_headers):
@@ -433,6 +439,7 @@ class WarningHunter(object):
         #   * unused forward decls for variables (globals)/classes
         #   * Functions that are too large/complex
         #   * Variables declared far from first use
+        #   * primitive member variables not initialized in ctor
 
 
 def main(argv):
