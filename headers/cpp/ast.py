@@ -645,14 +645,15 @@ class TypeConverter(object):
 
 
 class AstBuilder(object):
-    def __init__(self, token_stream, filename, in_class='', visibility=None):
+    def __init__(self, token_stream, filename, in_class='', visibility=None,
+                 namespace_stack=[]):
         self.tokens = token_stream
         self.filename = filename
         # TODO(nnorwitz): use a better data structure (deque) for the queue.
         # Switching directions of the "queue" improved perf by about 25%.
         # Using a deque should be even better since we access from both sides.
         self.token_queue = []
-        self.namespace_stack = []
+        self.namespace_stack = namespace_stack[:]
         self.in_class = in_class
         self.visibility = visibility
         self.in_function = False
@@ -1391,7 +1392,7 @@ class AstBuilder(object):
             assert token.name == '{', token
 
             ast = AstBuilder(self.GetScope(), self.filename, class_name,
-                             visibility)
+                             visibility, self.namespace_stack)
             body = list(ast.Generate())
 
             if not self._handling_typedef:

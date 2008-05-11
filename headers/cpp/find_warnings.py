@@ -221,6 +221,11 @@ class WarningHunter(object):
         def _AddReference(name, namespace):
             if name in decl_uses:
                 decl_uses[name] |= USES_REFERENCE
+            else:
+                # TODO(nnorwitz): make less hacky, do real name lookup.
+                name = '::'.join(namespace) + '::' + name
+                if name in decl_uses:
+                    decl_uses[name] |= USES_REFERENCE
 
         def _AddUse(name, namespace):
             if isinstance(name, list):
