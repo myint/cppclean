@@ -237,8 +237,8 @@ class _GenericDeclaration(Node):
 
 # TODO(nnorwitz): merge with Parameter in some way?
 class VariableDeclaration(_GenericDeclaration):
-    def __init__(self, start, end, name, var_type, initial_value):
-        _GenericDeclaration.__init__(self, start, end, name, [])
+    def __init__(self, start, end, name, var_type, initial_value, namespace):
+        _GenericDeclaration.__init__(self, start, end, name, namespace)
         self.type = var_type
         self.initial_value = initial_value
 
@@ -700,7 +700,7 @@ class AstBuilder(object):
                         templated_types, type_modifiers,
                         reference, pointer, array)
         return VariableDeclaration(pos_token.start, pos_token.end,
-                                   name, var_type, value)
+                                   name, var_type, value, self.namespace_stack)
 
     def _GenerateOne(self, token):
         if token.token_type == tokenize.NAME:

@@ -1,7 +1,7 @@
 
 .PHONY: test
 
-HEADER_TESTS=4 5 6 7
+HEADER_TESTS=4 5 6 7 8
 CC_TESTS=1 2 3
 
 test:
