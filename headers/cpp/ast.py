@@ -1262,7 +1262,7 @@ class AstBuilder(object):
                 name = tokens[1]
         new_type = tokens
         if tokens and isinstance(tokens[0], tokenize.Token):
-            new_type = self.converter.ToType(tokens)
+            new_type = self.converter.ToType(tokens)[0]
         return Typedef(indices.start, indices.end, name.name,
                        new_type, self.namespace_stack)
 

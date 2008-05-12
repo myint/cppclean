@@ -306,7 +306,11 @@ class WarningHunter(object):
                 elif isinstance(node, ast.Function):
                     _ProcessFunction(node)
                 elif isinstance(node, ast.Typedef):
-                    ast_seq.append(node.alias)
+                    alias = node.alias
+                    if isinstance(alias, ast.Type):
+                        _AddUse(alias.name, node.namespace)
+                        _AddTemplateUse('<typedef>', alias.templated_types,
+                                        node.namespace)
                 elif isinstance(node, ast.Friend):
                     if node.expr and node.expr[0].name == 'class':
                         name = ''.join([n.name for n in node.expr[1:]])
