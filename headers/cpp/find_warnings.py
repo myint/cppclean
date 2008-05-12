@@ -317,7 +317,7 @@ class WarningHunter(object):
                     _AddTemplateUse('', node.bases, node.namespace)
                 elif isinstance(node, ast.Struct) and node.body is not None:
                     pass  # TODO(nnorwitz): impl
-                elif isinstance(node, ast.Union) and node.body is not None:
+                elif isinstance(node, ast.Union) and node.fields:
                     pass  # TODO(nnorwitz): impl
 
         return file_uses, decl_uses
