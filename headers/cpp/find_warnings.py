@@ -283,16 +283,6 @@ class WarningHunter(object):
                 # TODO(nnorwitz): handle local vars and data member references.
                 pass
 
-        def _ProcessTypedef(typedef):
-            for token in typedef.alias:
-                if (isinstance(token, tokenize.Token) and
-                    token.token_type == tokenize.NAME):
-                    classes_used[token.name] = True
-                elif isinstance(token, ast.Struct):
-                    pass                # TODO(nnorwitz): impl
-                elif isinstance(token, ast.Union):
-                    pass                # TODO(nnorwitz): impl
-
         def _AddTemplateUse(name, types, namespace):
             if types:
                 for cls in types:
@@ -316,8 +306,7 @@ class WarningHunter(object):
                 elif isinstance(node, ast.Function):
                     _ProcessFunction(node)
                 elif isinstance(node, ast.Typedef):
-                    # TODO(nnorwitz): use _ProcessTypedef(node)
-                    pass
+                    ast_seq.append(node.alias)
                 elif isinstance(node, ast.Friend):
                     if node.expr and node.expr[0].name == 'class':
                         name = ''.join([n.name for n in node.expr[1:]])
@@ -326,6 +315,10 @@ class WarningHunter(object):
                     if node.body:
                         ast_seq.append(node.body)
                     _AddTemplateUse('', node.bases, node.namespace)
+                elif isinstance(node, ast.Struct) and node.body is not None:
+                    pass  # TODO(nnorwitz): impl
+                elif isinstance(node, ast.Union) and node.body is not None:
+                    pass  # TODO(nnorwitz): impl
 
         return file_uses, decl_uses
 
