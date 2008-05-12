@@ -1260,8 +1260,11 @@ class AstBuilder(object):
             if len(tokens) >= 2:
                 tokens.append(name)
                 name = tokens[1]
-        return Typedef(indices.start, indices.end, name.name, tokens,
-                       self.namespace_stack)
+        new_type = tokens
+        if tokens and isinstance(tokens[0], tokenize.Token):
+            new_type = self.converter.ToType(tokens)
+        return Typedef(indices.start, indices.end, name.name,
+                       new_type, self.namespace_stack)
 
     def handle_typeid(self):
         pass  # Not needed yet.
