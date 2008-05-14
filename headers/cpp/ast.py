@@ -583,12 +583,13 @@ class TypeConverter(object):
         def AddParameter():
             if default:
                 del default[0]  # Remove flag.
+            end = type_modifiers[-1].end
             name, type_name, templated_types, modifiers, unused_default, unused_other_tokens = \
                   self.DeclarationToParts(type_modifiers, True)
             parameter_type = Type(first_token.start, first_token.end,
                                   type_name, templated_types, modifiers,
                                   reference, pointer, array)
-            p = Parameter(first_token.start, first_token.end, name,
+            p = Parameter(first_token.start, end, name,
                           parameter_type, default)
             result.append(p)
 
