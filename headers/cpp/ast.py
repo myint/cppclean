@@ -422,7 +422,6 @@ class Type(_GenericDeclaration):
         if self.templated_types:
             name += '<%s>' % self.templated_types
         suffix = prefix + name
-        syntax = ''
         if self.reference:
             suffix += '&'
         if self.pointer:
@@ -584,8 +583,9 @@ class TypeConverter(object):
             if default:
                 del default[0]  # Remove flag.
             end = type_modifiers[-1].end
-            name, type_name, templated_types, modifiers, unused_default, unused_other_tokens = \
-                  self.DeclarationToParts(type_modifiers, True)
+            parts = self.DeclarationToParts(type_modifiers, True)
+            (name, type_name, templated_types, modifiers,
+             unused_default, unused_other_tokens) = parts
             parameter_type = Type(first_token.start, first_token.end,
                                   type_name, templated_types, modifiers,
                                   reference, pointer, array)
