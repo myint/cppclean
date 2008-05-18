@@ -32,6 +32,7 @@ import sys
 
 from cpp import ast
 from cpp import headers
+from cpp import keywords
 from cpp import metrics
 from cpp import symbols
 from cpp import tokenize
@@ -279,9 +280,21 @@ class WarningHunter(object):
                         _AddUse(p.type.name, function.namespace)
                     else:
                         _AddVariable(p.type, p.type.name, function.namespace)
-            if function.body:
-                # TODO(nnorwitz): handle local vars and data member references.
-                pass
+
+        def _ProcessFunctionBody(function, namespace):
+            iterator = iter(function.body)
+            for t in iterator:
+                if t.token_type == tokenize.NAME:
+                    if not keywords.IsKeyword(t.name):
+                        # TODO(nnorwitz): handle :: names.
+                        # TODO(nnorwitz): handle static function calls.
+                        # TODO(nnorwitz): handle using statements in file.
+                        # TODO(nnorwitz): handle using statements in function.
+                        # TODO(nnorwitz): handle namespace assignment in file.
+                        _AddUse(t.name, namespace)
+                elif t.name in ('.', '->'):
+                    # Skip tokens after a dereference.
+                    iterator.next()
 
         def _AddTemplateUse(name, types, namespace):
             if types:
@@ -305,6 +318,8 @@ class WarningHunter(object):
                                     node.type.templated_types, node.namespace)
                 elif isinstance(node, ast.Function):
                     _ProcessFunction(node)
+                    if node.body:
+                        _ProcessFunctionBody(node, node.namespace)
                 elif isinstance(node, ast.Typedef):
                     alias = node.alias
                     if isinstance(alias, ast.Type):
