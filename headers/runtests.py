@@ -28,6 +28,7 @@ from cpp import find_warnings
 
 
 # [(module, 'directory', 'input-file', 'expected-output-file')]
+# The tuples can have optional arguments after the expected output file.
 _GOLDEN_FILE_TESTS = [
     (ast, 'test', 'foo.h', 'foo.h.expected'),
     (find_warnings, 'test', 'foo.h', 'foo.h.expected-warnings'),
@@ -64,7 +65,8 @@ def DiffGoldenFile(test_type, test_name, output_lines, expected_file):
 
 def RunGoldenTests(generate_output):
     start_cwd = os.path.abspath(os.getcwd())
-    for module, directory, input_file, expected_file in _GOLDEN_FILE_TESTS:
+    for record in _GOLDEN_FILE_TESTS:
+        module, directory, input_file, expected_file = record[:4]
         # Capture stdout.
         sys.stdout = StringIO.StringIO()
         try:
@@ -73,7 +75,7 @@ def RunGoldenTests(generate_output):
             test_name = module.__name__
 
             # Run the test.
-            module.main([test_name, input_file])
+            module.main([test_name, input_file] + list(record[4:]))
 
             # Verify output.
             output = sys.stdout.getvalue()
