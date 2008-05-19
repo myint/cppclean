@@ -534,7 +534,13 @@ class TypeConverter(object):
                     parts = parts[:i-1]
                     break
             else:
-                name = parts.pop().name
+                if parts[-1].token_type == tokenize.NAME:
+                    name = parts.pop().name
+                else:
+                    # TODO(nnorwitz): this is a hack that happens for code like
+                    # Register(Foo<T>); where it thinks this is a function call
+                    # but it's actually a declaration.
+                    name = '???'
         modifiers = []
         type_name = []
         other_tokens = []
