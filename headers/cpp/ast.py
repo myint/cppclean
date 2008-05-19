@@ -650,6 +650,15 @@ class TypeConverter(object):
         return Type(start, end, name, templated_types, modifiers,
                     reference, pointer, array)
 
+    def GetTemplateIndices(self, names):
+        # names is a list of strings.
+        start = names.index('<')
+        end = len(names) - 1
+        while end > 0:
+            if names[end] == '>':
+                break
+            end -= 1
+        return start, end+1
 
 class AstBuilder(object):
     def __init__(self, token_stream, filename, in_class='', visibility=None,
@@ -751,10 +760,15 @@ class AstBuilder(object):
 
             if last_token.name == ';':
                 # Handle data, this isn't a method.
-                names = [t.name for t in temp_tokens]
-                name, type_name, templated_types, modifiers, default, unused_other_tokens = \
-                      self.converter.DeclarationToParts(temp_tokens, True)
+                parts = self.converter.DeclarationToParts(temp_tokens, True)
+                (name, type_name, templated_types, modifiers, default,
+                 unused_other_tokens) = parts
+                      
                 t0 = temp_tokens[0]
+                names = [t.name for t in temp_tokens]
+                if templated_types:
+                    start, end = self.converter.GetTemplateIndices(names)
+                    names = names[:start] + names[end:]
                 default = ''.join([t.name for t in default])
                 return self._CreateVariable(t0, name, type_name, modifiers,
                                             names, templated_types, default)

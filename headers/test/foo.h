@@ -265,3 +265,5 @@ Type* Singleton<Type>::instance_ = NULL;
 int CreateFakeResults(bool add, float score = 0.5);
 
 map<string, const Flag*> ReturnFlags();
+
+vector<string*> string_list;
