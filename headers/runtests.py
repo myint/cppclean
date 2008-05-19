@@ -65,6 +65,7 @@ def DiffGoldenFile(test_type, test_name, output_lines, expected_file):
 
 def RunGoldenTests(generate_output):
     start_cwd = os.path.abspath(os.getcwd())
+    exit_status = 0
     for record in _GOLDEN_FILE_TESTS:
         module, directory, input_file, expected_file = record[:4]
         # Capture stdout.
@@ -91,6 +92,7 @@ def RunGoldenTests(generate_output):
                 break
         finally:
             sys.stdout = sys.__stdout__
+    return exit_status
 
 
 def main(argv):
@@ -110,7 +112,7 @@ def main(argv):
                 exit_status += 1
     if exit_status == 0:
         generate_golden_files = len(argv) > 1 and argv[1] == '--expected'
-        RunGoldenTests(generate_golden_files)
+        exit_status = RunGoldenTests(generate_golden_files)
     return exit_status
 
 
