@@ -30,9 +30,9 @@ if 'set' not in dir(__builtins__):
     from sets import Set as set
 
 
-# TODO(nnorwitz): consider adding $ as a valid identifier char.
+# Add $ as a valid identifier char since so much code uses it.
 _letters = 'abcdefghijklmnopqrstuvwxyz'
-VALID_IDENTIFIER_CHARS = set(_letters + _letters.upper() + '_0123456789')
+VALID_IDENTIFIER_CHARS = set(_letters + _letters.upper() + '_0123456789$')
 HEX_DIGITS = set('0123456789abcdefABCDEF')
 INT_OR_FLOAT_DIGITS = set('01234567890eE-+')
 
