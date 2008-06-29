@@ -858,11 +858,13 @@ class AstBuilder(object):
             elif name.startswith('if'):
                 count += 1
 
-    def _GetMatchingChar(self, open_paren, close_paren):
+    def _GetMatchingChar(self, open_paren, close_paren, GetNextToken=None):
+        if GetNextToken is None:
+            GetNextToken = self._GetNextToken
         # Assumes the current token is open_paren and we will consume
         # and return up to the close_paren.
         count = 1
-        token = self._GetNextToken()
+        token = GetNextToken()
         while 1:
             if token.token_type == tokenize.SYNTAX:
                 if token.name == open_paren:
@@ -872,7 +874,7 @@ class AstBuilder(object):
                     if count == 0:
                         break
             yield token
-            token = self._GetNextToken()
+            token = GetNextToken()
         yield token
 
     def _GetParameters(self):
@@ -904,9 +906,12 @@ class AstBuilder(object):
                 assert tokens[-1].whence == tokenize.WHENCE_QUEUE, tokens
                 self.token_queue.extend(reversed(tokens))
 
-    def GetName(self):
+    def GetName(self, seq=None):
         """Returns ([tokens], next_token_info)."""
-        next_token = self._GetNextToken()
+        GetNextToken = self._GetNextToken
+        if seq is not None:
+            GetNextToken = iter(seq).next
+        next_token = GetNextToken()
         tokens = []
         last_token_was_name = False
         while (next_token.token_type == tokenize.NAME or
@@ -920,9 +925,9 @@ class AstBuilder(object):
             tokens.append(next_token)
             # Handle templated names.
             if next_token.name == '<':
-                tokens.extend(self._GetMatchingChar('<', '>'))
+                tokens.extend(self._GetMatchingChar('<', '>', GetNextToken))
                 last_token_was_name = True
-            next_token = self._GetNextToken()
+            next_token = GetNextToken()
         return tokens, next_token
 
     def GetMethod(self, modifiers, templated_types):
@@ -1313,10 +1318,9 @@ class AstBuilder(object):
             if i < len_tokens:
                 i += 1
                 if tokens[i-1].name == '=':
-                    # TODO(nnorwitz): handle names with :: in them.
                     assert i < len_tokens, '%s %s' % (i, tokens)
-                    value = tokens[i]
-                    i += 1
+                    value, unused_next_token = self.GetName(tokens[i:])
+                    i += len(value)
                 else:
                     assert tokens[i-1].name == ',', '%s %s' % (i, tokens)
             result[key] = value

@@ -404,8 +404,10 @@ class AstBuilder_GetTemplatedTypesTest(unittest.TestCase):
         builder = MakeBuilder('typename T=XX, typename U=YY> class')
         result = builder._GetTemplatedTypes()
         self.assertEqual(2, len(result))
-        self.assertEqual('XX', result['T'].name)
-        self.assertEqual('YY', result['U'].name)
+        self.assertEqual(1, len(result['T']))
+        self.assertEqual('XX', result['T'][0].name)
+        self.assertEqual(1, len(result['U']))
+        self.assertEqual('YY', result['U'][0].name)
 
 
 class AstBuilder_GetBasesTest(unittest.TestCase):
@@ -472,6 +474,21 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         nodes = list(MakeBuilder(cpp_code).Generate())
         self.assertEqual(1, len(nodes))
         self.assertEqual(Class('Foo::Bar', body=[]), nodes[0])
+        # TODO(nnorwitz): assert more about the body of the class.
+
+    def testClass_HandlesStructRebind(self):
+        cpp_code = """
+        template <typename T, typename Alloc = std::allocator<T> >
+        class AnotherAllocator : public Alloc {
+            template <class U> struct rebind {
+            };
+        };
+        """
+        nodes = list(MakeBuilder(cpp_code).Generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Class('AnotherAllocator', bases=[Type('Alloc')]),
+                         nodes[0])
+        # TODO(nnorwitz): assert more about the body of the class.
 
 
 def test_main():
