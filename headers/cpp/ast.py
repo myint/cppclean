@@ -671,6 +671,10 @@ class AstBuilder(object):
         self.token_queue = []
         self.namespace_stack = namespace_stack[:]
         self.in_class = in_class
+        if in_class is None:
+            self.in_class_name_only = None
+        else:
+            self.in_class_name_only = in_class.split('::')[-1]
         self.visibility = visibility
         self.in_function = False
         self.current_token = None
@@ -724,7 +728,7 @@ class AstBuilder(object):
                 not keywords.IsBuiltinType(token.name)):
                 method = getattr(self, 'handle_' + token.name)
                 return method()
-            elif token.name == self.in_class:
+            elif token.name == self.in_class_name_only:
                 # The token name is the same as the class, must be a ctor if
                 # there is a paren.  Otherwise, it's the return type.
                 # Peek ahead to get the next token to figure out which.
@@ -789,9 +793,8 @@ class AstBuilder(object):
                 token = self._GetNextToken()
                 # self.in_class can contain A::Name, but the dtor will only
                 # be Name.  Make sure to compare against the right value.
-                class_name = self.in_class.split('::')[-1]
                 if (token.token_type == tokenize.NAME and
-                    token.name == class_name):
+                    token.name == self.in_class_name_only):
                     return self._GetMethod([token], FUNCTION_DTOR, None, True)
             # TODO(nnorwitz): handle a lot more syntax.
         elif token.token_type == tokenize.PREPROCESSOR:

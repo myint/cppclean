@@ -77,3 +77,4 @@ VariableDeclaration(4058, 4062, Type(4058, 4062, Type Singleton<[Type(4074, 4078
 Function(4100, 4103, Type(4100, 4103, int) CreateFakeResults([Parameter(4122, 4130, Type(4122, 4126, bool) add), Parameter(4132, 4143, Type(4132, 4137, float) score = 0.5)]), 0x00, None)
 Function(4153, 4156, Type(4153, 4177, map<[Type(4157, 4163, string), Type(4165, 4175, const Flag*)]>) ReturnFlags([]), 0x00, None)
 VariableDeclaration(4194, 4200, Type(4194, 4200, vector<[Type(4201, 4207, string*)]>) string_list)
+Class(4230, 4233, Foo::Bar, None, [Function(4241, 4244, None Bar([]), 0x08, [Token('XXX', 4249, 4252), Token('(', 4252, 4253), Token('1', 4253, 4254), Token(')', 4254, 4255), Token('<<', 4256, 4258), Token('"should work"', 4259, 4272), Token(';', 4272, 4273)])])
