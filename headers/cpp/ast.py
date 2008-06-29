@@ -787,8 +787,11 @@ class AstBuilder(object):
             if token.name == '~' and self.in_class:
                 # Must be a dtor (probably not in method body).
                 token = self._GetNextToken()
+                # self.in_class can contain A::Name, but the dtor will only
+                # be Name.  Make sure to compare against the right value.
+                class_name = self.in_class.split('::')[-1]
                 if (token.token_type == tokenize.NAME and
-                    token.name == self.in_class):
+                    token.name == class_name):
                     return self._GetMethod([token], FUNCTION_DTOR, None, True)
             # TODO(nnorwitz): handle a lot more syntax.
         elif token.token_type == tokenize.PREPROCESSOR:
