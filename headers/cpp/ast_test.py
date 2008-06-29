@@ -461,6 +461,12 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(1, len(nodes))
         self.assertEqual(Class('Foo', namespace=[]), nodes[0])
 
+    def testClass_VirtualInheritance(self):
+        cpp_code = 'class Foo : public virtual Bar {};'
+        nodes = list(MakeBuilder(cpp_code).Generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Class('Foo', bases=[Type('Bar')]), nodes[0])
+
 
 def test_main():
     tests = [t for t in globals().values()

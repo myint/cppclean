@@ -1363,6 +1363,14 @@ class AstBuilder(object):
                 # Just put the token back so we can form a name.
                 # TODO(nnorwitz): it would be good to warn about this.
                 self._AddBackToken(token)
+            else:
+                # Check for virtual inheritance.
+                token = self._GetNextToken()
+                if token.name != 'virtual':
+                    self._AddBackToken(token)
+                else:
+                    # TODO(nnorwitz): store that we got virtual for this base.
+                    pass
             base, next_token = self.GetName()
             bases_ast = self.converter.ToType(base)
             assert len(bases_ast) == 1, bases_ast
