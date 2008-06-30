@@ -1098,6 +1098,7 @@ class AstBuilder(object):
         while i < end:
             # Iterate through the sequence parsing out each name.
             new_name, next = self.GetName(seq_copy[i:])
+            #assert new_name, 'Got empty new_name, next=%s' % next
             # We got a pointer or ref.  Add it to the name.
             if next and next.token_type == tokenize.SYNTAX:
                 new_name.append(next)
