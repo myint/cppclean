@@ -39,7 +39,9 @@ def _InstallGenericEqual(cls, attrs):
         if not isinstance(other, cls):
             return False
         for a in attrs:
-            if getattr(self, a) != getattr(other, a):
+            # Use not (a == other) since this could be recursive and
+            # we don't define a not equals method.
+            if not (getattr(self, a) == getattr(other, a)):
                 return False
         return True
     cls.__eq__ = __eq__
@@ -51,6 +53,9 @@ def _InstallEqualMethods():
     _InstallGenericEqual(ast.Class, 'name bases templated_types namespace')
     _InstallGenericEqual(ast.Type, ('name templated_types modifiers '
                                     'reference pointer array'))
+    _InstallGenericEqual(ast.Method, ('name in_class return_type parameters '
+                                      'modifiers templated_types '
+                                      'body namespace'))
 _InstallEqualMethods()
 
 
@@ -82,6 +87,18 @@ def Type(name, start=0, end=0, templated_types=None, modifiers=None,
         modifiers = []
     return ast.Type(start, end, name, templated_types, modifiers,
                      reference, pointer, array)
+
+
+def Method(name, in_class, return_type, parameters, start=0, end=0,
+           modifiers=0, templated_types=None, body=None, namespace=None):
+    if templated_types is None:
+        templated_types = []
+    if body is None:
+        body = []
+    if namespace is None:
+        namespace = []
+    return ast.Method(start, end, name, in_class, return_type, parameters,
+                      modifiers, templated_types, body, namespace)
 
 
 class TypeConverter_DeclarationToPartsTest(unittest.TestCase):
@@ -489,6 +506,54 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(Class('AnotherAllocator', bases=[Type('Alloc')]),
                          nodes[0])
         # TODO(nnorwitz): assert more about the body of the class.
+
+    def testMethod_WithTemplateClassWorks(self):
+        cpp_code = """
+        template <class T>
+        inline void EVM::VH<T>::Write() { 
+        } 
+        """
+        nodes = list(MakeBuilder(cpp_code).Generate())
+        self.assertEqual(1, len(nodes))
+        expected = Method('Write', list(GetTokens('EVM::VH<T>')),
+                          list(GetTokens('inline void')), [],
+                          templated_types={'T': None})
+        self.assertEqual(expected.return_type, nodes[0].return_type)
+        self.assertEqual(expected.in_class, nodes[0].in_class)
+        self.assertEqual(expected.templated_types, nodes[0].templated_types)
+        self.assertEqual(expected, nodes[0])
+
+    def testMethod_WithTemplateClassWith2ArgsWorks(self):
+        cpp_code = """
+        template <class T, typename U>
+        inline void EVM::VH<T, U>::Write() { 
+        } 
+        """
+        nodes = list(MakeBuilder(cpp_code).Generate())
+        self.assertEqual(1, len(nodes))
+        expected = Method('Write', list(GetTokens('EVM::VH<T, U>')),
+                          list(GetTokens('inline void')), [],
+                          templated_types={'T': None, 'U': None})
+        self.assertEqual(expected.return_type, nodes[0].return_type)
+        self.assertEqual(expected.in_class, nodes[0].in_class)
+        self.assertEqual(expected.templated_types, nodes[0].templated_types)
+        self.assertEqual(expected, nodes[0])
+
+    def testMethod_WithTemplateClassWith2ArgsWorks(self):
+        cpp_code = """
+        template <class CT, class IT, class DT>
+        DT* Worker<CT, IT, DT>::Create() { 
+        } 
+        """
+        nodes = list(MakeBuilder(cpp_code).Generate())
+        self.assertEqual(1, len(nodes))
+        expected = Method('Create', list(GetTokens('Worker<CT, IT, DT>')),
+                          list(GetTokens('DT*')), [],
+                          templated_types={'CT': None, 'IT': None, 'DT': None})
+        self.assertEqual(expected.return_type, nodes[0].return_type)
+        self.assertEqual(expected.in_class, nodes[0].in_class)
+        self.assertEqual(expected.templated_types, nodes[0].templated_types)
+        self.assertEqual(expected, nodes[0])
 
 
 def test_main():

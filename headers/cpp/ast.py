@@ -1059,14 +1059,8 @@ class AstBuilder(object):
 
         # Looks like we got a method, not a function.
         if len(return_type) > 2 and return_type[-1].name == '::':
-            # Assumes that function names aren't defined with :: as prefix.
-            index = len(return_type) - 1
-            # Strip off class name(s) and store that separately.
-            while index >= 0 and return_type[index] == '::':
-                index -= 2
-            index -= 1
-            in_class = return_type[index::2]
-            del return_type[index:]
+            return_type, in_class = \
+                         self._GetReturnTypeAndClassName(return_type)
             return Method(indices.start, indices.end, name.name, in_class,
                           return_type, parameters, modifiers, templated_types,
                           body, self.namespace_stack)
@@ -1074,6 +1068,49 @@ class AstBuilder(object):
                         parameters, modifiers, templated_types, body,
                         self.namespace_stack)
 
+    def _GetReturnTypeAndClassName(self, token_seq):
+        # Splitting the return type from the class name in a method
+        # can be tricky.  For example, Return::Type::Is::Hard::To::Find().
+        # Where is the return type and where is the class name?
+        # The heuristic used is to pull the last name as the class name.
+        # This includes all the templated type info.
+        # TODO(nnorwitz): if there is only One name like in the
+        # example above, punt and assume the last bit is the class name.
+
+        # Ignore a :: prefix, if exists so we can find the first real name.
+        i = 0
+        if token_seq[0].name == '::':
+            i = 1
+        # Ignore a :: suffix, if exists.
+        end = len(token_seq) - 1
+        if token_seq[end-1].name == '::':
+            end -= 1
+
+        # Make a copy of the sequence so we can append a sentinel
+        # value. This is required for GetName will has to have some
+        # terminating condition beyond the last name.
+        seq_copy = token_seq[i:end]
+        seq_copy.append(tokenize.Token(tokenize.SYNTAX, '', 0, 0))
+        names = []
+        while i < end:
+            # Iterate through the sequence parsing out each name.
+            new_name, next = self.GetName(seq_copy[i:])
+            # We got a pointer or ref.  Add it to the name.
+            if next and next.token_type == tokenize.SYNTAX:
+                new_name.append(next)
+            names.append(new_name)
+            i += len(new_name)
+
+        # Now that we have the names, it's time to undo what we did.
+
+        # Remove the sentinel value.
+        names[-1].pop()
+        # Flatten the token sequence for the return type.
+        return_type = [e for seq in names[:-1] for e in seq]
+        # The class name is the last name.
+        class_name = names[-1]
+        return return_type, class_name
+        
     def handle_bool(self):
         pass
 
