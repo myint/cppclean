@@ -805,6 +805,9 @@ class AstBuilder(object):
                 # Remove "include".
                 name = name[7:].strip()
                 assert name
+                # Handle #include \<newline> "header-on-second-line.h".
+                if name.startswith('\\'):
+                    name = name[1:].strip()
                 assert name[0] in '<"', token
                 assert name[-1] in '>"', token
                 system = name[0] == '<'

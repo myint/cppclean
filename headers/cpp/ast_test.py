@@ -56,6 +56,7 @@ def _InstallEqualMethods():
     _InstallGenericEqual(ast.Method, ('name in_class return_type parameters '
                                       'modifiers templated_types '
                                       'body namespace'))
+    _InstallGenericEqual(ast.Include, 'filename system')
 _InstallEqualMethods()
 
 
@@ -70,6 +71,10 @@ def MakeBuilder(code_string):
 
 def Token(name, start=0, end=0, token_type=tokenize.NAME):
     return tokenize.Token(token_type, name, start, end)
+
+
+def Include(filename, system=False, start=0, end=0):
+    return ast.Include(start, end, filename, system)
 
 
 def Class(name, start=0, end=0, bases=None, body=None, templated_types=None,
@@ -554,6 +559,11 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(expected.in_class, nodes[0].in_class)
         self.assertEqual(expected.templated_types, nodes[0].templated_types)
         self.assertEqual(expected, nodes[0])
+
+    def testInclude_WithBackslashContinuationWorks(self):
+        nodes = list(MakeBuilder('#include \\\n  "test.h"').Generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Include('test.h'), nodes[0])
 
 
 def test_main():
