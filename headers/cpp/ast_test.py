@@ -406,30 +406,39 @@ class AstBuilder_GetTemplatedTypesTest(unittest.TestCase):
         builder = MakeBuilder('T> class')
         result = builder._GetTemplatedTypes()
         self.assertEqual(1, len(result))
-        self.assertEqual(None, result['T'])
+        self.assertEqual((None, None), result['T'])
 
     def testMultiple(self):
         builder = MakeBuilder('T, U> class')
         result = builder._GetTemplatedTypes()
         self.assertEqual(2, len(result))
-        self.assertEqual(None, result['T'])
-        self.assertEqual(None, result['U'])
+        self.assertEqual((None, None), result['T'])
+        self.assertEqual((None, None), result['U'])
 
     def testMultipleWithTypename(self):
         builder = MakeBuilder('typename T, typename U> class')
         result = builder._GetTemplatedTypes()
         self.assertEqual(2, len(result))
-        self.assertEqual(None, result['T'])
-        self.assertEqual(None, result['U'])
+        self.assertEqual((None, None), result['T'])
+        self.assertEqual((None, None), result['U'])
 
     def testMultipleWithTypenameAndDefaults(self):
         builder = MakeBuilder('typename T=XX, typename U=YY> class')
         result = builder._GetTemplatedTypes()
         self.assertEqual(2, len(result))
-        self.assertEqual(1, len(result['T']))
-        self.assertEqual('XX', result['T'][0].name)
-        self.assertEqual(1, len(result['U']))
-        self.assertEqual('YY', result['U'][0].name)
+        self.assertEqual(None, result['T'][0])
+        self.assertEqual(1, len(result['T'][1]))
+        self.assertEqual('XX', result['T'][1][0].name)
+        self.assertEqual(None, result['U'][0])
+        self.assertEqual(1, len(result['U'][1]))
+        self.assertEqual('YY', result['U'][1][0].name)
+
+    def testMultipleWithUserDefinedTypeName(self):
+        builder = MakeBuilder('class C, Type t> class')
+        result = builder._GetTemplatedTypes()
+        self.assertEqual(2, len(result))
+        self.assertEqual((None, None), result['C'])
+        self.assertEqual('Type', result['t'][0].name)
 
 
 class AstBuilder_GetBasesTest(unittest.TestCase):
@@ -522,7 +531,7 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(1, len(nodes))
         expected = Method('Write', list(GetTokens('EVM::VH<T>')),
                           list(GetTokens('inline void')), [],
-                          templated_types={'T': None})
+                          templated_types={'T': (None, None)})
         self.assertEqual(expected.return_type, nodes[0].return_type)
         self.assertEqual(expected.in_class, nodes[0].in_class)
         self.assertEqual(expected.templated_types, nodes[0].templated_types)
@@ -552,9 +561,10 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         """
         nodes = list(MakeBuilder(code).Generate())
         self.assertEqual(1, len(nodes))
+        tt = (None, None)
         expected = Method('Create', list(GetTokens('Worker<CT, IT, DT>')),
                           list(GetTokens('DT*')), [],
-                          templated_types={'CT': None, 'IT': None, 'DT': None})
+                          templated_types={'CT': tt, 'IT': tt, 'DT': tt})
         self.assertEqual(expected.return_type, nodes[0].return_type)
         self.assertEqual(expected.in_class, nodes[0].in_class)
         self.assertEqual(expected.templated_types, nodes[0].templated_types)

@@ -1355,16 +1355,21 @@ class AstBuilder(object):
             i += 1
             if keywords.IsKeyword(key) or key == ',':
                 continue
-            value = None
+            type_name = default = None
             if i < len_tokens:
                 i += 1
                 if tokens[i-1].name == '=':
                     assert i < len_tokens, '%s %s' % (i, tokens)
-                    value, unused_next_token = self.GetName(tokens[i:])
-                    i += len(value)
+                    default, unused_next_token = self.GetName(tokens[i:])
+                    i += len(default)
                 else:
-                    assert tokens[i-1].name == ',', '%s %s' % (i, tokens)
-            result[key] = value
+                    if tokens[i-1].name != ',':
+                        # We got something like: Type variable.
+                        # Re-adjust the key (variable) and type_name (Type).
+                        key = tokens[i-1].name
+                        type_name = tokens[i-2]
+                
+            result[key] = (type_name, default)
         return result
 
     def handle_template(self):
