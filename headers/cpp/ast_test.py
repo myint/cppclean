@@ -53,6 +53,10 @@ def _InstallEqualMethods():
     _InstallGenericEqual(ast.Class, 'name bases templated_types namespace')
     _InstallGenericEqual(ast.Type, ('name templated_types modifiers '
                                     'reference pointer array'))
+    _InstallGenericEqual(ast.Parameter, 'name type default')
+    _InstallGenericEqual(ast.Function, ('name return_type parameters '
+                                        'modifiers templated_types '
+                                        'body namespace'))
     _InstallGenericEqual(ast.Method, ('name in_class return_type parameters '
                                       'modifiers templated_types '
                                       'body namespace'))
@@ -92,6 +96,17 @@ def Type(name, start=0, end=0, templated_types=None, modifiers=None,
         modifiers = []
     return ast.Type(start, end, name, templated_types, modifiers,
                      reference, pointer, array)
+
+
+def Function(name, return_type, parameters, start=0, end=0,
+           modifiers=0, templated_types=None, body=None, namespace=None):
+    # TODO(nnorwitz): why is templated_types diff for Functions and Methods?
+    if body is None:
+        body = []
+    if namespace is None:
+        namespace = []
+    return ast.Function(start, end, name, return_type, parameters,
+                        modifiers, templated_types, body, namespace)
 
 
 def Method(name, in_class, return_type, parameters, start=0, end=0,
@@ -520,6 +535,22 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(Class('AnotherAllocator', bases=[Type('Alloc')]),
                          nodes[0])
         # TODO(nnorwitz): assert more about the body of the class.
+
+    def testFunction_ParsesOperatorBracket(self):
+        code = """
+        class A {
+            const B& operator[](const int i) const {}
+        };
+        """
+        nodes = list(MakeBuilder(code).Generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Class('A'), nodes[0])
+        function = nodes[0].body[0]
+        expected = Function('operator[]', list(GetTokens('const B&')),
+                            list(GetTokens('const int i')),
+                            modifiers=ast.FUNCTION_CONST)
+        self.assertEqual(expected.return_type, function.return_type)
+        self.assertEqual(expected, function)
 
     def testMethod_WithTemplateClassWorks(self):
         code = """

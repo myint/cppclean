@@ -754,13 +754,16 @@ class AstBuilder(object):
                     last_token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
 
             if last_token.name == '[':
-                # Handle array, this isn't a method.
+                # Handle array, this isn't a method, unless it's an operator.
                 # TODO(nnorwitz): keep the size somewhere.
                 # unused_size = self._GetTokensUpTo(tokenize.SYNTAX, ']')
                 temp_tokens.append(last_token)
-                temp_tokens2, last_token = \
-                    self._GetVarTokensUpTo(tokenize.SYNTAX, ';')
-                temp_tokens.extend(temp_tokens2)
+                if temp_tokens[-2].name == 'operator':
+                    temp_tokens.append(self._GetNextToken())
+                else:
+                    temp_tokens2, last_token = \
+                        self._GetVarTokensUpTo(tokenize.SYNTAX, ';')
+                    temp_tokens.extend(temp_tokens2)
 
             if last_token.name == ';':
                 # Handle data, this isn't a method.
@@ -962,6 +965,16 @@ class AstBuilder(object):
             template_portion = return_type_and_name[index:] + [name]
             del return_type_and_name[index:]
             name = return_type_and_name.pop()
+        elif name.name == ']':
+            rt = return_type_and_name
+            assert rt[-1].name == '[', return_type_and_name
+            assert rt[-2].name == 'operator', return_type_and_name
+            name_seq = return_type_and_name[-2:]
+            del return_type_and_name[-2:]
+            name = tokenize.Token(tokenize.NAME, 'operator[]',
+                                  name_seq[0].start, name.end)
+            # Get the open paren so _GetParameters() below works.
+            unused_open_paren = self._GetNextToken()
 
         # TODO(nnorwitz): store template_portion.
         return_type = return_type_and_name
