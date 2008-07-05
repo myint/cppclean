@@ -486,39 +486,39 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(Class('Foo', namespace=[]), nodes[0])
 
     def testClass_VirtualInheritance(self):
-        cpp_code = 'class Foo : public virtual Bar {};'
-        nodes = list(MakeBuilder(cpp_code).Generate())
+        code = 'class Foo : public virtual Bar {};'
+        nodes = list(MakeBuilder(code).Generate())
         self.assertEqual(1, len(nodes))
         self.assertEqual(Class('Foo', bases=[Type('Bar')]), nodes[0])
 
     def testClass_ColonSeparatedClassNameAndInlineDtor(self):
-        cpp_code = 'class Foo::Bar { ~Bar() { XXX(1) << "should work"; } };'
-        nodes = list(MakeBuilder(cpp_code).Generate())
+        code = 'class Foo::Bar { ~Bar() { XXX(1) << "should work"; } };'
+        nodes = list(MakeBuilder(code).Generate())
         self.assertEqual(1, len(nodes))
         self.assertEqual(Class('Foo::Bar', body=[]), nodes[0])
         # TODO(nnorwitz): assert more about the body of the class.
 
     def testClass_HandlesStructRebind(self):
-        cpp_code = """
+        code = """
         template <typename T, typename Alloc = std::allocator<T> >
         class AnotherAllocator : public Alloc {
             template <class U> struct rebind {
             };
         };
         """
-        nodes = list(MakeBuilder(cpp_code).Generate())
+        nodes = list(MakeBuilder(code).Generate())
         self.assertEqual(1, len(nodes))
         self.assertEqual(Class('AnotherAllocator', bases=[Type('Alloc')]),
                          nodes[0])
         # TODO(nnorwitz): assert more about the body of the class.
 
     def testMethod_WithTemplateClassWorks(self):
-        cpp_code = """
+        code = """
         template <class T>
         inline void EVM::VH<T>::Write() { 
         } 
         """
-        nodes = list(MakeBuilder(cpp_code).Generate())
+        nodes = list(MakeBuilder(code).Generate())
         self.assertEqual(1, len(nodes))
         expected = Method('Write', list(GetTokens('EVM::VH<T>')),
                           list(GetTokens('inline void')), [],
@@ -529,12 +529,12 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(expected, nodes[0])
 
     def testMethod_WithTemplateClassWith2ArgsWorks(self):
-        cpp_code = """
+        code = """
         template <class T, typename U>
         inline void EVM::VH<T, U>::Write() { 
         } 
         """
-        nodes = list(MakeBuilder(cpp_code).Generate())
+        nodes = list(MakeBuilder(code).Generate())
         self.assertEqual(1, len(nodes))
         expected = Method('Write', list(GetTokens('EVM::VH<T, U>')),
                           list(GetTokens('inline void')), [],
@@ -545,12 +545,12 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(expected, nodes[0])
 
     def testMethod_WithTemplateClassWith2ArgsWorks(self):
-        cpp_code = """
+        code = """
         template <class CT, class IT, class DT>
         DT* Worker<CT, IT, DT>::Create() { 
         } 
         """
-        nodes = list(MakeBuilder(cpp_code).Generate())
+        nodes = list(MakeBuilder(code).Generate())
         self.assertEqual(1, len(nodes))
         expected = Method('Create', list(GetTokens('Worker<CT, IT, DT>')),
                           list(GetTokens('DT*')), [],
