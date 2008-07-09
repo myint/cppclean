@@ -18,7 +18,6 @@
 """Run all the unittests."""
 
 import difflib
-import popen2
 import os
 import StringIO
 import sys
@@ -42,13 +41,6 @@ _GOLDEN_FILE_TESTS = [
     (find_warnings, 'test/define', 'd7.h', 'd7.expected'),
     (find_warnings, 'test/define', 'd8.h', 'd8.expected'),
     ]
-
-
-def GetAndPrintOutput(fp):
-    output = fp.read()
-    if output:
-        print output
-    return output
 
 
 def DiffGoldenFile(test_type, test_name, output_lines, expected_file):
@@ -95,6 +87,30 @@ def RunGoldenTests(generate_output):
     return exit_status
 
 
+def _RunCommand(args):
+    try:
+        # Support older versions: subprocess was added in 2.4.
+        import subprocess
+        p = subprocess.Popen(args, shell=False, close_fds=False,
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out_fp = p.stdout
+        err_fp = p.stderr
+        status = p.wait()
+    except ImportError:
+        status = 0
+        in_fp, out_fp, err_fp = os.popen3(args)
+        in_fp.close()
+
+    def GetAndPrintOutput(fp):
+        output = fp.read()
+        fp.close()
+        if output:
+            print output
+        return output
+
+    return status, GetAndPrintOutput(out_fp), GetAndPrintOutput(err_fp)
+
+
 def main(argv):
     dirname = os.path.abspath(os.path.dirname(argv[0]))
     test_dir = os.path.join(dirname, 'cpp')
@@ -102,12 +118,8 @@ def main(argv):
     exit_status = 0
     for f in os.listdir(test_dir):
         if f.endswith('_test.py'):
-            # TODO(nnorwitz): need to properly quote args?
             args = [sys.executable, os.path.join(test_dir, f)]
-            p = popen2.Popen3(args, True)
-            status = p.wait()
-            GetAndPrintOutput(p.fromchild)
-            stderr = GetAndPrintOutput(p.childerr)
+            status, stdout, stderr = _RunCommand(args)
             if status or stderr:
                 exit_status += 1
     if exit_status == 0:
