@@ -110,9 +110,8 @@ def Type(name, start=0, end=0, templated_types=None, modifiers=None,
 
 def Function(name, return_type, parameters, start=0, end=0,
            modifiers=0, templated_types=None, body=None, namespace=None):
-    # TODO(nnorwitz): why is templated_types diff for Functions and Methods?
-    if body is None:
-        body = []
+    # TODO(nnorwitz): why are body & templated_types different
+    # for Functions and Methods?
     if namespace is None:
         namespace = []
     return ast.Function(start, end, name, return_type, parameters,
@@ -525,6 +524,17 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(1, len(nodes))
         self.assertEqual(Class('Foo', bases=[Type('Bar')], body=[]), nodes[0])
 
+    def testClass_VirtualInlineDestructor(self):
+        code = 'class Foo { virtual inline ~Foo(); };'
+        nodes = list(MakeBuilder(code).Generate())
+        self.assertEqual(1, len(nodes))
+        function = nodes[0].body[0]
+        expected = Function('Foo', [], [],
+                            modifiers=ast.FUNCTION_DTOR|ast.FUNCTION_VIRTUAL)
+        self.assertEqual(expected.return_type, function.return_type)
+        self.assertEqual(expected, function)
+        self.assertEqual(Class('Foo', body=[expected]), nodes[0])
+
     def testClass_ColonSeparatedClassNameAndInlineDtor(self):
         method_body = 'XXX(1) << "should work";'
         code = 'class Foo::Bar { ~Bar() { %s } };' % method_body
@@ -562,7 +572,7 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(1, len(nodes))
         function = nodes[0].body[0]
         expected = Function('operator[]', list(GetTokens('const B&')),
-                            list(GetTokens('const int i')),
+                            list(GetTokens('const int i')), body=[],
                             modifiers=ast.FUNCTION_CONST)
         self.assertEqual(expected.return_type, function.return_type)
         self.assertEqual(expected, function)
