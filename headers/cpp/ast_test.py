@@ -50,7 +50,10 @@ def _InstallGenericEqual(cls, attrs):
 def _InstallEqualMethods():
     """Install __eq__ methods on the appropriate objects used for testing."""
     _InstallGenericEqual(tokenize.Token, 'name')
-    _InstallGenericEqual(ast.Class, 'name bases templated_types namespace')
+    _InstallGenericEqual(ast.Class,
+                         'name bases templated_types namespace body')
+    _InstallGenericEqual(ast.Struct,
+                         'name bases templated_types namespace body')
     _InstallGenericEqual(ast.Type, ('name templated_types modifiers '
                                     'reference pointer array'))
     _InstallGenericEqual(ast.Parameter, 'name type default')
@@ -86,6 +89,13 @@ def Class(name, start=0, end=0, bases=None, body=None, templated_types=None,
     if namespace is None:
         namespace = []
     return ast.Class(start, end, name, bases, templated_types, body, namespace)
+
+def Struct(name, start=0, end=0, bases=None, body=None, templated_types=None,
+          namespace=None):
+    if namespace is None:
+        namespace = []
+    return ast.Struct(start, end, name, bases, templated_types, body,
+                      namespace)
 
 
 def Type(name, start=0, end=0, templated_types=None, modifiers=None,
@@ -513,14 +523,19 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         code = 'class Foo : public virtual Bar {};'
         nodes = list(MakeBuilder(code).Generate())
         self.assertEqual(1, len(nodes))
-        self.assertEqual(Class('Foo', bases=[Type('Bar')]), nodes[0])
+        self.assertEqual(Class('Foo', bases=[Type('Bar')], body=[]), nodes[0])
 
     def testClass_ColonSeparatedClassNameAndInlineDtor(self):
-        code = 'class Foo::Bar { ~Bar() { XXX(1) << "should work"; } };'
+        method_body = 'XXX(1) << "should work";'
+        code = 'class Foo::Bar { ~Bar() { %s } };' % method_body
         nodes = list(MakeBuilder(code).Generate())
         self.assertEqual(1, len(nodes))
-        self.assertEqual(Class('Foo::Bar', body=[]), nodes[0])
-        # TODO(nnorwitz): assert more about the body of the class.
+        function = nodes[0].body[0]
+        expected = Function('Bar', [], [], body=list(GetTokens(method_body)),
+                            modifiers=ast.FUNCTION_DTOR)
+        self.assertEqual(expected.return_type, function.return_type)
+        self.assertEqual(expected, function)
+        self.assertEqual(Class('Foo::Bar', body=[expected]), nodes[0])
 
     def testClass_HandlesStructRebind(self):
         code = """
@@ -532,7 +547,8 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         """
         nodes = list(MakeBuilder(code).Generate())
         self.assertEqual(1, len(nodes))
-        self.assertEqual(Class('AnotherAllocator', bases=[Type('Alloc')]),
+        self.assertEqual(Class('AnotherAllocator', bases=[Type('Alloc')],
+                               body=[Struct('rebind', body=[])]),
                          nodes[0])
         # TODO(nnorwitz): assert more about the body of the class.
 
@@ -544,13 +560,13 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         """
         nodes = list(MakeBuilder(code).Generate())
         self.assertEqual(1, len(nodes))
-        self.assertEqual(Class('A'), nodes[0])
         function = nodes[0].body[0]
         expected = Function('operator[]', list(GetTokens('const B&')),
                             list(GetTokens('const int i')),
                             modifiers=ast.FUNCTION_CONST)
         self.assertEqual(expected.return_type, function.return_type)
         self.assertEqual(expected, function)
+        self.assertEqual(Class('A', body=[expected]), nodes[0])
 
     def testMethod_WithTemplateClassWorks(self):
         code = """
