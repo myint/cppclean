@@ -1071,6 +1071,12 @@ class AstBuilder(object):
                 modifiers |= FUNCTION_PURE_VIRTUAL
                 token = self._GetNextToken()
 
+            if token.name == '[':
+                # TODO(nnorwitz): store tokens and improve parsing.
+                # template <typename T, size_t N> char (&ASH(T (&seq)[N]))[N];
+                tokens = list(self._GetMatchingChar('[', ']'))
+                token = self._GetNextToken()
+
             assert token.name == ';', (token, return_type_and_name, parameters)
 
         # Looks like we got a method, not a function.

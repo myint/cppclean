@@ -578,6 +578,17 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(expected, function)
         self.assertEqual(Class('A', body=[expected]), nodes[0])
 
+    def testFunction_ParsesTemplateWithArrayAccess(self):
+        code = """
+        template <typename T, size_t N>
+        char (&ASH(T (&seq)[N]))[N];
+        """
+        nodes = list(MakeBuilder(code).Generate())
+        self.assertEqual(1, len(nodes))
+        function = nodes[0]
+        # TODO(nnorwitz): this doesn't parse correctly, but at least
+        # it doesn't raise an exception anymore.  Improve the parsing.
+        
     def testMethod_WithTemplateClassWorks(self):
         code = """
         template <class T>
