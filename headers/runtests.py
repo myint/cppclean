@@ -30,14 +30,12 @@ import sys
 
 from cpp import ast
 from cpp import find_warnings
-from cpp import gmock_interface
 
 
 # [(module, 'directory', 'input-file', 'expected-output-file')]
 # The tuples can have optional arguments after the expected output file.
 _GOLDEN_FILE_TESTS = [
     (ast, 'test', 'foo.h', 'foo.h.expected'),
-    (gmock_interface, 'test/gmock', 'm1.h', 'm1.expected', 'MockTestClass'),
     (find_warnings, 'test', 'foo.h', 'foo.h.expected-warnings'),
     (find_warnings, 'test', 'need-class.h', 'need-class.h.expected-warnings'),
     (find_warnings, 'test/define', 'd1.cc', 'd1.expected'),
