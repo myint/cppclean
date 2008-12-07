@@ -20,10 +20,18 @@
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
+try:
+    # Python 3.x
+    import builtins
+except ImportError:
+    # Python 2.x
+    import __builtin__ as builtins
+
+
 from cpp import keywords
 
 
-if 'set' not in dir(__builtins__):
+if not hasattr(builtins, 'set'):
     # Nominal support for Python 2.3.
     from sets import Set as frozenset
 

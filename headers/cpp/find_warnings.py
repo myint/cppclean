@@ -27,6 +27,13 @@ suppress warnings.
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
+try:
+    # Python 3.x
+    import builtins
+except ImportError:
+    # Python 2.x
+    import __builtin__ as builtins
+
 import os
 import sys
 
@@ -38,9 +45,14 @@ from cpp import symbols
 from cpp import tokenize
 from cpp import utils
 
-if 'set' not in dir(__builtins__):
+if not hasattr(builtins, 'set'):
     # Nominal support for Python 2.3.
     from sets import Set as set
+
+if not hasattr(builtins, 'next'):
+    # Support Python 2.5 and earlier.
+    def next(obj):
+        return obj.next()
 
 
 # The filename extension used for the primary header file associated w/.cc file.
@@ -109,19 +121,19 @@ class WarningHunter(object):
     def ShowWarnings(self):
         self.warnings.sort()
         for filename, line_num, msg in self.warnings:
-            print '%s:%d: %s' % (filename, line_num, msg)
+            print('%s:%d: %s' % (filename, line_num, msg))
 
     def FindWarnings(self):
-        # print 'Searching for warnings in:', self.filename
+        # print('Searching for warnings in: %s' % self.filename)
         if _IsHeaderFile(self.filename):
             self._FindHeaderWarnings()
         elif _IsCppFile(self.filename):
             self._FindSourceWarnings()
         else:
-            print 'Unknown filetype for: %s' % self.filename
+            print('Unknown filetype for: %s' % self.filename)
 
     def _UpdateSymbolTable(self, module):
-        for name, node in module.public_symbols.iteritems():
+        for name, node in module.public_symbols.items():
             self.symbol_table.AddSymbol(name, node.namespace, node, module)
 
     def _GetModule(self, filename):
@@ -136,7 +148,7 @@ class WarningHunter(object):
         source, actual_filename = headers.ReadSource(filename)
         if source is None:
             module = Module(filename, None)
-            print 'Unable to find', filename
+            print('Unable to find %s' % filename)
         else:
             builder = ast.BuilderFromSource(source, filename)
             try:
@@ -144,7 +156,7 @@ class WarningHunter(object):
             except KeyboardInterrupt:
                 sys.exit(1)
             except:
-                print 'Exception while processing', filename
+                print('Exception while processing %s' % filename)
                 module = Module(filename, None)
             else:
                 self._UpdateSymbolTable(module)
@@ -173,7 +185,7 @@ class WarningHunter(object):
         # Read and parse all the #include'd files and warn about really
         # stupid things that can be determined from the #include'd file name.
         files_seen = {}
-        for filename, (node, module) in included_files.iteritems():
+        for filename, (node, module) in included_files.items():
             normalized_filename = module.normalized_filename
             if _IsCppFile(filename):
                 msg = 'should not #include C++ source file: %s' % filename
@@ -190,7 +202,7 @@ class WarningHunter(object):
 
     def _VerifyIncludeFilesUsed(self, file_uses, included_files):
         # Find all #include files that are unnecessary.
-        for include_file, use in file_uses.iteritems():
+        for include_file, use in file_uses.items():
             if use != USES_DECLARATION:
                 node, module = included_files[include_file]
                 if module.ast_list is not None:
@@ -245,7 +257,8 @@ class WarningHunter(object):
                 file_uses[name] = file_uses.get(name, 0) | USES_DECLARATION
                 return
             if not file_use_node:
-                print 'Could not find #include file for', name, 'in', namespace
+                print('Could not find #include file for %s in %s' %
+                      (name, namespace))
                 return
             # TODO(nnorwitz): do proper check for ref/pointer/symbol.
             name = file_use_node[1].normalized_filename
@@ -294,7 +307,7 @@ class WarningHunter(object):
                         _AddUse(t.name, namespace)
                 elif t.name in ('.', '->'):
                     # Skip tokens after a dereference.
-                    iterator.next()
+                    next(iterator)
 
         def _AddTemplateUse(name, types, namespace):
             if types:
@@ -360,7 +373,7 @@ class WarningHunter(object):
     def _FindPublicFunctionWarnings(self, node, name, primary_header,
                                     public_symbols, all_headers):
         # Not found in the primary header, search all other headers.
-        for header_node, header in all_headers.itervalues():
+        for header_node, header in all_headers.values():
             if name in header.public_symbols:
                 # If the primary.filename == header.filename, it probably
                 # indicates an error elsewhere.  It sucks to mask it,
@@ -384,7 +397,7 @@ class WarningHunter(object):
         declared_only_symbols = {}
         if primary_header:
             public_symbols = {}
-            for name, symbol in primary_header.public_symbols.iteritems():
+            for name, symbol in primary_header.public_symbols.items():
                 if isinstance(symbol, ast.Function):
                     public_symbols[name] = symbol
             declared_only_symbols = dict.fromkeys(public_symbols, True)
@@ -416,7 +429,7 @@ class WarningHunter(object):
                 self._FindPublicFunctionWarnings(node, name, primary_header,
                                                  public_symbols, all_headers)
 
-        for name, declared_only in declared_only_symbols.iteritems():
+        for name, declared_only in declared_only_symbols.items():
             if declared_only:
                 # TODO(nnorwitz): shouldn't warn if function is templatized.
                 node = public_symbols[name]
@@ -440,7 +453,7 @@ class WarningHunter(object):
             # be configurable or removed in the future.  But it's easy
             # to check for now.
             msg = 'forward declarations not expected in source file'
-            self._AddWarning(msg, forward_declarations.itervalues().next())
+            self._AddWarning(msg, next(forward_declarations.values()))
 
         # A primary header is optional.  However, when looking up
         # defined methods in the source, always look in the
@@ -470,9 +483,9 @@ def main(argv):
         if source is None:
             continue
 
-        print 'Processing', filename
+        print('Processing %s' % filename)
         builder = ast.BuilderFromSource(source, filename)
-        entire_ast = filter(None, builder.Generate())
+        entire_ast = list(filter(None, builder.Generate()))
         hunter = WarningHunter(filename, source, entire_ast)
         hunter.FindWarnings()
         hunter.ShowWarnings()

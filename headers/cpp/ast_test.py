@@ -20,7 +20,12 @@
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
-from test import test_support
+try:
+    # Python 2.x
+    from test import test_support
+except ImportError:
+    # Python 3.x
+    from test import support as test_support
 import unittest
 
 from cpp import ast

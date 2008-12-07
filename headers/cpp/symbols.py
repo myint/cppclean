@@ -19,12 +19,21 @@
 
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
+try:
+    # Python 3.x
+    import builtins
+except ImportError:
+    # Python 2.x
+    import __builtin__ as builtins
 
-if 'BaseException' not in dir(__builtins__):
+import sys
+
+
+if not hasattr(builtins, 'BaseException'):
     # Support Python 2.4 and earlier.
     BaseException = Exception
 
-if 'reversed' not in dir(__builtins__):
+if not hasattr(builtins, 'reversed'):
     # Support Python 2.3 and earlier.
     def reversed(seq):
         for i in range(len(seq)-1, -1, -1):
@@ -84,13 +93,14 @@ class SymbolTable(object):
         try:
             # Try to do a normal, global namespace lookup.
             return self._LookupNamespace(symbol, namespace, 'global ')
-        except Error, orig_exc:
+        except Error:
+            orig_exc = sys.exc_info()[1]
             try:
                 # The normal lookup can fail if all of the parts aren't
                 # namespaces.  This happens with OuterClass::Inner.
                 namespace = self.namespaces[None]
                 return self._LookupNamespace(symbol, namespace, 'global ')
-            except Error, unused_exc:
+            except Error:
                 raise orig_exc
 
     def _LookupInAllNamespaces(self, symbol):

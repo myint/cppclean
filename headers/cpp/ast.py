@@ -32,6 +32,13 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 #  * exceptions
 
 
+try:
+    # Python 3.x
+    import builtins
+except ImportError:
+    # Python 2.x
+    import __builtin__ as builtins
+
 import sys
 import traceback
 
@@ -40,11 +47,16 @@ from cpp import tokenize
 from cpp import utils
 
 
-if 'reversed' not in dir(__builtins__):
+if not hasattr(builtins, 'reversed'):
     # Support Python 2.3 and earlier.
     def reversed(seq):
         for i in range(len(seq)-1, -1, -1):
             yield seq[i]
+
+if not hasattr(builtins, 'next'):
+    # Support Python 2.5 and earlier.
+    def next(obj):
+        return obj.next()
 
 
 VISIBILITY_PUBLIC, VISIBILITY_PROTECTED, VISIBILITY_PRIVATE = range(3)
@@ -685,8 +697,8 @@ class AstBuilder(object):
 
     def HandleError(self, msg, token):
         printable_queue = list(reversed(self.token_queue[-20:]))
-        print >>sys.stderr, ('Got %s in %s @ %s %s' %
-                             (msg, self.filename, token, printable_queue))
+        sys.stderr.write('Got %s in %s @ %s %s\n' %
+                         (msg, self.filename, token, printable_queue))
 
     def Generate(self):
         while 1:
@@ -892,7 +904,7 @@ class AstBuilder(object):
     def _GetNextToken(self):
         if self.token_queue:
             return self.token_queue.pop()
-        return self.tokens.next()
+        return next(self.tokens)
 
     def _AddBackToken(self, token):
         if token.whence == tokenize.WHENCE_STREAM:
@@ -916,7 +928,8 @@ class AstBuilder(object):
         """Returns ([tokens], next_token_info)."""
         GetNextToken = self._GetNextToken
         if seq is not None:
-            GetNextToken = iter(seq).next
+            it = iter(seq)
+            GetNextToken = lambda: next(it)
         next_token = GetNextToken()
         tokens = []
         last_token_was_name = False
@@ -1133,7 +1146,7 @@ class AstBuilder(object):
         # The class name is the last name.
         class_name = names[-1]
         return return_type, class_name
-        
+
     def handle_bool(self):
         pass
 
@@ -1392,7 +1405,7 @@ class AstBuilder(object):
                         # Re-adjust the key (variable) and type_name (Type).
                         key = tokens[i-1].name
                         type_name = tokens[i-2]
-                
+
             result[key] = (type_name, default)
         return result
 
@@ -1649,15 +1662,15 @@ def PrintIndentifiers(filename, should_print):
     """
     source = utils.ReadFile(filename, False)
     if source is None:
-        print 'Unable to find', filename
+        sys.stderr.write('Unable to find: %s\n' % filename)
         return
 
-    #print 'Processing', actual_filename
+    #print('Processing %s' % actual_filename)
     builder = BuilderFromSource(source, filename)
     try:
         for node in builder.Generate():
             if should_print(node):
-                print node.name
+                print(node.name)
     except KeyboardInterrupt:
       return
     except:
@@ -1681,7 +1694,7 @@ def main(argv):
         if source is None:
             continue
 
-        print 'Processing', filename
+        print('Processing %s' % filename)
         builder = BuilderFromSource(source, filename)
         try:
             entire_ast = filter(None, builder.Generate())
@@ -1693,7 +1706,7 @@ def main(argv):
         else:
             if utils.DEBUG:
                 for ast in entire_ast:
-                    print ast
+                    print(ast)
 
 
 if __name__ == '__main__':

@@ -17,19 +17,27 @@
 
 """Run all the unittests."""
 
+try:
+    # Python 3.x
+    from io import StringIO
+except ImportError:
+    # Python 2.x
+    from StringIO import StringIO
+
 import difflib
 import os
-import StringIO
 import sys
 
 from cpp import ast
 from cpp import find_warnings
+from cpp import gmock_interface
 
 
 # [(module, 'directory', 'input-file', 'expected-output-file')]
 # The tuples can have optional arguments after the expected output file.
 _GOLDEN_FILE_TESTS = [
     (ast, 'test', 'foo.h', 'foo.h.expected'),
+    (gmock_interface, 'test/gmock', 'm1.h', 'm1.expected', 'MockTestClass'),
     (find_warnings, 'test', 'foo.h', 'foo.h.expected-warnings'),
     (find_warnings, 'test', 'need-class.h', 'need-class.h.expected-warnings'),
     (find_warnings, 'test/define', 'd1.cc', 'd1.expected'),
@@ -47,11 +55,11 @@ def DiffGoldenFile(test_type, test_name, output_lines, expected_file):
     expected_lines = open(expected_file).readlines()
     diffs = list(difflib.unified_diff(output_lines, expected_lines))
     if diffs:
-        print >>sys.__stdout__, test_type, test_name, 'failed.  Diffs:'
+        sys.__stdout__.write('%s %s failed.  Diffs:\n' % (test_type, test_name))
         for line in diffs:
-            print >>sys.__stdout__, line,
+            sys.__stdout__.write(line)
         return 1
-    print >>sys.__stdout__, test_type, test_name, 'passed'
+    sys.__stdout__.write('%s %s passed\n' % (test_type, test_name))
     return 0
 
 
@@ -61,7 +69,7 @@ def RunGoldenTests(generate_output):
     for record in _GOLDEN_FILE_TESTS:
         module, directory, input_file, expected_file = record[:4]
         # Capture stdout.
-        sys.stdout = StringIO.StringIO()
+        sys.stdout = StringIO()
         try:
             # Setup directory and test name.
             os.chdir(os.path.join(start_cwd, directory))
@@ -105,7 +113,7 @@ def _RunCommand(args):
         output = fp.read()
         fp.close()
         if output:
-            print output
+            print(output)
         return output
 
     return status, GetAndPrintOutput(out_fp), GetAndPrintOutput(err_fp)

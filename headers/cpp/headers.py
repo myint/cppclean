@@ -49,17 +49,17 @@ def ReadSource(relative_filename):
 def GetHeaders(filename):
     source, actual_filename = ReadSource(filename)
     if source is None:
-        print 'Unable to find', filename
+        print('Unable to find %s' % filename)
         return []
 
     included_files = []
 
-    print 'Processing', actual_filename
+    print('Processing %s' % actual_filename)
     builder = ast.BuilderFromSource(source, filename)
     for node in builder.Generate():
         if isinstance(node, ast.Include):
             if not node.system:
-                print node.filename
+                print(node.filename)
                 included_files.append(node.filename)
 
     # Transitively process all the files that were included.

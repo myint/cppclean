@@ -20,12 +20,20 @@
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
+try:
+    # Python 3.x
+    import builtins
+except ImportError:
+    # Python 2.x
+    import __builtin__ as builtins
+
+
 import sys
 
 from cpp import utils
 
 
-if 'set' not in dir(__builtins__):
+if not hasattr(builtins, 'set'):
     # Nominal support for Python 2.3.
     from sets import Set as set
 
@@ -252,13 +260,12 @@ def GetTokens(source):
             # exception and  return the bogus char.
             i += 1
         else:
-            print >>sys.stderr, \
-                  ('Got invalid token in %s @ %d token:%s: %r' %
-                   ('?', i, c, source[i-10:i+10]))
+            sys.stderr.write('Got invalid token in %s @ %d token:%s: %r\n' %
+                             ('?', i, c, source[i-10:i+10]))
             raise RuntimeError('unexpected token')
 
         if i <= 0:
-            print 'Invalid index, exiting now.'
+            print('Invalid index, exiting now.')
             return
         yield Token(token_type, source[start:i], start, i)
 
@@ -272,9 +279,9 @@ if __name__ == '__main__':
                 continue
 
             for token in GetTokens(source):
-                print '%-12s: %s' % (token.token_type, token.name)
-                # print '\r%6.2f%%' % (100.0 * index / token.end),
-            print
+                print('%-12s: %s' % (token.token_type, token.name))
+                # print('\r%6.2f%%' % (100.0 * index / token.end),)
+            sys.stdout.write('\n')
 
 
     main(sys.argv)
