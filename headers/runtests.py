@@ -109,6 +109,9 @@ def _RunCommand(args):
 
     def GetAndPrintOutput(fp):
         output = fp.read()
+        if not isinstance(output, str):
+            # This should only happen in Python 3.0, where str is unicode str.
+            output = str(output, 'ascii')
         fp.close()
         if output:
             print(output)
