@@ -507,6 +507,12 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(1, len(nodes))
         self.assertEqual(Class('Foo', namespace=['A', 'B', 'C']), nodes[0])
 
+    def testClass_InNamespaceMultipleWithOneClosed(self):
+        code = 'namespace A { namespace B {} namespace C { class Foo; }}'
+        nodes = list(MakeBuilder(code).Generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Class('Foo', namespace=['A', 'C']), nodes[0])
+
     def testClass_InAnonymousNamespaceSingle(self):
         nodes = list(MakeBuilder('namespace { class Foo; }').Generate())
         self.assertEqual(1, len(nodes))
