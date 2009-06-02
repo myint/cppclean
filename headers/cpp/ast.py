@@ -782,7 +782,7 @@ class AstBuilder(object):
                 parts = self.converter.DeclarationToParts(temp_tokens, True)
                 (name, type_name, templated_types, modifiers, default,
                  unused_other_tokens) = parts
-                      
+
                 t0 = temp_tokens[0]
                 names = [t.name for t in temp_tokens]
                 if templated_types:
