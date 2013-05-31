@@ -153,7 +153,7 @@ class WarningHunter(object):
         source, actual_filename = headers.ReadSource(filename)
         if source is None:
             module = Module(filename, None)
-            print(('Unable to find %s' % filename))
+            print('Unable to find %s' % filename)
         else:
             builder = ast.BuilderFromSource(source, filename)
             try:
