@@ -93,16 +93,13 @@ class WarningHunter(object):
         if filename not in self._module_cache:
             self._module_cache[filename] = Module(filename, ast_list)
 
-    def _GetLineNum(self, metrics, node):
-        return metrics.GetLineNumber(node.start)
-
     def _AddWarning(self, msg, node, filename=None):
         if filename is not None:
             src_metrics = metrics.Metrics(open(filename).read())
         else:
             filename = self.filename
             src_metrics = self.metrics
-        line_number = self._GetLineNum(src_metrics, node)
+        line_number = get_line_number(src_metrics, node)
         self.warnings.append((filename, line_number, msg))
 
     def ShowWarnings(self):
@@ -181,7 +178,7 @@ class WarningHunter(object):
                 self._AddWarning('%s #includes itself' % filename, node)
             if normalized_filename in files_seen:
                 include_node = files_seen[normalized_filename]
-                line_num = self._GetLineNum(self.metrics, include_node)
+                line_num = get_line_number(self.metrics, include_node)
                 msg = '%s already #included on line %d' % (filename, line_num)
                 self._AddWarning(msg, node)
             else:
@@ -464,6 +461,10 @@ class WarningHunter(object):
         #   * Functions that are too large/complex
         #   * Variables declared far from first use
         #   * primitive member variables not initialized in ctor
+
+
+def get_line_number(metrics, node):
+    return metrics.GetLineNumber(node.start)
 
 
 def run(filenames):
