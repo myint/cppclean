@@ -1,25 +1,25 @@
+test/define/d1.cc:2: unable to find header file with matching name
 test/define/d1.cc:11: SomeFunction1 not found in any directly #included header
 test/define/d1.cc:15: SomeOtherFunction1 not found in any directly #included header
 test/define/d1.cc:19: SomePublicFunction not found in any directly #included header
-test/define/d1.cc:2: unable to find header file with matching name
 test/define/d2.cc:2: SomeFunction not found in any directly #included header
 test/define/d2.cc:2: unable to find header file with matching name
 test/define/d3.cc:2: unable to find header file with matching name
-test/define/d7.h:4 Bar has virtual methods without a virtual dtor
-test/foo.h:101 static data: ptof
-test/foo.h:106 static data: data
 test/foo.h:14: 'Unused' not used
-test/foo.h:150: 'AR' not used
-test/foo.h:20 static data: d
-test/foo.h:208 static data: garbage_state
-test/foo.h:225 static data: flags_
-test/foo.h:234 Colon has virtual methods without a virtual dtor
-test/foo.h:239 static data: foo
-test/foo.h:241 static data: GlobalKey
-test/foo.h:263 static data: instance_
-test/foo.h:269 static data: string_list
 test/foo.h:61: 'ProtoArray' not used
+test/foo.h:150: 'AR' not used
 test/need-class.h:4: 'Bar' forward declared, but needs to be #included
 test/need-class.h:5: 'Baz' forward declared, but needs to be #included
 test/need-class.h:6: 'Bong' forward declared, but needs to be #included
 test/need-class.h:7: 'Bling' forward declared, but needs to be #included
+test/define/d7.h:4 Bar has virtual methods without a virtual dtor
+test/foo.h:234 Colon has virtual methods without a virtual dtor
+test/foo.h:20 static data: d
+test/foo.h:101 static data: ptof
+test/foo.h:106 static data: data
+test/foo.h:208 static data: garbage_state
+test/foo.h:225 static data: flags_
+test/foo.h:239 static data: foo
+test/foo.h:241 static data: GlobalKey
+test/foo.h:263 static data: instance_
+test/foo.h:269 static data: string_list

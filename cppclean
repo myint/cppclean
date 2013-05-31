@@ -70,7 +70,7 @@ def main():
     else:
         args.exclude = []
 
-    args.files = list(find_files(args.files, exclude=args.exclude))
+    args.files = list(sorted(find_files(args.files, exclude=args.exclude)))
 
     for module in [find_warnings,
                    nonvirtual_dtors,
