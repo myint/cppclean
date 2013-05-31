@@ -49,7 +49,7 @@ def find_files(filenames, exclude):
         name = filenames.pop(0)
         if os.path.isdir(name):
             for root, directories, children in os.walk(name):
-                filenames += [os.path.join(root, f) for f in children
+                filenames += [os.path.join(root, f) for f in sorted(children)
                               if match_file(f, exclude)]
                 directories[:] = [d for d in directories
                                   if not d.startswith('.')]
@@ -70,7 +70,7 @@ def main():
     else:
         args.exclude = []
 
-    args.files = list(sorted(find_files(args.files, exclude=args.exclude)))
+    args.files = list(find_files(args.files, exclude=args.exclude))
 
     for module in [find_warnings,
                    nonvirtual_dtors,
