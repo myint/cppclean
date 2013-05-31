@@ -20,11 +20,6 @@
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
-try:
-    from test import support
-except ImportError:
-    from test import test_support as support
-
 import unittest
 
 from cpp import tokenize

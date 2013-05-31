@@ -40,7 +40,6 @@ except ImportError:
     import __builtin__ as builtins
 
 import sys
-import traceback
 
 from . import keywords
 from . import tokenize
