@@ -603,7 +603,6 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         """
         nodes = list(MakeBuilder(code).Generate())
         self.assertEqual(1, len(nodes))
-        function = nodes[0]
         # TODO(nnorwitz): this doesn't parse correctly, but at least
         # it doesn't raise an exception anymore.  Improve the parsing.
 
@@ -639,7 +638,7 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(expected.templated_types, nodes[0].templated_types)
         self.assertEqual(expected, nodes[0])
 
-    def testMethod_WithTemplateClassWith2ArgsWorks(self):
+    def testMethod_WithTemplateClassWith3ArgsWorks(self):
         code = """
         template <class CT, class IT, class DT>
         DT* Worker<CT, IT, DT>::Create() {

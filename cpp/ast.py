@@ -618,7 +618,6 @@ class TypeConverter(object):
             return []
 
         result = []
-        name = type_name = ''
         type_modifiers = []
         pointer = reference = array = False
         first_token = None
@@ -630,7 +629,7 @@ class TypeConverter(object):
             end = type_modifiers[-1].end
             parts = self.DeclarationToParts(type_modifiers, True)
             (name, type_name, templated_types, modifiers,
-             unused_default, unused_other_tokens) = parts
+             _, __) = parts
             parameter_type = Type(first_token.start, first_token.end,
                                   type_name, templated_types, modifiers,
                                   reference, pointer, array)
@@ -652,7 +651,6 @@ class TypeConverter(object):
 
             if s.name == ',':
                 AddParameter()
-                name = type_name = ''
                 type_modifiers = []
                 pointer = reference = array = False
                 first_token = None
@@ -810,7 +808,7 @@ class AstBuilder(object):
                 # Handle data, this isn't a method.
                 parts = self.converter.DeclarationToParts(temp_tokens, True)
                 (name, type_name, templated_types, modifiers, default,
-                 unused_other_tokens) = parts
+                 _) = parts
 
                 t0 = temp_tokens[0]
                 names = [t.name for t in temp_tokens]
@@ -888,7 +886,7 @@ class AstBuilder(object):
 
     # TODO(nnorwitz): remove _IgnoreUpTo() it shouldn't be necesary.
     def _IgnoreUpTo(self, token_type, token):
-        unused_tokens = self._GetTokensUpTo(token_type, token)
+        self._GetTokensUpTo(token_type, token)
 
     def _SkipIf0Blocks(self):
         count = 1
@@ -1017,7 +1015,7 @@ class AstBuilder(object):
             name = tokenize.Token(tokenize.NAME, 'operator[]',
                                   name_seq[0].start, name.end)
             # Get the open paren so _GetParameters() below works.
-            unused_open_paren = self._GetNextToken()
+            self._GetNextToken()
 
         # TODO(nnorwitz): store template_portion.
         return_type = return_type_and_name
@@ -1049,13 +1047,13 @@ class AstBuilder(object):
                 modifiers |= FUNCTION_ATTRIBUTE
                 assert token.name == '(', token
                 # Consume everything between the (parens).
-                unused_tokens = list(self._GetMatchingChar('(', ')'))
+                list(self._GetMatchingChar('(', ')'))
                 token = self._GetNextToken()
             elif modifier_token.name == 'throw':
                 modifiers |= FUNCTION_THROW
                 assert token.name == '(', token
                 # Consume everything between the (parens).
-                unused_tokens = list(self._GetMatchingChar('(', ')'))
+                list(self._GetMatchingChar('(', ')'))
                 token = self._GetNextToken()
             elif modifier_token.name == modifier_token.name.upper():
                 # HACK(nnorwitz):  assume that all upper-case names
@@ -1117,7 +1115,7 @@ class AstBuilder(object):
             if token.name == '[':
                 # TODO(nnorwitz): store tokens and improve parsing.
                 # template <typename T, size_t N> char (&ASH(T (&seq)[N]))[N];
-                tokens = list(self._GetMatchingChar('[', ']'))
+                list(self._GetMatchingChar('[', ']'))
                 token = self._GetNextToken()
 
             assert token.name == ';', (token, return_type_and_name, parameters)
@@ -1427,7 +1425,7 @@ class AstBuilder(object):
                 i += 1
                 if tokens[i - 1].name == '=':
                     assert i < len_tokens, '%s %s' % (i, tokens)
-                    default, unused_next_token = self.GetName(tokens[i:])
+                    default, _ = self.GetName(tokens[i:])
                     i += len(default)
                 else:
                     if tokens[i - 1].name != ',':

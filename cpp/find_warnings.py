@@ -27,16 +27,6 @@ suppress warnings.
 
 from __future__ import print_function
 
-__author__ = 'nnorwitz@google.com (Neal Norwitz)'
-
-
-try:
-    # Python 3.x
-    import builtins
-except ImportError:
-    # Python 2.x
-    import __builtin__ as builtins
-
 import os
 import sys
 
@@ -48,14 +38,8 @@ from . import symbols
 from . import tokenize
 from . import utils
 
-if not hasattr(builtins, 'set'):
-    # Nominal support for Python 2.3.
-    from sets import Set as set
 
-if not hasattr(builtins, 'next'):
-    # Support Python 2.5 and earlier.
-    def next(obj):
-        return obj.next()
+__author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
 # The filename extension used for the primary header file associated w/.cc
