@@ -53,7 +53,7 @@ Run
 
 Configure
 =========
-You can add a siteheaders.py file in /cppclean/cpp to configure where
+You can add a ``siteheaders.py`` file in /cppclean/cpp to configure where
 to look for other headers (typically -I options passed to a compiler).
 Currently two values are supported: ``_TRANSITIVE`` and ``GetIncludeDirs``.
 ``_TRANSITIVE`` should be set to a boolean value (``True`` or ``False``)
