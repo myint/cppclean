@@ -37,12 +37,6 @@ AST is Abstract Syntax Tree, a representation of parsed source code.
 http://en.wikipedia.org/wiki/Abstract_syntax_tree
 
 
-System requirements
-===================
-* Python 2.4 or later (2.3 probably works too)
-* Works on Windows (untested), Mac OS X, and Unix
-
-
 Installation
 ============
 ::
