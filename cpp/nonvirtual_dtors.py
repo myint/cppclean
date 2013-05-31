@@ -16,6 +16,8 @@
 
 """Print classes which have a virtual method and non-virtual destructor."""
 
+from __future__ import print_function
+
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
@@ -42,8 +44,8 @@ def _FindWarnings(filename, source, ast_list):
       else:
         if has_virtuals and not class_node.bases:
           lines = metrics.Metrics(source)
-          print '%s:%d' % (filename, lines.GetLineNumber(class_node.start)),
-          print class_node.name, 'has virtual methods without a virtual dtor'
+          print('%s:%d' % (filename, lines.GetLineNumber(class_node.start)), end=' ')
+          print(class_node.name, 'has virtual methods without a virtual dtor')
 
 
 def main(argv):
@@ -52,7 +54,7 @@ def main(argv):
     if source is None:
       continue
 
-    print 'Processing', filename
+    print('Processing', filename)
     builder = ast.BuilderFromSource(source, filename)
     try:
       entire_ast = filter(None, builder.Generate())
@@ -63,7 +65,3 @@ def main(argv):
       pass
     else:
       _FindWarnings(filename, source, entire_ast)
-
-
-if __name__ == '__main__':
-  main(sys.argv)

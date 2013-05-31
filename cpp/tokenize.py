@@ -17,6 +17,8 @@
 
 """Tokenize C++ source code."""
 
+from __future__ import print_function
+
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
@@ -58,7 +60,7 @@ PREPROCESSOR = 'PREPROCESSOR'
 
 # Where the token originated from.  This can be used for backtracking.
 # It is always set to WHENCE_STREAM in this code.
-WHENCE_STREAM, WHENCE_QUEUE = range(2)
+WHENCE_STREAM, WHENCE_QUEUE = list(range(2))
 
 
 class Token(object):

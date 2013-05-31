@@ -24,6 +24,8 @@ There also needs to be a way to use annotations in the source code to
 suppress warnings.
 """
 
+from __future__ import print_function
+
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
@@ -37,13 +39,13 @@ except ImportError:
 import os
 import sys
 
-from cpp import ast
-from cpp import headers
-from cpp import keywords
-from cpp import metrics
-from cpp import symbols
-from cpp import tokenize
-from cpp import utils
+from . import ast
+from . import headers
+from . import keywords
+from . import metrics
+from . import symbols
+from . import tokenize
+from . import utils
 
 if not hasattr(builtins, 'set'):
     # Nominal support for Python 2.3.
@@ -121,7 +123,7 @@ class WarningHunter(object):
     def ShowWarnings(self):
         self.warnings.sort()
         for filename, line_num, msg in self.warnings:
-            print('%s:%d: %s' % (filename, line_num, msg))
+            print(('%s:%d: %s' % (filename, line_num, msg)))
 
     def FindWarnings(self):
         # print('Searching for warnings in: %s' % self.filename)
@@ -130,7 +132,7 @@ class WarningHunter(object):
         elif _IsCppFile(self.filename):
             self._FindSourceWarnings()
         else:
-            print('Unknown filetype for: %s' % self.filename)
+            print(('Unknown filetype for: %s' % self.filename))
 
     def _UpdateSymbolTable(self, module):
         for name, node in module.public_symbols.items():
@@ -148,7 +150,7 @@ class WarningHunter(object):
         source, actual_filename = headers.ReadSource(filename)
         if source is None:
             module = Module(filename, None)
-            print('Unable to find %s' % filename)
+            print(('Unable to find %s' % filename))
         else:
             builder = ast.BuilderFromSource(source, filename)
             try:
@@ -156,7 +158,7 @@ class WarningHunter(object):
             except KeyboardInterrupt:
                 sys.exit(1)
             except:
-                print('Exception while processing %s' % filename)
+                print(('Exception while processing %s' % filename))
                 module = Module(filename, None)
             else:
                 self._UpdateSymbolTable(module)
@@ -257,8 +259,8 @@ class WarningHunter(object):
                 file_uses[name] = file_uses.get(name, 0) | USES_DECLARATION
                 return
             if not file_use_node:
-                print('Could not find #include file for %s in %s' %
-                      (name, namespace))
+                print(('Could not find #include file for %s in %s' %
+                      (name, namespace)))
                 return
             # TODO(nnorwitz): do proper check for ref/pointer/symbol.
             name = file_use_node[1].normalized_filename
@@ -483,13 +485,9 @@ def main(argv):
         if source is None:
             continue
 
-        print('Processing %s' % filename)
+        print(('Processing %s' % filename))
         builder = ast.BuilderFromSource(source, filename)
         entire_ast = list(filter(None, builder.Generate()))
         hunter = WarningHunter(filename, source, entire_ast)
         hunter.FindWarnings()
         hunter.ShowWarnings()
-
-
-if __name__ == '__main__':
-    main(sys.argv)

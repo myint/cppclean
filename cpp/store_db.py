@@ -17,6 +17,8 @@
 
 """Store the parse tree (AST) from C++ source in MySQL."""
 
+from __future__ import print_function
+
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
@@ -383,8 +385,8 @@ class SourceRevision(object):
             self.identifiers = self._GetAllNames(dbc, 'identifier')
 
         dbc.close()
-        print self.paths
-        print self.identifiers
+        print(self.paths)
+        print(self.identifiers)
 
     def GetParseTrees(self):
         # TODO(nnorwitz): return these in-order, depth-first.
@@ -409,7 +411,7 @@ def main(argv):
         if source is None:
             continue
 
-        print 'Processing', filename
+        print('Processing', filename)
         tokens = list(tokenize.GetTokens(source))
         builder = ast.AstBuilder(iter(tokens), source)
         entire_ast = filter(None, builder.Generate())

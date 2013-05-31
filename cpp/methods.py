@@ -17,6 +17,8 @@
 
 """Find and print the methods in a source file."""
 
+from __future__ import print_function
+
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
@@ -34,7 +36,7 @@ def main(argv):
                 if (isinstance(node, ast.Function) and
                     not (node.modifiers & special_function)):
                     # TODO(nnorwitz): print operators properly.
-                    print node.name
+                    print(node.name)
 
     ast.PrintAllIndentifiers(argv[1:], IsMethod)
 

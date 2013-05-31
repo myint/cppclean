@@ -16,6 +16,8 @@
 
 """Print classes, functions and modules which contain static data."""
 
+from __future__ import print_function
+
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
@@ -29,8 +31,8 @@ from cpp import utils
 def _FindWarnings(filename, source, ast_list, static_is_optional):
   def PrintWarning(node, name):
     lines = metrics.Metrics(source)
-    print '%s:%d' % (filename, lines.GetLineNumber(node.start)),
-    print 'static data:', name
+    print('%s:%d' % (filename, lines.GetLineNumber(node.start)), end=' ')
+    print('static data:', name)
 
   def FindStatic(function_node):
     for node in function_node.body:
@@ -58,7 +60,7 @@ def main(argv):
     if source is None:
       continue
 
-    print 'Processing', filename
+    print('Processing', filename)
     builder = ast.BuilderFromSource(source, filename)
     try:
       entire_ast = filter(None, builder.Generate())

@@ -17,6 +17,8 @@
 
 """Generate an Abstract Syntax Tree (AST) for C++."""
 
+from __future__ import print_function
+
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
@@ -59,7 +61,7 @@ if not hasattr(builtins, 'next'):
         return obj.next()
 
 
-VISIBILITY_PUBLIC, VISIBILITY_PROTECTED, VISIBILITY_PRIVATE = range(3)
+VISIBILITY_PUBLIC, VISIBILITY_PROTECTED, VISIBILITY_PRIVATE = list(range(3))
 
 FUNCTION_NONE = 0x00
 FUNCTION_CONST = 0x01

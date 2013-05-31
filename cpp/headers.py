@@ -17,6 +17,8 @@
 
 """Find and print the headers #include'd in a source file."""
 
+from __future__ import print_function
+
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
