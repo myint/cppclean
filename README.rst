@@ -43,6 +43,14 @@ System Requirements
  * Works on Windows (untested), Mac OS X, and Unix
 
 
+Installation
+============
+
+::
+
+    $ pip install --upgrade git+https://github.com/myint/cppclean.git
+
+
 How to Run
 ==========
 ::
