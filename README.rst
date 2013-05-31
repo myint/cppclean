@@ -19,19 +19,19 @@ The project home page is: http://code.google.com/p/cppclean/
 
 Features
 ========
-* Find and print C++ language constructs: classes, methods, functions, etc.
-* Find classes with virtual methods, no virtual destructor, and no bases
-* Find global/static data that are potential problems when using threads
-* Unnecessary forward class declarations
-* Unnecessary function declarations
-* Undeclared function definitions
-* (planned) Find unnecessary header files #included
+- Find and print C++ language constructs: classes, methods, functions, etc.
+- Find classes with virtual methods, no virtual destructor, and no bases
+- Find global/static data that are potential problems when using threads
+- Unnecessary forward class declarations
+- Unnecessary function declarations
+- Undeclared function definitions
+- (planned) Find unnecessary header files #included
     - No direct reference to anything in the header
     - Header is unnecessary if classes were forward declared instead
-* (planned) Source files that reference headers not directly #included,
-   ie, files that rely on a transitive #include from another header
-* (planned) Unused members (private, protected, & public) methods and data
-* (planned) Store AST in a SQL database so relationships can be queried
+- (planned) Source files that reference headers not directly #included,
+  ie, files that rely on a transitive #include from another header
+- (planned) Unused members (private, protected, & public) methods and data
+- (planned) Store AST in a SQL database so relationships can be queried
 
 AST is Abstract Syntax Tree, a representation of parsed source code.
 http://en.wikipedia.org/wiki/Abstract_syntax_tree
@@ -85,9 +85,9 @@ and storing an AST in a database.
 
 Non-goals
 =========
-* Parsing all valid C++ source
-* Handling invalid C++ source gracefully
-* Compiling to machine code (or anything beyond an AST)
+- Parsing all valid C++ source
+- Handling invalid C++ source gracefully
+- Compiling to machine code (or anything beyond an AST)
 
 
 Contact
