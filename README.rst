@@ -45,7 +45,6 @@ System Requirements
 
 Installation
 ============
-
 ::
 
     $ pip install --upgrade git+https://github.com/myint/cppclean.git
