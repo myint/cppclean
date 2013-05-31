@@ -5,7 +5,7 @@
 from distutils import core
 
 
-with open('README') as readme:
+with open('README.rst') as readme:
     core.setup(name='cppclean',
                description='Find problems in C++ source that slow development '
                            'of large code bases.',
