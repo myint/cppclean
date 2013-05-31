@@ -1,5 +1,13 @@
+========
+cppclean
+========
+.. image:: https://travis-ci.org/myint/cppclean.png?branch=master
+   :target: https://travis-ci.org/myint/cppclean
+   :alt: Build status
+
+
 Goal
-----
+====
 CppClean attempts to find problems in C++ source that slow development
 in large code bases, for example various forms of unused code.
 Unused code can be unused functions, methods, data members, types, etc
@@ -10,7 +18,7 @@ The project home page is: http://code.google.com/p/cppclean/
 
 
 Features
---------
+========
 * Find and print C++ language constructs: classes, methods, functions, etc.
 * Find classes with virtual methods, no virtual destructor, and no bases
 * Find global/static data that are potential problems when using threads
@@ -30,20 +38,20 @@ http://en.wikipedia.org/wiki/Abstract_syntax_tree
 
 
 System Requirements
--------------------
+===================
  * Python 2.4 or later (2.3 probably works too)
  * Works on Windows (untested), Mac OS X, and Unix
 
 
 How to Run
-----------
+==========
 ::
 
     $ cppclean <path>
 
 
 How to Configure
-----------------
+================
 You can add a siteheaders.py file in /cppclean/cpp to configure where
 to look for other headers (typically -I options passed to a compiler).
 Currently two values are supported: .TRANSITIVE and GetIncludeDirs.
@@ -65,7 +73,7 @@ return a static list::
 
 
 Current Status
---------------
+==============
 The parser works pretty well for header files, parsing about 99% of Google's
 header files. Anything which inspects structure of C++ source files should
 work reasonably well. Function bodies are not transformed to an AST,
@@ -74,14 +82,14 @@ and storing an AST in a database.
 
 
 Non-goals
----------
+=========
 * Parsing all valid C++ source
 * Handling invalid C++ source gracefully
 * Compiling to machine code (or anything beyond an AST)
 
 
 Contact
--------
+=======
 If you used cppclean, I would love to hear about your experiences
 cppclean@googlegroups.com. .ven if you don't use cppclean, I'd like to
 hear from you. :-) (You can contact me directly at: nnorwitz@gmail.com)
