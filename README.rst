@@ -56,8 +56,9 @@ Configure
 You can add a siteheaders.py file in /cppclean/cpp to configure where
 to look for other headers (typically -I options passed to a compiler).
 Currently two values are supported: ``_TRANSITIVE`` and ``GetIncludeDirs``.
-``_TRANSITIVE`` should be set to a boolean value (True or False) indicating
-whether to transitively process all header files. The default is False.
+``_TRANSITIVE`` should be set to a boolean value (``True`` or ``False``)
+indicating whether to transitively process all header files. The default is
+``False``.
 
 ``GetIncludeDirs`` is a function that takes a single argument and returns
 a sequence of directories to include. This can be a generator or
