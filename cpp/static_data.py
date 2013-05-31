@@ -21,11 +21,9 @@ from __future__ import print_function
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
-import sys
-
-from cpp import ast
-from cpp import metrics
-from cpp import utils
+from . import ast
+from . import metrics
+from . import utils
 
 
 def _FindWarnings(filename, source, ast_list, static_is_optional):
@@ -71,7 +69,3 @@ def main(argv):
       pass
     else:
       _FindWarnings(filename, source, entire_ast, True)
-
-
-if __name__ == '__main__':
-  main(sys.argv)

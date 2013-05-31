@@ -19,23 +19,16 @@
 
 import sys
 
-from cpp import ast
 from cpp import find_warnings
-from cpp import utils
+from cpp import nonvirtual_dtors
+from cpp import static_data
 
 
 def main(argv):
-    for filename in argv[1:]:
-        source = utils.ReadFile(filename)
-        if source is None:
-            continue
-
-        print('Processing %s' % filename)
-        builder = ast.BuilderFromSource(source, filename)
-        entire_ast = list(filter(None, builder.Generate()))
-        hunter = find_warnings.WarningHunter(filename, source, entire_ast)
-        hunter.FindWarnings()
-        hunter.ShowWarnings()
+    for module in [find_warnings,
+                   nonvirtual_dtors,
+                   static_data]:
+        module.main(argv)
 
 
 sys.exit(main(sys.argv))
