@@ -1,0 +1,13 @@
+language: python
+
+python:
+    - "2.7"
+    - "3.3"
+
+install:
+    - python setup.py --quiet install
+
+script:
+    - rm -f .tmp
+    - cppclean test > .tmp
+    - diff .tmp test/expected.txt && rm -f .tmp
