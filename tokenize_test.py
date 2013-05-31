@@ -21,11 +21,10 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
 try:
-    # Python 2.x
-    from test import test_support
+    from test import support
 except ImportError:
-    # Python 3.x
-    from test import support as test_support
+    from test import test_support as support
+
 import unittest
 
 from cpp import tokenize
@@ -416,9 +415,5 @@ class TokenizeTest(unittest.TestCase):
     # identifiers (e.g., _).  what to do about dollar signs?
 
 
-def test_main():
-    test_support.run_unittest(TokenizeTest)
-
-
 if __name__ == '__main__':
-    test_main()
+    unittest.main()

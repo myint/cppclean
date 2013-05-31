@@ -19,13 +19,6 @@
 
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
-
-try:
-    # Python 2.x
-    from test import test_support
-except ImportError:
-    # Python 3.x
-    from test import support as test_support
 import unittest
 
 from cpp import ast
@@ -632,7 +625,8 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(1, len(nodes))
         expected = Method('Write', list(GetTokens('EVM::VH<T, U>')),
                           list(GetTokens('inline void')), [],
-                          templated_types={'T': None, 'U': None})
+                          templated_types={'T': (None, None),
+                                           'U': (None, None)})
         self.assertEqual(expected.return_type, nodes[0].return_type)
         self.assertEqual(expected.in_class, nodes[0].in_class)
         self.assertEqual(expected.templated_types, nodes[0].templated_types)
@@ -661,11 +655,5 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(Include('test.h'), nodes[0])
 
 
-def test_main():
-    tests = [t for t in globals().values()
-             if isinstance(t, type) and issubclass(t, unittest.TestCase)]
-    test_support.run_unittest(*tests)
-
-
 if __name__ == '__main__':
-    test_main()
+    unittest.main()
