@@ -1,12 +1,3 @@
-Unable to find bar.h
-Unable to find d1.h
-Unable to find d3.h
-Unable to find d4-used.h
-Unable to find dir//bar.h
-Unable to find not-used.h
-Unable to find other_defined1.h
-Unable to find something1.h
-Unable to find xss_module.h
 test/define/d1.cc:11: SomeFunction1 not found in any directly #included header
 test/define/d1.cc:15: SomeOtherFunction1 not found in any directly #included header
 test/define/d1.cc:19: SomePublicFunction not found in any directly #included header
