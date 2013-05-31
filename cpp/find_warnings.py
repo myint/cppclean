@@ -468,8 +468,8 @@ class WarningHunter(object):
         #   * primitive member variables not initialized in ctor
 
 
-def main(argv):
-    for filename in argv[1:]:
+def run(filenames):
+    for filename in filenames:
         source = utils.ReadFile(filename)
         if source is None:
             continue

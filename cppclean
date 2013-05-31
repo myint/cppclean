@@ -75,7 +75,7 @@ def main():
     for module in [find_warnings,
                    nonvirtual_dtors,
                    static_data]:
-        module.main(args.files)
+        module.run(args.files)
 
 
 sys.exit(main())

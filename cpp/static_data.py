@@ -53,8 +53,8 @@ def _FindWarnings(filename, source, ast_list, static_is_optional):
             _FindWarnings(filename, source, node.body, False)
 
 
-def main(argv):
-    for filename in argv[1:]:
+def run(filenames):
+    for filename in filenames:
         source = utils.ReadFile(filename)
         if source is None:
             continue
