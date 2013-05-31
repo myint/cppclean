@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright 2007 Neal Norwitz
 # Portions Copyright 2007 Google Inc.
 #
@@ -28,7 +26,7 @@ except ImportError:
     import __builtin__ as builtins
 
 
-from cpp import keywords
+from . import keywords
 
 
 if not hasattr(builtins, 'set'):

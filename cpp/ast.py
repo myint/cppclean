@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright 2007 Neal Norwitz
 # Portions Copyright 2007 Google Inc.
 #
@@ -44,9 +42,9 @@ except ImportError:
 import sys
 import traceback
 
-from cpp import keywords
-from cpp import tokenize
-from cpp import utils
+from . import keywords
+from . import tokenize
+from . import utils
 
 
 if not hasattr(builtins, 'reversed'):
@@ -1721,28 +1719,3 @@ def PrintAllIndentifiers(filenames, should_print):
     """
     for path in filenames:
         PrintIndentifiers(path, should_print)
-
-
-def main(argv):
-    for filename in argv[1:]:
-        source = utils.ReadFile(filename)
-        if source is None:
-            continue
-
-        print('Processing %s' % filename)
-        builder = BuilderFromSource(source, filename)
-        try:
-            entire_ast = filter(None, builder.Generate())
-        except KeyboardInterrupt:
-            return
-        except:
-            # Already printed a warning, print the traceback and continue.
-            traceback.print_exc()
-        else:
-            if utils.DEBUG:
-                for ast in entire_ast:
-                    print(ast)
-
-
-if __name__ == '__main__':
-    main(sys.argv)

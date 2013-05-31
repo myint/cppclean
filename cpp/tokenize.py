@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright 2007 Neal Norwitz
 # Portions Copyright 2007 Google Inc.
 #
@@ -32,7 +30,7 @@ except ImportError:
 
 import sys
 
-from cpp import utils
+from . import utils
 
 
 if not hasattr(builtins, 'set'):
@@ -273,19 +271,3 @@ def GetTokens(source):
             print('Invalid index, exiting now.')
             return
         yield Token(token_type, source[start:i], start, i)
-
-
-if __name__ == '__main__':
-    def main(argv):
-        """Driver mostly for testing purposes."""
-        for filename in argv[1:]:
-            source = utils.ReadFile(filename)
-            if source is None:
-                continue
-
-            for token in GetTokens(source):
-                print('%-12s: %s' % (token.token_type, token.name))
-                # print('\r%6.2f%%' % (100.0 * index / token.end),)
-            sys.stdout.write('\n')
-
-    main(sys.argv)

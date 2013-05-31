@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright 2007 Neal Norwitz
 # Portions Copyright 2007 Google Inc.
 #
@@ -23,10 +21,9 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
 import os
-import sys
 
-from cpp import ast
-from cpp import utils
+from . import ast
+from . import utils
 
 # Allow a site to override the defaults if they choose.
 # Just put a siteheaders.py somewhere in the PYTHONPATH.
@@ -69,12 +66,3 @@ def GetHeaders(filename):
         for filename in included_files:
             included_files.extend(GetHeaders(filename))
     return included_files
-
-
-def main(argv):
-    for filename in argv[1:]:
-        GetHeaders(filename)
-
-
-if __name__ == '__main__':
-    main(sys.argv)
