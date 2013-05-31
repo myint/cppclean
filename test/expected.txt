@@ -1,0 +1,85 @@
+Processing test/foo.h
+Unable to find bar.h
+Unable to find xss_module.h
+Unable to find not-used.h
+Unable to find dir//bar.h
+test/foo.h:14: 'Unused' not used
+test/foo.h:61: 'ProtoArray' not used
+test/foo.h:150: 'AR' not used
+Processing test/need-class.h
+Unable to find something1.h
+test/need-class.h:4: 'Bar' forward declared, but needs to be #included
+test/need-class.h:5: 'Baz' forward declared, but needs to be #included
+test/need-class.h:6: 'Bong' forward declared, but needs to be #included
+test/need-class.h:7: 'Bling' forward declared, but needs to be #included
+Processing test/not-used.h
+Processing test/something1.h
+Processing test/xss_module.h
+Processing test/define/d1.cc
+Unable to find d1.h
+Unable to find other_defined1.h
+test/define/d1.cc:2: unable to find header file with matching name
+test/define/d1.cc:11: SomeFunction1 not found in any directly #included header
+test/define/d1.cc:15: SomeOtherFunction1 not found in any directly #included header
+test/define/d1.cc:19: SomePublicFunction not found in any directly #included header
+Processing test/define/d1.h
+Processing test/define/d2.cc
+test/define/d2.cc:2: SomeFunction not found in any directly #included header
+test/define/d2.cc:2: unable to find header file with matching name
+Processing test/define/d3.cc
+Unable to find d3.h
+test/define/d3.cc:2: unable to find header file with matching name
+Processing test/define/d3.h
+Processing test/define/d4-used.h
+Processing test/define/d4.h
+Unable to find d4-used.h
+Processing test/define/d5.h
+Processing test/define/d6.h
+Processing test/define/d7.h
+Processing test/define/d8.h
+Processing test/define/other_defined1.h
+Processing test/foo.h
+test/foo.h:234 Colon has virtual methods without a virtual dtor
+Processing test/need-class.h
+Processing test/not-used.h
+Processing test/something1.h
+Processing test/xss_module.h
+Processing test/define/d1.cc
+Processing test/define/d1.h
+Processing test/define/d2.cc
+Processing test/define/d3.cc
+Processing test/define/d3.h
+Processing test/define/d4-used.h
+Processing test/define/d4.h
+Processing test/define/d5.h
+Processing test/define/d6.h
+Processing test/define/d7.h
+test/define/d7.h:4 Bar has virtual methods without a virtual dtor
+Processing test/define/d8.h
+Processing test/define/other_defined1.h
+Processing test/foo.h
+test/foo.h:20 static data: d
+test/foo.h:101 static data: ptof
+test/foo.h:106 static data: data
+test/foo.h:208 static data: garbage_state
+test/foo.h:225 static data: flags_
+test/foo.h:239 static data: foo
+test/foo.h:241 static data: GlobalKey
+test/foo.h:263 static data: instance_
+test/foo.h:269 static data: string_list
+Processing test/need-class.h
+Processing test/not-used.h
+Processing test/something1.h
+Processing test/xss_module.h
+Processing test/define/d1.cc
+Processing test/define/d1.h
+Processing test/define/d2.cc
+Processing test/define/d3.cc
+Processing test/define/d3.h
+Processing test/define/d4-used.h
+Processing test/define/d4.h
+Processing test/define/d5.h
+Processing test/define/d6.h
+Processing test/define/d7.h
+Processing test/define/d8.h
+Processing test/define/other_defined1.h
