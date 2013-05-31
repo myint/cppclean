@@ -10,4 +10,4 @@ install:
 script:
     - rm -f .tmp
     - cppclean test/ | grep -v Processing | grep -v Unable | sort > .tmp
-    - diff .tmp test/expected.txt && rm -f .tmp
+    - diff --unified .tmp test/expected.txt && rm -f .tmp
