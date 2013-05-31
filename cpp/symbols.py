@@ -36,15 +36,17 @@ if not hasattr(builtins, 'BaseException'):
 if not hasattr(builtins, 'reversed'):
     # Support Python 2.3 and earlier.
     def reversed(seq):
-        for i in range(len(seq)-1, -1, -1):
+        for i in range(len(seq) - 1, -1, -1):
             yield seq[i]
 
 
 class Error(BaseException):
+
     """Exception raised when lookup fails."""
 
 
 class Symbol(object):
+
     """Data container used internally."""
 
     def __init__(self, name, parts, namespace_stack):
@@ -54,6 +56,7 @@ class Symbol(object):
 
 
 class SymbolTable(object):
+
     """Symbol table that can perform namespace operations."""
 
     def __init__(self):
@@ -67,6 +70,7 @@ class SymbolTable(object):
           symbol: Symbol
           namespace: pointer into self.namespaces
           kind: 'kind of namespace for error message'
+
         """
         for namespace_part in symbol.parts:
             namespace = namespace.get(namespace_part)
@@ -84,6 +88,7 @@ class SymbolTable(object):
 
         Args:
           symbol: Symbol
+
         """
         assert symbol.parts
         namespace = self.namespaces
@@ -108,6 +113,7 @@ class SymbolTable(object):
 
         Args:
           symbol: Symbol
+
         """
         namespace = self.namespaces
         # Create a stack of namespaces.
@@ -139,6 +145,7 @@ class SymbolTable(object):
 
         Raises:
           Error if the symbol cannot be found.
+
         """
         # TODO(nnorwitz): a convenient API for this depends on the
         # representation of the name.  e.g., does symbol_name contain
@@ -160,7 +167,11 @@ class SymbolTable(object):
         return self._LookupGlobal(symbol)
 
     def _Add(self, symbol_name, namespace, node, module):
-        """Helper function for adding symbols.  See AddSymbol()."""
+        """Helper function for adding symbols.
+
+        See AddSymbol().
+
+        """
         result = symbol_name in namespace
         namespace[symbol_name] = node, module
         return not result
@@ -176,6 +187,7 @@ class SymbolTable(object):
 
         Returns:
           bool(if symbol was *not* already present)
+
         """
         # TODO(nnorwitz): verify symbol_name doesn't contain :: ?
         if namespace_stack:
@@ -195,6 +207,7 @@ class SymbolTable(object):
 
         Returns:
           ['names', 'that', 'are', 'namespaces', 'possibly', 'empty', 'list']
+
         """
         namespaces = self.namespaces
         result = []

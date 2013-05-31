@@ -27,45 +27,46 @@ from . import utils
 
 
 def _FindWarnings(filename, source, ast_list, static_is_optional):
-  def PrintWarning(node, name):
-    lines = metrics.Metrics(source)
-    print('%s:%d' % (filename, lines.GetLineNumber(node.start)), end=' ')
-    print('static data:', name)
+    def PrintWarning(node, name):
+        lines = metrics.Metrics(source)
+        print('%s:%d' % (filename, lines.GetLineNumber(node.start)), end=' ')
+        print('static data:', name)
 
-  def FindStatic(function_node):
-    for node in function_node.body:
-      if node.name == 'static':
-        # TODO(nnorwitz): should ignore const.  Is static const common here?
-        PrintWarning(node, function_node.name)
+    def FindStatic(function_node):
+        for node in function_node.body:
+            if node.name == 'static':
+                # TODO(nnorwitz): should ignore const.  Is static const common
+                # here?
+                PrintWarning(node, function_node.name)
 
-  for node in ast_list:
-    if isinstance(node, ast.VariableDeclaration):
-      # Ignore 'static' at module scope so we can find globals too.
-      is_static = 'static' in node.type.modifiers
-      is_not_const = 'const' not in node.type.modifiers
-      if is_not_const and (static_is_optional or is_static):
-        PrintWarning(node, node.name)
-    elif isinstance(node, ast.Function):
-      if node.body:
-        FindStatic(node)
-    elif isinstance(node, ast.Class) and node.body:
-      _FindWarnings(filename, source, node.body, False)
+    for node in ast_list:
+        if isinstance(node, ast.VariableDeclaration):
+            # Ignore 'static' at module scope so we can find globals too.
+            is_static = 'static' in node.type.modifiers
+            is_not_const = 'const' not in node.type.modifiers
+            if is_not_const and (static_is_optional or is_static):
+                PrintWarning(node, node.name)
+        elif isinstance(node, ast.Function):
+            if node.body:
+                FindStatic(node)
+        elif isinstance(node, ast.Class) and node.body:
+            _FindWarnings(filename, source, node.body, False)
 
 
 def main(argv):
-  for filename in argv[1:]:
-    source = utils.ReadFile(filename)
-    if source is None:
-      continue
+    for filename in argv[1:]:
+        source = utils.ReadFile(filename)
+        if source is None:
+            continue
 
-    print('Processing', filename)
-    builder = ast.BuilderFromSource(source, filename)
-    try:
-      entire_ast = filter(None, builder.Generate())
-    except KeyboardInterrupt:
-      return
-    except:
-      # An error message was already printed since we couldn't parse.
-      pass
-    else:
-      _FindWarnings(filename, source, entire_ast, True)
+        print('Processing', filename)
+        builder = ast.BuilderFromSource(source, filename)
+        try:
+            entire_ast = filter(None, builder.Generate())
+        except KeyboardInterrupt:
+            return
+        except:
+            # An error message was already printed since we couldn't parse.
+            pass
+        else:
+            _FindWarnings(filename, source, entire_ast, True)

@@ -31,6 +31,8 @@ import unittest
 from cpp import tokenize
 
 # For convenience, add factories and __eq__ to test the module.
+
+
 def Syntax(name, start, end):
     return tokenize.Token(tokenize.SYNTAX, name, start, end)
 
@@ -217,7 +219,7 @@ class TokenizeTest(unittest.TestCase):
             value = '123%s' % suffix
             size = len(value)
             self.assertEqual(Constant(value, 0, size), tokens[0])
-            self.assertEqual(Syntax(';', size, size+1), tokens[1])
+            self.assertEqual(Syntax(';', size, size + 1), tokens[1])
 
             suffix = suffix.upper()
 
@@ -227,7 +229,7 @@ class TokenizeTest(unittest.TestCase):
             value = '123%s' % suffix
             size = len(value)
             self.assertEqual(Constant(value, 0, size), tokens[0])
-            self.assertEqual(Syntax(';', size, size+1), tokens[1])
+            self.assertEqual(Syntax(';', size, size + 1), tokens[1])
 
     def testGetTokens_OctalConstants(self):
         #                        0123456789
@@ -243,7 +245,7 @@ class TokenizeTest(unittest.TestCase):
             value = '01234567%s' % suffix
             size = len(value)
             self.assertEqual(Constant(value, 0, size), tokens[0])
-            self.assertEqual(Syntax(';', size, size+1), tokens[1])
+            self.assertEqual(Syntax(';', size, size + 1), tokens[1])
 
             suffix = suffix.upper()
 
@@ -253,7 +255,7 @@ class TokenizeTest(unittest.TestCase):
             value = '01234567%s' % suffix
             size = len(value)
             self.assertEqual(Constant(value, 0, size), tokens[0])
-            self.assertEqual(Syntax(';', size, size+1), tokens[1])
+            self.assertEqual(Syntax(';', size, size + 1), tokens[1])
 
     def testGetTokens_HexConstants(self):
         #                        012345678901
@@ -269,7 +271,7 @@ class TokenizeTest(unittest.TestCase):
             value = '0xBEEF%s' % suffix
             size = len(value)
             self.assertEqual(Constant(value, 0, size), tokens[0])
-            self.assertEqual(Syntax(';', size, size+1), tokens[1])
+            self.assertEqual(Syntax(';', size, size + 1), tokens[1])
 
             suffix = suffix.upper()
 
@@ -279,7 +281,7 @@ class TokenizeTest(unittest.TestCase):
             value = '0xBEEF%s' % suffix
             size = len(value)
             self.assertEqual(Constant(value, 0, size), tokens[0])
-            self.assertEqual(Syntax(';', size, size+1), tokens[1])
+            self.assertEqual(Syntax(';', size, size + 1), tokens[1])
 
     def testGetTokens_FloatConstants(self):
         #                        012345678901

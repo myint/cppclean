@@ -38,8 +38,10 @@ def _InstallGenericEqual(cls, attrs):
     Args:
       cls: Python class to add __eq__ method to
       attrs: string - space separated of attribute names to compare
+
     """
     attrs = attrs.split()
+
     def __eq__(self, other):
         if not isinstance(other, cls):
             return False
@@ -95,8 +97,9 @@ def Class(name, start=0, end=0, bases=None, body=None, templated_types=None,
         namespace = []
     return ast.Class(start, end, name, bases, templated_types, body, namespace)
 
+
 def Struct(name, start=0, end=0, bases=None, body=None, templated_types=None,
-          namespace=None):
+           namespace=None):
     if namespace is None:
         namespace = []
     return ast.Struct(start, end, name, bases, templated_types, body,
@@ -104,17 +107,17 @@ def Struct(name, start=0, end=0, bases=None, body=None, templated_types=None,
 
 
 def Type(name, start=0, end=0, templated_types=None, modifiers=None,
-          reference=False, pointer=False, array=False):
+         reference=False, pointer=False, array=False):
     if templated_types is None:
         templated_types = []
     if modifiers is None:
         modifiers = []
     return ast.Type(start, end, name, templated_types, modifiers,
-                     reference, pointer, array)
+                    reference, pointer, array)
 
 
 def Function(name, return_type, parameters, start=0, end=0,
-           modifiers=0, templated_types=None, body=None, namespace=None):
+             modifiers=0, templated_types=None, body=None, namespace=None):
     # TODO(nnorwitz): why are body & templated_types different
     # for Functions and Methods?
     if namespace is None:
@@ -143,7 +146,7 @@ class TypeConverter_DeclarationToPartsTest(unittest.TestCase):
     def testSimple(self):
         tokens = GetTokens('Fool data')
         name, type_name, templated_types, modifiers, default, other_tokens = \
-              self.converter.DeclarationToParts(list(tokens), True)
+            self.converter.DeclarationToParts(list(tokens), True)
         self.assertEqual('data', name)
         self.assertEqual('Fool', type_name)
         self.assertEqual([], templated_types)
@@ -152,7 +155,7 @@ class TypeConverter_DeclarationToPartsTest(unittest.TestCase):
     def testSimpleModifiers(self):
         tokens = GetTokens('const volatile Fool data')
         name, type_name, templated_types, modifiers, default, other_tokens = \
-              self.converter.DeclarationToParts(list(tokens), True)
+            self.converter.DeclarationToParts(list(tokens), True)
         self.assertEqual('data', name)
         self.assertEqual('Fool', type_name)
         self.assertEqual([], templated_types)
@@ -161,7 +164,7 @@ class TypeConverter_DeclarationToPartsTest(unittest.TestCase):
     def testSimpleArray(self):
         tokens = GetTokens('Fool[] data')
         name, type_name, templated_types, modifiers, default, other_tokens = \
-              self.converter.DeclarationToParts(list(tokens), True)
+            self.converter.DeclarationToParts(list(tokens), True)
         self.assertEqual('data', name)
         self.assertEqual('Fool', type_name)
         self.assertEqual([], templated_types)
@@ -170,7 +173,7 @@ class TypeConverter_DeclarationToPartsTest(unittest.TestCase):
     def testSimpleTemplate(self):
         tokens = GetTokens('Fool<tt> data')
         name, type_name, templated_types, modifiers, default, other_tokens = \
-              self.converter.DeclarationToParts(list(tokens), True)
+            self.converter.DeclarationToParts(list(tokens), True)
         self.assertEqual('data', name)
         self.assertEqual('Fool', type_name)
         self.assertEqual([Type('tt')], templated_types)
@@ -479,9 +482,13 @@ class AstBuilder_GetClassTest(unittest.TestCase):
 
 
 class AstBuilderIntegrationTest(unittest.TestCase):
-    """Unlike the other test cases in this file, this test case is
-    meant to be an integration test.  It doesn't test any individual
+
+    """Unlike the other test cases in this file, this test case is meant to be
+    an integration test.
+
+    It doesn't test any individual
     method.  It tests whole code blocks.
+
     """
 
     # TODO(nnorwitz): add lots more tests.
@@ -541,7 +548,7 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(1, len(nodes))
         function = nodes[0].body[0]
         expected = Function('Foo', [], [],
-                            modifiers=ast.FUNCTION_DTOR|ast.FUNCTION_VIRTUAL)
+                            modifiers=ast.FUNCTION_DTOR | ast.FUNCTION_VIRTUAL)
         self.assertEqual(expected.return_type, function.return_type)
         self.assertEqual(expected, function)
         self.assertEqual(Class('Foo', body=[expected]), nodes[0])
@@ -599,12 +606,12 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         function = nodes[0]
         # TODO(nnorwitz): this doesn't parse correctly, but at least
         # it doesn't raise an exception anymore.  Improve the parsing.
-        
+
     def testMethod_WithTemplateClassWorks(self):
         code = """
         template <class T>
-        inline void EVM::VH<T>::Write() { 
-        } 
+        inline void EVM::VH<T>::Write() {
+        }
         """
         nodes = list(MakeBuilder(code).Generate())
         self.assertEqual(1, len(nodes))
@@ -619,8 +626,8 @@ class AstBuilderIntegrationTest(unittest.TestCase):
     def testMethod_WithTemplateClassWith2ArgsWorks(self):
         code = """
         template <class T, typename U>
-        inline void EVM::VH<T, U>::Write() { 
-        } 
+        inline void EVM::VH<T, U>::Write() {
+        }
         """
         nodes = list(MakeBuilder(code).Generate())
         self.assertEqual(1, len(nodes))
@@ -635,8 +642,8 @@ class AstBuilderIntegrationTest(unittest.TestCase):
     def testMethod_WithTemplateClassWith2ArgsWorks(self):
         code = """
         template <class CT, class IT, class DT>
-        DT* Worker<CT, IT, DT>::Create() { 
-        } 
+        DT* Worker<CT, IT, DT>::Create() {
+        }
         """
         nodes = list(MakeBuilder(code).Generate())
         self.assertEqual(1, len(nodes))

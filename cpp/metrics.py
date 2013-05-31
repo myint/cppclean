@@ -42,6 +42,7 @@ _COMPLEXITY_KEYWORDS = \
 
 
 class Metrics(object):
+
     """Calculate various metrics on C++ source code."""
 
     def __init__(self, source):

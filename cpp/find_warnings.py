@@ -22,6 +22,7 @@ be generated and which should be suppressed.  Currently, all possible
 warnings will always be displayed.  There is no way to suppress any.
 There also needs to be a way to use annotations in the source code to
 suppress warnings.
+
 """
 
 from __future__ import print_function
@@ -57,7 +58,8 @@ if not hasattr(builtins, 'next'):
         return obj.next()
 
 
-# The filename extension used for the primary header file associated w/.cc file.
+# The filename extension used for the primary header file associated w/.cc
+# file.
 PRIMARY_HEADER_EXTENSION = '.h'
 
 # These enumerations are used to determine how an symbol/#include file is used.
@@ -67,6 +69,7 @@ USES_DECLARATION = 2
 
 
 class Module(object):
+
     """Data container represting a single source file."""
 
     def __init__(self, filename, ast_list):
@@ -291,7 +294,8 @@ class WarningHunter(object):
                         # the parameter type is really used.
                         # NOTE(nnorwitz): this is over-aggressive. It would be
                         # better to iterate through the body and determine
-                        # actual uses based on local vars and data members used.
+                        # actual uses based on local vars and data members
+                        # used.
                         _AddUse(p.type.name, function.namespace)
                     else:
                         _AddVariable(p.type, p.type.name, function.namespace)
@@ -381,7 +385,7 @@ class WarningHunter(object):
                 # indicates an error elsewhere.  It sucks to mask it,
                 # but false positives are worse.
                 if (primary_header and
-                    primary_header.filename != header.filename):
+                        primary_header.filename != header.filename):
                     msg = ('expected to find %s in %s, but found in %s' %
                            (name, primary_header.filename, header.filename))
                     self._AddWarning(msg, node)
@@ -440,7 +444,8 @@ class WarningHunter(object):
 
     def _GetPrimaryHeader(self, included_files):
         basename = os.path.splitext(self.normalized_filename)[0]
-        primary_header = included_files.get(basename + PRIMARY_HEADER_EXTENSION)
+        primary_header = included_files.get(
+            basename + PRIMARY_HEADER_EXTENSION)
         if not primary_header:
             primary_header = included_files.get(basename)
         if primary_header:

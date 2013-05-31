@@ -30,7 +30,7 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 #  * Handle conditions and loops (if/else, switch, for, while/do)
 #
 # TODO much, much later:
-#  * Handle #define
+# * Handle #define
 #  * exceptions
 
 
@@ -52,7 +52,7 @@ from cpp import utils
 if not hasattr(builtins, 'reversed'):
     # Support Python 2.3 and earlier.
     def reversed(seq):
-        for i in range(len(seq)-1, -1, -1):
+        for i in range(len(seq) - 1, -1, -1):
             yield seq[i]
 
 if not hasattr(builtins, 'next'):
@@ -108,6 +108,7 @@ class _NullDict(object):
 
 # TODO(nnorwitz): move AST nodes into a separate module.
 class Node(object):
+
     """Base AST node."""
 
     def __init__(self, start, end):
@@ -143,6 +144,7 @@ class Node(object):
 
 
 class Define(Node):
+
     def __init__(self, start, end, name, definition):
         Node.__init__(self, start, end)
         self.name = name
@@ -154,6 +156,7 @@ class Define(Node):
 
 
 class Include(Node):
+
     def __init__(self, start, end, filename, system):
         Node.__init__(self, start, end)
         self.filename = filename
@@ -167,6 +170,7 @@ class Include(Node):
 
 
 class Goto(Node):
+
     def __init__(self, start, end, label):
         Node.__init__(self, start, end)
         self.label = label
@@ -176,6 +180,7 @@ class Goto(Node):
 
 
 class Expr(Node):
+
     def __init__(self, start, end, expr):
         Node.__init__(self, start, end)
         self.expr = expr
@@ -197,12 +202,14 @@ class Delete(Expr):
 
 
 class Friend(Expr):
+
     def __init__(self, start, end, expr, namespace):
         Expr.__init__(self, start, end, expr)
         self.namespace = namespace[:]
 
 
 class Using(Node):
+
     def __init__(self, start, end, names):
         Node.__init__(self, start, end)
         self.names = names
@@ -212,6 +219,7 @@ class Using(Node):
 
 
 class Parameter(Node):
+
     def __init__(self, start, end, name, parameter_type, default):
         Node.__init__(self, start, end)
         self.name = name
@@ -231,6 +239,7 @@ class Parameter(Node):
 
 
 class _GenericDeclaration(Node):
+
     def __init__(self, start, end, name, namespace):
         Node.__init__(self, start, end)
         self.name = name
@@ -251,6 +260,7 @@ class _GenericDeclaration(Node):
 
 # TODO(nnorwitz): merge with Parameter in some way?
 class VariableDeclaration(_GenericDeclaration):
+
     def __init__(self, start, end, name, var_type, initial_value, namespace):
         _GenericDeclaration.__init__(self, start, end, name, namespace)
         self.type = var_type
@@ -272,6 +282,7 @@ class VariableDeclaration(_GenericDeclaration):
 
 
 class Typedef(_GenericDeclaration):
+
     def __init__(self, start, end, name, alias, namespace):
         _GenericDeclaration.__init__(self, start, end, name, namespace)
         self.alias = alias
@@ -296,6 +307,7 @@ class Typedef(_GenericDeclaration):
 
 
 class _NestedType(_GenericDeclaration):
+
     def __init__(self, start, end, name, fields, namespace):
         _GenericDeclaration.__init__(self, start, end, name, namespace)
         self.fields = fields
@@ -320,7 +332,9 @@ class Enum(_NestedType):
 
 
 class Class(_GenericDeclaration):
-    def __init__(self, start, end, name, bases, templated_types, body, namespace):
+
+    def __init__(self, start, end, name,
+                 bases, templated_types, body, namespace):
         _GenericDeclaration.__init__(self, start, end, name, namespace)
         self.bases = bases
         self.body = body
@@ -359,6 +373,7 @@ class Struct(Class):
 
 
 class Function(_GenericDeclaration):
+
     def __init__(self, start, end, name, return_type, parameters,
                  modifiers, templated_types, body, namespace):
         _GenericDeclaration.__init__(self, start, end, name, namespace)
@@ -398,6 +413,7 @@ class Function(_GenericDeclaration):
 
 
 class Method(Function):
+
     def __init__(self, start, end, name, in_class, return_type, parameters,
                  modifiers, templated_types, body, namespace):
         Function.__init__(self, start, end, name, return_type, parameters,
@@ -408,16 +424,18 @@ class Method(Function):
 
 
 class Type(_GenericDeclaration):
+
     """Type used for any variable (eg class, primitive, struct, etc)."""
 
     def __init__(self, start, end, name, templated_types, modifiers,
                  reference, pointer, array):
-        """
-        Args:
-          name: str name of main type
-          templated_types: [Class (Type?)] template type info between <>
-          modifiers: [str] type modifiers (keywords) eg, const, mutable, etc.
-          reference, pointer, array: bools
+        """Args:
+
+        name: str name of main type
+        templated_types: [Class (Type?)] template type info between <>
+        modifiers: [str] type modifiers (keywords) eg, const, mutable, etc.
+        reference, pointer, array: bools
+
         """
         _GenericDeclaration.__init__(self, start, end, name, [])
         self.templated_types = templated_types
@@ -464,7 +482,7 @@ class TypeConverter(object):
     def _GetTemplateEnd(self, tokens, start):
         count = 1
         end = start
-        while 1:
+        while True:
             token = tokens[end]
             end += 1
             if token.name == '<':
@@ -473,15 +491,17 @@ class TypeConverter(object):
                 count -= 1
                 if count == 0:
                     break
-        return tokens[start:end-1], end
+        return tokens[start:end - 1], end
 
     def ToType(self, tokens):
         """Convert [Token,...] to [Class(...), ] useful for base classes.
+
         For example, code like class Foo : public Bar<x, y> { ... };
         the "Bar<x, y>" portion gets converted to an AST.
 
         Returns:
           [Class(...), ...]
+
         """
         result = []
         name_tokens = []
@@ -507,7 +527,7 @@ class TypeConverter(object):
         while i < end:
             token = tokens[i]
             if token.name == '<':
-                new_tokens, new_end = self._GetTemplateEnd(tokens, i+1)
+                new_tokens, new_end = self._GetTemplateEnd(tokens, i + 1)
                 AddType(self.ToType(new_tokens))
                 # If there is a comma after the template, we need to consume
                 # that here otherwise it becomes part of the name.
@@ -521,7 +541,7 @@ class TypeConverter(object):
             elif token.name == '&':
                 reference = True
             elif token.name == '[':
-               pointer = True
+                pointer = True
             elif token.name == ']':
                 pass
             else:
@@ -540,12 +560,12 @@ class TypeConverter(object):
             # Handle default (initial) values properly.
             for i, t in enumerate(parts):
                 if t.name == '=':
-                    default = parts[i+1:]
-                    name = parts[i-1].name
-                    if name == ']' and parts[i-2].name == '[':
-                        name = parts[i-3].name
+                    default = parts[i + 1:]
+                    name = parts[i - 1].name
+                    if name == ']' and parts[i - 2].name == '[':
+                        name = parts[i - 3].name
                         i -= 1
-                    parts = parts[:i-1]
+                    parts = parts[:i - 1]
                     break
             else:
                 if parts[-1].token_type == tokenize.NAME:
@@ -566,7 +586,7 @@ class TypeConverter(object):
             if keywords.IsKeyword(p.name):
                 modifiers.append(p.name)
             elif p.name == '<':
-                templated_tokens, new_end = self._GetTemplateEnd(parts, i+1)
+                templated_tokens, new_end = self._GetTemplateEnd(parts, i + 1)
                 templated_types = self.ToType(templated_tokens)
                 i = new_end - 1
                 # Don't add a spurious :: to data members being initialized.
@@ -579,8 +599,13 @@ class TypeConverter(object):
             elif p.name not in ('*', '&', '>'):
                 # Ensure that names have a space between them.
                 if (type_name and type_name[-1].token_type == tokenize.NAME and
-                    p.token_type == tokenize.NAME):
-                    type_name.append(tokenize.Token(tokenize.SYNTAX, ' ', 0, 0))
+                        p.token_type == tokenize.NAME):
+                    type_name.append(
+                        tokenize.Token(
+                            tokenize.SYNTAX,
+                            ' ',
+                            0,
+                            0))
                 type_name.append(p)
             else:
                 other_tokens.append(p)
@@ -656,7 +681,7 @@ class TypeConverter(object):
         start = return_type_seq[0].start
         end = return_type_seq[-1].end
         _, name, templated_types, modifiers, default, other_tokens = \
-           self.DeclarationToParts(return_type_seq, False)
+            self.DeclarationToParts(return_type_seq, False)
         names = [n.name for n in other_tokens]
         reference = '&' in names
         pointer = '*' in names
@@ -672,9 +697,11 @@ class TypeConverter(object):
             if names[end] == '>':
                 break
             end -= 1
-        return start, end+1
+        return start, end + 1
+
 
 class AstBuilder(object):
+
     def __init__(self, token_stream, filename, in_class='', visibility=None,
                  namespace_stack=[]):
         self.tokens = token_stream
@@ -703,7 +730,7 @@ class AstBuilder(object):
                          (msg, self.filename, token, printable_queue))
 
     def Generate(self):
-        while 1:
+        while True:
             token = self._GetNextToken()
             if not token:
                 break
@@ -739,7 +766,7 @@ class AstBuilder(object):
     def _GenerateOne(self, token):
         if token.token_type == tokenize.NAME:
             if (keywords.IsKeyword(token.name) and
-                not keywords.IsBuiltinType(token.name)):
+                    not keywords.IsBuiltinType(token.name)):
                 method = getattr(self, 'handle_' + token.name)
                 return method()
             elif token.name == self.in_class_name_only:
@@ -811,7 +838,7 @@ class AstBuilder(object):
                 # self.in_class can contain A::Name, but the dtor will only
                 # be Name.  Make sure to compare against the right value.
                 if (token.token_type == tokenize.NAME and
-                    token.name == self.in_class_name_only):
+                        token.name == self.in_class_name_only):
                     return self._GetMethod([token], FUNCTION_DTOR, None, True)
             # TODO(nnorwitz): handle a lot more syntax.
         elif token.token_type == tokenize.PREPROCESSOR:
@@ -865,7 +892,7 @@ class AstBuilder(object):
 
     def _SkipIf0Blocks(self):
         count = 1
-        while 1:
+        while True:
             token = self._GetNextToken()
             if token.token_type != tokenize.PREPROCESSOR:
                 continue
@@ -885,7 +912,7 @@ class AstBuilder(object):
         # and return up to the close_paren.
         count = 1
         token = GetNextToken()
-        while 1:
+        while True:
             if token.token_type == tokenize.SYNTAX:
                 if token.name == open_paren:
                     count += 1
@@ -954,8 +981,9 @@ class AstBuilder(object):
     def GetMethod(self, modifiers, templated_types):
         return_type_and_name = self._GetTokensUpTo(tokenize.SYNTAX, '(')
         assert len(return_type_and_name) >= 1
-        return self._GetMethod(return_type_and_name, modifiers, templated_types,
-                               False)
+        return self._GetMethod(
+            return_type_and_name, modifiers, templated_types,
+            False)
 
     def _GetMethod(self, return_type_and_name, modifiers, templated_types,
                    get_paren):
@@ -1097,7 +1125,7 @@ class AstBuilder(object):
         # Looks like we got a method, not a function.
         if len(return_type) > 2 and return_type[-1].name == '::':
             return_type, in_class = \
-                         self._GetReturnTypeAndClassName(return_type)
+                self._GetReturnTypeAndClassName(return_type)
             return Method(indices.start, indices.end, name.name, in_class,
                           return_type, parameters, modifiers, templated_types,
                           body, self.namespace_stack)
@@ -1120,7 +1148,7 @@ class AstBuilder(object):
             i = 1
         # Ignore a :: suffix, if exists.
         end = len(token_seq) - 1
-        if token_seq[end-1].name == '::':
+        if token_seq[end - 1].name == '::':
             end -= 1
 
         # Make a copy of the sequence so we can append a sentinel
@@ -1234,7 +1262,7 @@ class AstBuilder(object):
                     # Handle methods declared to return a struct.
                     t0 = name_tokens[0]
                     struct = tokenize.Token(tokenize.NAME, 'struct',
-                                            t0.start-7, t0.start-2)
+                                            t0.start - 7, t0.start - 2)
                     type_and_name = [struct]
                     type_and_name.extend(name_tokens)
                     type_and_name.extend((var_token, next_token))
@@ -1341,7 +1369,7 @@ class AstBuilder(object):
     def handle_typedef(self):
         token = self._GetNextToken()
         if (token.token_type == tokenize.NAME and
-            keywords.IsKeyword(token.name)):
+                keywords.IsKeyword(token.name)):
             # Token must be struct/enum/union/class.
             method = getattr(self, 'handle_' + token.name)
             self._handling_typedef = True
@@ -1364,7 +1392,7 @@ class AstBuilder(object):
         if name.name == ')':
             # HACK(nnorwitz): Handle pointers to functions "properly".
             if (len(tokens) >= 4 and
-                tokens[1].name == '(' and tokens[2].name == '*'):
+                    tokens[1].name == '(' and tokens[2].name == '*'):
                 tokens.append(name)
                 name = tokens[3]
         elif name.name == ']':
@@ -1397,16 +1425,16 @@ class AstBuilder(object):
             type_name = default = None
             if i < len_tokens:
                 i += 1
-                if tokens[i-1].name == '=':
+                if tokens[i - 1].name == '=':
                     assert i < len_tokens, '%s %s' % (i, tokens)
                     default, unused_next_token = self.GetName(tokens[i:])
                     i += len(default)
                 else:
-                    if tokens[i-1].name != ',':
+                    if tokens[i - 1].name != ',':
                         # We got something like: Type variable.
                         # Re-adjust the key (variable) and type_name (Type).
-                        key = tokens[i-1].name
-                        type_name = tokens[i-2]
+                        key = tokens[i - 1].name
+                        type_name = tokens[i - 2]
 
             result[key] = (type_name, default)
         return result
@@ -1449,7 +1477,7 @@ class AstBuilder(object):
     def _GetBases(self):
         # Get base classes.
         bases = []
-        while 1:
+        while True:
             token = self._GetNextToken()
             assert token.token_type == tokenize.NAME, token
             # TODO(nnorwitz): store kind of inheritance...maybe.
@@ -1655,6 +1683,7 @@ def BuilderFromSource(source, filename):
 
     Returns:
       AstBuilder
+
     """
     return AstBuilder(tokenize.GetTokens(source), filename)
 
@@ -1665,13 +1694,14 @@ def PrintIndentifiers(filename, should_print):
     Args:
       filename: 'file1'
       should_print: predicate with signature: bool Function(token)
+
     """
     source = utils.ReadFile(filename, False)
     if source is None:
         sys.stderr.write('Unable to find: %s\n' % filename)
         return
 
-    #print('Processing %s' % actual_filename)
+    # print('Processing %s' % actual_filename)
     builder = BuilderFromSource(source, filename)
     try:
         for node in builder.Generate():
@@ -1689,6 +1719,7 @@ def PrintAllIndentifiers(filenames, should_print):
     Args:
       filenames: ['file1', 'file2', ...]
       should_print: predicate with signature: bool Function(token)
+
     """
     for path in filenames:
         PrintIndentifiers(path, should_print)

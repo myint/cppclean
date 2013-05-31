@@ -34,7 +34,7 @@ def main(argv):
         if isinstance(node, ast.Class) and node.body:
             for node in node.body:
                 if (isinstance(node, ast.Function) and
-                    not (node.modifiers & special_function)):
+                        not (node.modifiers & special_function)):
                     # TODO(nnorwitz): print operators properly.
                     print(node.name)
 

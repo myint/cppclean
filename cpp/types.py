@@ -18,6 +18,7 @@
 """Find and print the types in a source file.
 
 The types are:  structs, unions, enums, typedefs
+
 """
 
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'

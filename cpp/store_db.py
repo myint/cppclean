@@ -43,9 +43,11 @@ _UNKNOWN = '<unknown>'
 
 
 class _Reference(object):
+
     """Data container for all columns in each DB table.
 
     i.e., any Declaration, Definition, or Use table.
+
     """
 
     def __init__(self, filename, line):
@@ -58,6 +60,7 @@ class _Reference(object):
 
 
 class _Declaration(_Reference):
+
     """Data container for all columns in each _decl DB table."""
 
     def __init__(self, name, namespace, filename, line):
@@ -83,6 +86,7 @@ class GlobalVariableDeclaration(_Declaration):
 
 
 class FunctionDeclaration(_Declaration):
+
     def __init__(self, name, namespace, modifiers, num_parameters,
                  filename, line):
         _Declaration.__init__(self, name, namespace, filename, line)
@@ -99,6 +103,7 @@ class ClassDeclaration(_Declaration):
 
 
 class _MemberDeclaration(_Reference):
+
     """Data container for columns in _decl DB tables defined within a class."""
 
     def __init__(self, name, class_, filename, line):
@@ -109,6 +114,7 @@ class _MemberDeclaration(_Reference):
 
 
 class FieldDeclaration(_MemberDeclaration):
+
     def __init__(self, name, class_, modifiers, filename, line):
         _MemberDeclaration.__init__(self, name, class_, filename, line)
         self.modifiers = modifiers
@@ -119,7 +125,9 @@ class FieldDeclaration(_MemberDeclaration):
 
 
 class MethodDeclaration(_MemberDeclaration):
-    def __init__(self, name, class_, modifiers, num_parameters, filename, line):
+
+    def __init__(self, name, class_, modifiers,
+                 num_parameters, filename, line):
         _MemberDeclaration.__init__(self, name, class_, filename, line)
         self.modifiers = modifiers
         self.num_parameters = num_parameters
@@ -130,6 +138,7 @@ class MethodDeclaration(_MemberDeclaration):
 
 
 class _Definition(_Reference):
+
     """Data container for all columns in each *_definition DB table."""
 
     def __init__(self, declaration, num_lines, complexity, filename, line):
@@ -161,12 +170,14 @@ def AsTuples(seq):
 
     Yields:
       each item in the sequence as a tuple
+
     """
     for item in seq:
         yield item.AsTuple()
 
 
 class ParsedSource(object):
+
     def __init__(self, filename, source, tokens, entire_ast):
         self.filename = filename
         self.source = source
@@ -189,6 +200,7 @@ class ParsedSource(object):
         """Iterates through the AST storing all reference info.
 
         i.e., Store the declarations, definitions, and uses.
+
         """
         for node in self.entire_ast.Generate():
             if isinstance(node, ast.Typedef):
@@ -230,7 +242,7 @@ class ParsedSource(object):
                     name = identifiers[node.name]
                     namespace = identifiers[node.namespace or _NO_NAMESPACE]
                     decl = FunctionDeclaration(name, namespace, node.modifiers,
-                               len(node.parameters), file_index, line)
+                                               len(node.parameters), file_index, line)
                     self.function_declarations.append(decl)
                 else:
                     decl = 1  # TODO(nnorwitz): get decl
@@ -342,6 +354,7 @@ class ParsedSource(object):
 
 
 class SourceRevision(object):
+
     def __init__(self):
         self.parse_trees = {}
         self.paths = {}

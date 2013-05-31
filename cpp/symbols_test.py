@@ -69,7 +69,7 @@ class SymbolTableTest(unittest.TestCase):
         AddSymbol = self._AddSymbol
         # Also add foo to the global namespace.
         ns_symbols = [AddSymbol(st, 'foo', None)] + \
-                     [AddSymbol(st, 'foo', ns[:i+1]) for i in range(len(ns))]
+                     [AddSymbol(st, 'foo', ns[:i + 1]) for i in range(len(ns))]
 
         # Verify global lookup works.
         self.assertEqual(ns_symbols[0], st.LookupSymbol('::foo', ns))

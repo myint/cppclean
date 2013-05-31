@@ -46,14 +46,16 @@ _GOLDEN_FILE_TESTS = [
     (find_warnings, 'test/define', 'd6.h', 'd6.expected'),
     (find_warnings, 'test/define', 'd7.h', 'd7.expected'),
     (find_warnings, 'test/define', 'd8.h', 'd8.expected'),
-    ]
+]
 
 
 def DiffGoldenFile(test_type, test_name, output_lines, expected_file):
     expected_lines = open(expected_file).readlines()
     diffs = list(difflib.unified_diff(output_lines, expected_lines))
     if diffs:
-        sys.__stdout__.write('%s %s failed.  Diffs:\n' % (test_type, test_name))
+        sys.__stdout__.write(
+            '%s %s failed.  Diffs:\n' %
+            (test_type, test_name))
         for line in diffs:
             sys.__stdout__.write(line)
         return 1

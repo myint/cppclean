@@ -27,39 +27,46 @@ from . import utils
 
 
 def _FindWarnings(filename, source, ast_list):
-  for node in ast_list:
-    if isinstance(node, ast.Class) and node.body:
-      class_node = node
-      has_virtuals = False
-      for node in node.body:
+    for node in ast_list:
         if isinstance(node, ast.Class) and node.body:
-          _FindWarnings(filename, source, [node])
-        elif (isinstance(node, ast.Function) and
-            node.modifiers & ast.FUNCTION_VIRTUAL):
-            has_virtuals = True
-            if node.modifiers & ast.FUNCTION_DTOR:
-              break
-      else:
-        if has_virtuals and not class_node.bases:
-          lines = metrics.Metrics(source)
-          print('%s:%d' % (filename, lines.GetLineNumber(class_node.start)), end=' ')
-          print(class_node.name, 'has virtual methods without a virtual dtor')
+            class_node = node
+            has_virtuals = False
+            for node in node.body:
+                if isinstance(node, ast.Class) and node.body:
+                    _FindWarnings(filename, source, [node])
+                elif (isinstance(node, ast.Function) and
+                      node.modifiers & ast.FUNCTION_VIRTUAL):
+                    has_virtuals = True
+                    if node.modifiers & ast.FUNCTION_DTOR:
+                        break
+            else:
+                if has_virtuals and not class_node.bases:
+                    lines = metrics.Metrics(source)
+                    print(
+                        '%s:%d' % (
+                            filename,
+                            lines.GetLineNumber(
+                                class_node.start)),
+                        end=' ')
+                    print(
+                        class_node.name,
+                        'has virtual methods without a virtual dtor')
 
 
 def main(argv):
-  for filename in argv[1:]:
-    source = utils.ReadFile(filename)
-    if source is None:
-      continue
+    for filename in argv[1:]:
+        source = utils.ReadFile(filename)
+        if source is None:
+            continue
 
-    print('Processing', filename)
-    builder = ast.BuilderFromSource(source, filename)
-    try:
-      entire_ast = filter(None, builder.Generate())
-    except KeyboardInterrupt:
-      return
-    except:
-      # An error message was already printed since we couldn't parse.
-      pass
-    else:
-      _FindWarnings(filename, source, entire_ast)
+        print('Processing', filename)
+        builder = ast.BuilderFromSource(source, filename)
+        try:
+            entire_ast = filter(None, builder.Generate())
+        except KeyboardInterrupt:
+            return
+        except:
+            # An error message was already printed since we couldn't parse.
+            pass
+        else:
+            _FindWarnings(filename, source, entire_ast)
