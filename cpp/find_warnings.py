@@ -108,7 +108,6 @@ class WarningHunter(object):
             print(('%s:%d: %s' % (filename, line_num, msg)))
 
     def FindWarnings(self):
-        # print('Searching for warnings in: %s' % self.filename)
         if _IsHeaderFile(self.filename):
             self._FindHeaderWarnings()
         elif _IsCppFile(self.filename):

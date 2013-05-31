@@ -792,7 +792,6 @@ class AstBuilder(object):
             if last_token.name == '[':
                 # Handle array, this isn't a method, unless it's an operator.
                 # TODO(nnorwitz): keep the size somewhere.
-                # unused_size = self._GetTokensUpTo(tokenize.SYNTAX, ']')
                 temp_tokens.append(last_token)
                 if temp_tokens[-2].name == 'operator':
                     temp_tokens.append(self._GetNextToken())
@@ -1696,7 +1695,6 @@ def PrintIndentifiers(filename, should_print):
         sys.stderr.write('Unable to find: %s\n' % filename)
         return
 
-    # print('Processing %s' % actual_filename)
     builder = BuilderFromSource(source, filename)
     try:
         for node in builder.Generate():
