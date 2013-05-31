@@ -8,7 +8,7 @@ cppclean
 
 Goal
 ====
-CppClean attempts to find problems in C++ source that slow development
+cppclean attempts to find problems in C++ source that slow development
 in large code bases, for example various forms of unused code.
 Unused code can be unused functions, methods, data members, types, etc
 to unnecessary #include directives. .nnecessary #includes can cause
