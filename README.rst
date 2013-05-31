@@ -37,10 +37,10 @@ AST is Abstract Syntax Tree, a representation of parsed source code.
 http://en.wikipedia.org/wiki/Abstract_syntax_tree
 
 
-System Requirements
+System requirements
 ===================
- * Python 2.4 or later (2.3 probably works too)
- * Works on Windows (untested), Mac OS X, and Unix
+* Python 2.4 or later (2.3 probably works too)
+* Works on Windows (untested), Mac OS X, and Unix
 
 
 Installation
@@ -50,15 +50,15 @@ Installation
     $ pip install --upgrade git+https://github.com/myint/cppclean.git
 
 
-How to Run
-==========
+Run
+===
 ::
 
     $ cppclean <path>
 
 
-How to Configure
-================
+Configure
+=========
 You can add a siteheaders.py file in /cppclean/cpp to configure where
 to look for other headers (typically -I options passed to a compiler).
 Currently two values are supported: .TRANSITIVE and GetIncludeDirs.
@@ -79,7 +79,7 @@ return a static list::
         yield '/path3'
 
 
-Current Status
+Current status
 ==============
 The parser works pretty well for header files, parsing about 99% of Google's
 header files. Anything which inspects structure of C++ source files should
