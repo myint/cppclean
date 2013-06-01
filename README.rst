@@ -25,13 +25,12 @@ Features
 - Unnecessary forward class declarations
 - Unnecessary function declarations
 - Undeclared function definitions
-- (planned) Find unnecessary header files #included
+- Find unnecessary header files #included
     - No direct reference to anything in the header
     - Header is unnecessary if classes were forward declared instead
 - (planned) Source files that reference headers not directly #included,
   ie, files that rely on a transitive #include from another header
 - (planned) Unused members (private, protected, & public) methods and data
-- (planned) Store AST in a SQL database so relationships can be queried
 
 AST is Abstract Syntax Tree, a representation of parsed source code.
 http://en.wikipedia.org/wiki/Abstract_syntax_tree
