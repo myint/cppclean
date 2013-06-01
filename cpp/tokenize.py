@@ -17,25 +17,11 @@
 
 from __future__ import print_function
 
-__author__ = 'nnorwitz@google.com (Neal Norwitz)'
-
-
-try:
-    # Python 3.x
-    import builtins
-except ImportError:
-    # Python 2.x
-    import __builtin__ as builtins
-
-
 import sys
 
 from . import utils
 
-
-if not hasattr(builtins, 'set'):
-    # Nominal support for Python 2.3.
-    from sets import Set as set
+__author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
 # Add $ as a valid identifier char since so much code uses it.

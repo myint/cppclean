@@ -19,25 +19,7 @@
 
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
-try:
-    # Python 3.x
-    import builtins
-except ImportError:
-    # Python 2.x
-    import __builtin__ as builtins
-
 import sys
-
-
-if not hasattr(builtins, 'BaseException'):
-    # Support Python 2.4 and earlier.
-    BaseException = Exception
-
-if not hasattr(builtins, 'reversed'):
-    # Support Python 2.3 and earlier.
-    def reversed(seq):
-        for i in range(len(seq) - 1, -1, -1):
-            yield seq[i]
 
 
 class Error(BaseException):
