@@ -105,7 +105,7 @@ class WarningHunter(object):
     def ShowWarnings(self):
         self.warnings.sort()
         for filename, line_num, msg in self.warnings:
-            print(('%s:%d: %s' % (filename, line_num, msg)))
+            print('%s:%d: %s' % (filename, line_num, msg))
 
     def FindWarnings(self):
         if _IsHeaderFile(self.filename):
@@ -113,7 +113,7 @@ class WarningHunter(object):
         elif _IsCppFile(self.filename):
             self._FindSourceWarnings()
         else:
-            print(('Unknown filetype for: %s' % self.filename))
+            print('Unknown filetype for: %s' % self.filename)
 
     def _UpdateSymbolTable(self, module):
         for name, node in module.public_symbols.items():
@@ -139,7 +139,7 @@ class WarningHunter(object):
             except KeyboardInterrupt:
                 sys.exit(1)
             except:
-                print(('Exception while processing %s' % filename))
+                print('Exception while processing %s' % filename)
                 module = Module(filename, None)
             else:
                 self._UpdateSymbolTable(module)
@@ -473,7 +473,7 @@ def run(filenames):
         if source is None:
             continue
 
-        print(('Processing %s' % filename))
+        print('Processing %s' % filename)
         builder = ast.BuilderFromSource(source, filename)
         entire_ast = list(filter(None, builder.Generate()))
         hunter = WarningHunter(filename, source, entire_ast)
