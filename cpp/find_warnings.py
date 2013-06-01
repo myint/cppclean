@@ -374,7 +374,8 @@ class WarningHunter(object):
             if primary_header:
                 where = ('in expected header ' + primary_header.filename +
                          ' or any other directly #included header')
-            self._AddWarning('%s not found %s' % (name, where), node)
+            if name != 'main':
+                self._AddWarning('%s not found %s' % (name, where), node)
 
     def _CheckPublicFunctions(self, primary_header, all_headers):
         # Verify all the public functions are also declared in a header file.
@@ -446,7 +447,9 @@ class WarningHunter(object):
         # primary_header first.  Expect that is the most likely location.
         # Use of primary_header is primarily an optimization.
         primary_header = self._GetPrimaryHeader(included_files)
-        if not primary_header:
+        if not primary_header and not any(node for node in self.ast_list
+                                          if isinstance(node, ast.Function) and
+                                          node.name == 'main'):
             # TODO(nnorwitz): This shouldn't always be a warning.
             # For example, *main.cc shouldn't need a header.  But
             # almost all other source files should have a
