@@ -135,7 +135,7 @@ class WarningHunter(object):
         else:
             builder = ast.BuilderFromSource(source, filename)
             try:
-                module = Module(filename, filter(None, builder.Generate()))
+                module = Module(filename, [_f for _f in builder.Generate() if _f])
             except KeyboardInterrupt:
                 sys.exit(1)
             except:
@@ -475,7 +475,7 @@ def run(filenames):
 
         print('Processing %s' % filename)
         builder = ast.BuilderFromSource(source, filename)
-        entire_ast = list(filter(None, builder.Generate()))
+        entire_ast = list([_f for _f in builder.Generate() if _f])
         hunter = WarningHunter(filename, source, entire_ast)
         hunter.FindWarnings()
         hunter.ShowWarnings()
