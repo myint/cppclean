@@ -135,7 +135,8 @@ class WarningHunter(object):
         else:
             builder = ast.BuilderFromSource(source, filename)
             try:
-                module = Module(filename, [_f for _f in builder.Generate() if _f])
+                module = Module(filename,
+                                [_f for _f in builder.Generate() if _f])
             except KeyboardInterrupt:
                 sys.exit(1)
             except:
