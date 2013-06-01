@@ -608,7 +608,12 @@ class TypeConverter(object):
                 other_tokens.append(p)
             i += 1
         type_name = ''.join([t.name for t in type_name])
-        return name, type_name, templated_types, modifiers, default, other_tokens
+        return (name,
+                type_name,
+                templated_types,
+                modifiers,
+                default,
+                other_tokens)
 
     def ToParameters(self, tokens):
         if not tokens:
@@ -1442,9 +1447,13 @@ class AstBuilder(object):
         token = self._GetNextToken()
         if token.token_type == tokenize.NAME:
             if token.name == 'class':
-                return self._GetClass(Class, VISIBILITY_PRIVATE, templated_types)
+                return self._GetClass(Class,
+                                      VISIBILITY_PRIVATE,
+                                      templated_types)
             elif token.name == 'struct':
-                return self._GetClass(Struct, VISIBILITY_PUBLIC, templated_types)
+                return self._GetClass(Struct,
+                                      VISIBILITY_PUBLIC,
+                                      templated_types)
             elif token.name == 'friend':
                 return self.handle_friend()
         self._AddBackToken(token)
@@ -1635,7 +1644,9 @@ class AstBuilder(object):
     def handle_return(self):
         tokens = self._GetTokensUpTo(tokenize.SYNTAX, ';')
         if not tokens:
-            return Return(self.current_token.start, self.current_token.end, None)
+            return Return(self.current_token.start,
+                          self.current_token.end,
+                          None)
         return Return(tokens[0].start, tokens[0].end, tokens)
 
     def handle_goto(self):

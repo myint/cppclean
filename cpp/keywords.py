@@ -53,7 +53,8 @@ CONTROL = set('case switch default if else return goto'.split())
 EXCEPTION = set('try catch throw'.split())
 LOOP = set('while do for break continue'.split())
 
-ALL = TYPES | TYPE_MODIFIERS | ACCESS | CASTS | OTHERS | OTHER_TYPES | CONTROL | EXCEPTION | LOOP
+ALL = (TYPES | TYPE_MODIFIERS | ACCESS | CASTS | OTHERS | OTHER_TYPES |
+       CONTROL | EXCEPTION | LOOP)
 
 
 def IsKeyword(token):

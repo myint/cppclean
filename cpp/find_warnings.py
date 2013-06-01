@@ -201,7 +201,8 @@ class WarningHunter(object):
             if decl_uses[cls] == UNUSED:
                 node = forward_declarations[cls]
                 if cls in file_uses:
-                    msg = '%r forward declared, but needs to be #included' % cls
+                    msg = ('%r forward declared, but needs to be #included' %
+                           cls)
                 else:
                     msg = '%r not used' % cls
                 self._AddWarning(msg, node)
