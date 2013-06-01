@@ -451,10 +451,6 @@ class WarningHunter(object):
         if not primary_header and not any(node for node in self.ast_list
                                           if isinstance(node, ast.Function) and
                                           node.name == 'main'):
-            # TODO(nnorwitz): This shouldn't always be a warning.
-            # For example, *main.cc shouldn't need a header.  But
-            # almost all other source files should have a
-            # corresponding header.
             msg = 'unable to find header file with matching name'
             self._AddWarning(msg, self.ast_list[0])
 
