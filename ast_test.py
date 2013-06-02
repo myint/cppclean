@@ -131,7 +131,7 @@ def Method(name, in_class, return_type, parameters, start=0, end=0,
                       modifiers, templated_types, body, namespace)
 
 
-class TypeConverter_declaration_to_partsTest(unittest.TestCase):
+class TypeConverterDeclarationToPartsTest(unittest.TestCase):
 
     def setUp(self):
         self.converter = ast.TypeConverter([])
@@ -173,7 +173,7 @@ class TypeConverter_declaration_to_partsTest(unittest.TestCase):
         self.assertEqual([], modifiers)
 
 
-class TypeConverter_to_parametersTest(unittest.TestCase):
+class TypeConverterToParametersTest(unittest.TestCase):
 
     def setUp(self):
         self.converter = ast.TypeConverter([])
@@ -308,7 +308,7 @@ class TypeConverter_to_parametersTest(unittest.TestCase):
         self.assertEqual([Token('NULL')], results[0].default)
 
 
-class TypeConverter_to_typeTest(unittest.TestCase):
+class TypeConverterToTypeTest(unittest.TestCase):
 
     def setUp(self):
         self.converter = ast.TypeConverter([])
@@ -364,7 +364,7 @@ class TypeConverter_to_typeTest(unittest.TestCase):
         self.assertEqual(Type('Bar', templated_types=types), result[0])
 
 
-class TypeConverter_create_return_typeTest(unittest.TestCase):
+class TypeConverterCreateReturnTypeTest(unittest.TestCase):
 
     def setUp(self):
         self.converter = ast.TypeConverter([])
@@ -405,27 +405,7 @@ class TypeConverter_create_return_typeTest(unittest.TestCase):
                          result)
 
 
-class AstBuilder_get_var_tokens_up_toTest(unittest.TestCase):
-    pass  # TODO(nnorwitz): implement.
-
-
-class AstBuilder_skip_if0blocksTest(unittest.TestCase):
-    pass  # TODO(nnorwitz): implement.
-
-
-class AstBuilder_get_matching_charTest(unittest.TestCase):
-    pass  # TODO(nnorwitz): implement.
-
-
-class AstBuilderget_nameTest(unittest.TestCase):
-    pass  # TODO(nnorwitz): implement.
-
-
-class AstBuilder_get_nested_typesTest(unittest.TestCase):
-    pass  # TODO(nnorwitz): implement.
-
-
-class AstBuilder_get_templated_typesTest(unittest.TestCase):
+class AstBuilderGetTemplatedTypesTest(unittest.TestCase):
 
     def test_simple(self):
         builder = MakeBuilder('T> class')
@@ -464,14 +444,6 @@ class AstBuilder_get_templated_typesTest(unittest.TestCase):
         self.assertEqual(2, len(result))
         self.assertEqual((None, None), result['C'])
         self.assertEqual('Type', result['t'][0].name)
-
-
-class AstBuilder_get_basesTest(unittest.TestCase):
-    pass  # TODO(nnorwitz): implement.
-
-
-class AstBuilder_get_classTest(unittest.TestCase):
-    pass  # TODO(nnorwitz): implement.
 
 
 class AstBuilderIntegrationTest(unittest.TestCase):
