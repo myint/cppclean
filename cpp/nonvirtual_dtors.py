@@ -51,19 +51,18 @@ def _find_warnings(filename, source, ast_list):
                         'has virtual methods without a virtual dtor')
 
 
-def run(filenames):
-    for filename in filenames:
-        source = utils.read_file(filename)
-        if source is None:
-            continue
+def run(filename):
+    source = utils.read_file(filename)
+    if source is None:
+        return
 
-        builder = ast.builder_from_source(source, filename)
-        try:
-            entire_ast = [_f for _f in builder.generate() if _f]
-        except KeyboardInterrupt:
-            return
-        except:
-            # An error message was already printed since we couldn't parse.
-            pass
-        else:
-            _find_warnings(filename, source, entire_ast)
+    builder = ast.builder_from_source(source, filename)
+    try:
+        entire_ast = [_f for _f in builder.generate() if _f]
+    except KeyboardInterrupt:
+        return
+    except:
+        # An error message was already printed since we couldn't parse.
+        pass
+    else:
+        _find_warnings(filename, source, entire_ast)

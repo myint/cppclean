@@ -81,7 +81,7 @@ def main():
         for module in [find_warnings,
                        nonvirtual_dtors,
                        static_data]:
-            module.run([filename])
+            module.run(filename)
 
 
 sys.exit(main())

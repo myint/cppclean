@@ -476,14 +476,13 @@ def get_line_number(metrics, node):
     return metrics.get_line_number(node.start)
 
 
-def run(filenames):
-    for filename in filenames:
-        source = utils.read_file(filename)
-        if source is None:
-            continue
+def run(filename):
+    source = utils.read_file(filename)
+    if source is None:
+        return
 
-        builder = ast.builder_from_source(source, filename)
-        entire_ast = list([_f for _f in builder.generate() if _f])
-        hunter = WarningHunter(filename, source, entire_ast)
-        hunter.find_warnings()
-        hunter.show_warnings()
+    builder = ast.builder_from_source(source, filename)
+    entire_ast = list([_f for _f in builder.generate() if _f])
+    hunter = WarningHunter(filename, source, entire_ast)
+    hunter.find_warnings()
+    hunter.show_warnings()
