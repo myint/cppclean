@@ -16,12 +16,12 @@
 
 from __future__ import print_function
 
-__author__ = 'nnorwitz@google.com (Neal Norwitz)'
-
-
 from . import ast
 from . import metrics
 from . import utils
+
+
+__author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
 def _find_warnings(filename, source, ast_list, static_is_optional):
@@ -57,7 +57,6 @@ def run(filenames):
         if source is None:
             continue
 
-        print('Processing', filename)
         builder = ast.builder_from_source(source, filename)
         try:
             entire_ast = [_f for _f in builder.generate() if _f]

@@ -482,7 +482,6 @@ def run(filenames):
         if source is None:
             continue
 
-        print('Processing %s' % filename)
         builder = ast.builder_from_source(source, filename)
         entire_ast = list([_f for _f in builder.generate() if _f])
         hunter = WarningHunter(filename, source, entire_ast)

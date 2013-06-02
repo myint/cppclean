@@ -17,6 +17,8 @@
 
 """Find warnings for C++ code."""
 
+from __future__ import print_function
+
 import argparse
 import fnmatch
 import os
@@ -63,6 +65,8 @@ def main():
     parser.add_argument('--exclude', metavar='globs',
                         help='exclude files/directories that match these '
                              'comma-separated globs')
+    parser.add_argument('--verbose', action='store_true',
+                        help='print verbose messages')
     args = parser.parse_args()
 
     if args.exclude:
@@ -70,12 +74,14 @@ def main():
     else:
         args.exclude = []
 
-    args.files = list(find_files(args.files, exclude=args.exclude))
+    for filename in find_files(args.files, exclude=args.exclude):
+        if args.verbose:
+            print('Processing', filename, file=sys.stderr)
 
-    for module in [find_warnings,
-                   nonvirtual_dtors,
-                   static_data]:
-        module.run(args.files)
+        for module in [find_warnings,
+                       nonvirtual_dtors,
+                       static_data]:
+            module.run([filename])
 
 
 sys.exit(main())

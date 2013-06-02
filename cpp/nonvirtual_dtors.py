@@ -57,7 +57,6 @@ def run(filenames):
         if source is None:
             continue
 
-        print('Processing', filename)
         builder = ast.builder_from_source(source, filename)
         try:
             entire_ast = [_f for _f in builder.generate() if _f]
