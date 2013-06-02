@@ -109,9 +109,6 @@ class Node(object):
         """Does this AST node require the definition of the node passed in?"""
         return False
 
-    def XXX__str__(self):
-        return self._string_helper(self.__class__.__name__, '')
-
     def _string_helper(self, name, suffix):
         if not utils.DEBUG:
             return '%s(%s)' % (name, suffix)
