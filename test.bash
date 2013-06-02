@@ -5,6 +5,7 @@ do
     ./$test
 done
 
-rm -f .tmp
-./cppclean test/ | grep -v Processing | grep -v Unable > .tmp
-diff --unified .tmp test/expected.txt && rm -f .tmp
+cd 'test'
+rm -f '.tmp'
+../cppclean . > '.tmp'
+diff --unified '.tmp' 'expected.txt' && rm -f '.tmp'

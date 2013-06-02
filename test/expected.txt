@@ -1,25 +1,88 @@
-test/foo.h:14: 'Unused' not used
-test/foo.h:61: 'ProtoArray' not used
-test/foo.h:150: 'AR' not used
-test/need-class.h:4: 'Bar' forward declared, but needs to be #included
-test/need-class.h:5: 'Baz' forward declared, but needs to be #included
-test/need-class.h:6: 'Bong' forward declared, but needs to be #included
-test/need-class.h:7: 'Bling' forward declared, but needs to be #included
-test/define/d1.cc:2: unable to find header file with matching name
-test/define/d1.cc:11: SomeFunction1 not found in any directly #included header
-test/define/d1.cc:15: SomeOtherFunction1 not found in any directly #included header
-test/define/d1.cc:19: SomePublicFunction not found in any directly #included header
-test/define/d2.cc:2: SomeFunction not found in any directly #included header
-test/define/d2.cc:2: unable to find header file with matching name
-test/define/d3.cc:2: unable to find header file with matching name
-test/foo.h:234 Colon has virtual methods without a virtual dtor
-test/define/d7.h:4 Bar has virtual methods without a virtual dtor
-test/foo.h:20 static data: d
-test/foo.h:101 static data: ptof
-test/foo.h:106 static data: data
-test/foo.h:208 static data: garbage_state
-test/foo.h:225 static data: flags_
-test/foo.h:239 static data: foo
-test/foo.h:241 static data: GlobalKey
-test/foo.h:263 static data: instance_
-test/foo.h:269 static data: string_list
+Processing ./bar.h
+Processing ./foo.h
+Unable to find dir//bar.h
+./foo.h:14: 'Unused' not used
+./foo.h:61: 'ProtoArray' not used
+./foo.h:113: not-used.h does not need to be #included
+./foo.h:150: 'AR' not used
+Processing ./need-class.h
+./need-class.h:4: 'Bar' forward declared, but needs to be #included
+./need-class.h:5: 'Baz' forward declared, but needs to be #included
+./need-class.h:6: 'Bong' forward declared, but needs to be #included
+./need-class.h:7: 'Bling' forward declared, but needs to be #included
+Processing ./not-used.h
+Processing ./something1.h
+Processing ./with_main.cc
+Processing ./xss_module.h
+Processing ./define/d1.cc
+Unable to find d1.h
+Unable to find other_defined1.h
+./define/d1.cc:2: unable to find header file with matching name
+./define/d1.cc:11: SomeFunction1 not found in any directly #included header
+./define/d1.cc:15: SomeOtherFunction1 not found in any directly #included header
+./define/d1.cc:19: SomePublicFunction not found in any directly #included header
+Processing ./define/d1.h
+Processing ./define/d2.cc
+./define/d2.cc:2: SomeFunction not found in any directly #included header
+./define/d2.cc:2: unable to find header file with matching name
+Processing ./define/d3.cc
+Unable to find d3.h
+./define/d3.cc:2: unable to find header file with matching name
+Processing ./define/d3.h
+Processing ./define/d4-used.h
+Processing ./define/d4.h
+Unable to find d4-used.h
+Processing ./define/d5.h
+Processing ./define/d6.h
+Processing ./define/d7.h
+Processing ./define/d8.h
+Processing ./define/other_defined1.h
+Processing ./bar.h
+Processing ./foo.h
+./foo.h:234 Colon has virtual methods without a virtual dtor
+Processing ./need-class.h
+Processing ./not-used.h
+Processing ./something1.h
+Processing ./with_main.cc
+Processing ./xss_module.h
+Processing ./define/d1.cc
+Processing ./define/d1.h
+Processing ./define/d2.cc
+Processing ./define/d3.cc
+Processing ./define/d3.h
+Processing ./define/d4-used.h
+Processing ./define/d4.h
+Processing ./define/d5.h
+Processing ./define/d6.h
+Processing ./define/d7.h
+./define/d7.h:4 Bar has virtual methods without a virtual dtor
+Processing ./define/d8.h
+Processing ./define/other_defined1.h
+Processing ./bar.h
+Processing ./foo.h
+./foo.h:20 static data: d
+./foo.h:101 static data: ptof
+./foo.h:106 static data: data
+./foo.h:208 static data: garbage_state
+./foo.h:225 static data: flags_
+./foo.h:239 static data: foo
+./foo.h:241 static data: GlobalKey
+./foo.h:263 static data: instance_
+./foo.h:269 static data: string_list
+Processing ./need-class.h
+Processing ./not-used.h
+Processing ./something1.h
+Processing ./with_main.cc
+Processing ./xss_module.h
+Processing ./define/d1.cc
+Processing ./define/d1.h
+Processing ./define/d2.cc
+Processing ./define/d3.cc
+Processing ./define/d3.h
+Processing ./define/d4-used.h
+Processing ./define/d4.h
+Processing ./define/d5.h
+Processing ./define/d6.h
+Processing ./define/d7.h
+Processing ./define/d8.h
+Processing ./define/other_defined1.h
