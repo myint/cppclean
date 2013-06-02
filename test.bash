@@ -5,7 +5,6 @@ do
     ./$test
 done
 
-cd 'test'
 rm -f '.tmp'
-../cppclean . > '.tmp'
-diff --unified '.tmp' 'expected.txt' && rm -f '.tmp'
+./cppclean 'test' > '.tmp'
+diff --unified '.tmp' 'test/expected.txt' && rm -f '.tmp'

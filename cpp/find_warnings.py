@@ -128,7 +128,12 @@ class WarningHunter(object):
             self._UpdateSymbolTable(module)
             return module
 
-        source, actual_filename = headers.ReadSource(filename)
+        directory_relative_filename = os.path.join(
+            os.path.dirname(self.filename), filename)
+
+        source, actual_filename = headers.ReadSource(
+            directory_relative_filename)
+
         if source is None:
             module = Module(filename, None)
             print('Unable to find %s' % filename)
