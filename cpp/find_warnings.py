@@ -58,20 +58,20 @@ class Module(object):
         self.filename = filename
         self.normalized_filename = os.path.abspath(filename)
         self.ast_list = ast_list
-        self.public_symbols = self._GetExportedSymbols()
+        self.public_symbols = self._get_exported_symbols()
 
-    def _GetExportedSymbols(self):
+    def _get_exported_symbols(self):
         if not self.ast_list:
             return {}
-        return dict([(n.name, n) for n in self.ast_list if n.IsExportable()])
+        return dict([(n.name, n) for n in self.ast_list if n.is_exportable()])
 
 
-def _IsHeaderFile(filename):
+def _is_header_file(filename):
     base, ext = os.path.splitext(filename)
     return ext.lower() in ('.h', '.hpp', '.h++', '.hxx')
 
 
-def _IsCppFile(filename):
+def _is_cpp_file(filename):
     base, ext = os.path.splitext(filename)
     return ext.lower() in ('.c', '.cc', '.cpp', '.c++', '.cxx')
 
@@ -93,7 +93,7 @@ class WarningHunter(object):
         if filename not in self._module_cache:
             self._module_cache[filename] = Module(filename, ast_list)
 
-    def _AddWarning(self, msg, node, filename=None):
+    def _addWarning(self, msg, node, filename=None):
         if filename is not None:
             src_metrics = metrics.Metrics(open(filename).read())
         else:
@@ -102,57 +102,57 @@ class WarningHunter(object):
         line_number = get_line_number(src_metrics, node)
         self.warnings.append((filename, line_number, msg))
 
-    def ShowWarnings(self):
+    def show_warnings(self):
         self.warnings.sort()
         for filename, line_num, msg in self.warnings:
             print('%s:%d: %s' % (filename, line_num, msg))
 
-    def FindWarnings(self):
-        if _IsHeaderFile(self.filename):
-            self._FindHeaderWarnings()
-        elif _IsCppFile(self.filename):
-            self._FindSourceWarnings()
+    def find_warnings(self):
+        if _is_header_file(self.filename):
+            self._find_header_warnings()
+        elif _is_cpp_file(self.filename):
+            self._find_source_warnings()
         else:
             print('Unknown filetype for: %s' % self.filename)
 
-    def _UpdateSymbolTable(self, module):
+    def _update_symbol_table(self, module):
         for name, node in module.public_symbols.items():
-            self.symbol_table.AddSymbol(name, node.namespace, node, module)
+            self.symbol_table.add_symbol(name, node.namespace, node, module)
 
-    def _GetModule(self, filename):
+    def _get_module(self, filename):
         if filename in self._module_cache:
             # The cache survives across all instances, but the symbol table
             # is per instance, so we need to make sure the symbol table
             # is updated even if the module was in the cache.
             module = self._module_cache[filename]
-            self._UpdateSymbolTable(module)
+            self._update_symbol_table(module)
             return module
 
         directory_relative_filename = os.path.join(
             os.path.dirname(self.filename), filename)
 
-        source, actual_filename = headers.ReadSource(
+        source, actual_filename = headers.read_source(
             directory_relative_filename)
 
         if source is None:
             module = Module(filename, None)
             print('Unable to find %s' % filename)
         else:
-            builder = ast.BuilderFromSource(source, filename)
+            builder = ast.builder_from_source(source, filename)
             try:
                 module = Module(filename,
-                                [_f for _f in builder.Generate() if _f])
+                                [_f for _f in builder.generate() if _f])
             except KeyboardInterrupt:
                 sys.exit(1)
             except:
                 print('Exception while processing %s' % filename)
                 module = Module(filename, None)
             else:
-                self._UpdateSymbolTable(module)
+                self._update_symbol_table(module)
         self._module_cache[filename] = module
         return module
 
-    def _ReadAndParseIncludes(self):
+    def _read_and_parse_includes(self):
         DECLARATION_TYPES = (ast.Class, ast.Struct, ast.Enum, ast.Union)
 
         # Map header-filename: (#include AST node, module).
@@ -163,33 +163,33 @@ class WarningHunter(object):
             # Ignore #include <> files.  Only handle #include "".
             # Assume that <> are used for only basic C/C++ headers.
             if isinstance(node, ast.Include) and not node.system:
-                module = self._GetModule(node.filename)
+                module = self._get_module(node.filename)
                 included_files[module.normalized_filename] = node, module
-            if isinstance(node, DECLARATION_TYPES) and node.IsDeclaration():
-                forward_declarations[node.FullName()] = node
+            if isinstance(node, DECLARATION_TYPES) and node.is_declaration():
+                forward_declarations[node.full_name()] = node
 
         return included_files, forward_declarations
 
-    def _VerifyIncludes(self, included_files):
+    def _verify_includes(self, included_files):
         # Read and parse all the #include'd files and warn about really
         # stupid things that can be determined from the #include'd file name.
         files_seen = {}
         for filename, (node, module) in included_files.items():
             normalized_filename = module.normalized_filename
-            if _IsCppFile(filename):
+            if _is_cpp_file(filename):
                 msg = 'should not #include C++ source file: %s' % filename
-                self._AddWarning(msg, node)
+                self._addWarning(msg, node)
             if normalized_filename == self.normalized_filename:
-                self._AddWarning('%s #includes itself' % filename, node)
+                self._addWarning('%s #includes itself' % filename, node)
             if normalized_filename in files_seen:
                 include_node = files_seen[normalized_filename]
                 line_num = get_line_number(self.metrics, include_node)
                 msg = '%s already #included on line %d' % (filename, line_num)
-                self._AddWarning(msg, node)
+                self._addWarning(msg, node)
             else:
                 files_seen[normalized_filename] = node
 
-    def _VerifyIncludeFilesUsed(self, file_uses, included_files):
+    def _verify_include_files_used(self, file_uses, included_files):
         # Find all #include files that are unnecessary.
         for include_file, use in file_uses.items():
             if use != USES_DECLARATION:
@@ -198,9 +198,9 @@ class WarningHunter(object):
                     msg = module.filename + ' does not need to be #included'
                     if use == USES_REFERENCE:
                         msg += '.  Use references instead'
-                    self._AddWarning(msg, node)
+                    self._addWarning(msg, node)
 
-    def _VerifyForwardDeclarationsUsed(self, forward_declarations, decl_uses,
+    def _verify_forward_declarations_used(self, forward_declarations, decl_uses,
                                        file_uses):
         # Find all the forward declarations that are not used.
         for cls in forward_declarations:
@@ -211,15 +211,15 @@ class WarningHunter(object):
                            cls)
                 else:
                     msg = '%r not used' % cls
-                self._AddWarning(msg, node)
+                self._addWarning(msg, node)
 
-    def _DetermineUses(self, included_files, forward_declarations):
+    def _determine_uses(self, included_files, forward_declarations):
         # Setup the use type of each symbol.
         file_uses = dict.fromkeys(included_files, UNUSED)
         decl_uses = dict.fromkeys(forward_declarations, UNUSED)
         symbol_table = self.symbol_table
 
-        def _AddReference(name, namespace):
+        def _addReference(name, namespace):
             if name in decl_uses:
                 decl_uses[name] |= USES_REFERENCE
             elif not None in namespace:
@@ -228,7 +228,7 @@ class WarningHunter(object):
                 if name in decl_uses:
                     decl_uses[name] |= USES_REFERENCE
 
-        def _AddUse(name, namespace):
+        def _addUse(name, namespace):
             if isinstance(name, list):
                 # name contains a list of tokens.
                 name = '::'.join([n.name for n in name])
@@ -237,7 +237,7 @@ class WarningHunter(object):
                 #   enum {...} variable;
                 return
             try:
-                file_use_node = symbol_table.LookupSymbol(name, namespace)
+                file_use_node = symbol_table.lookup_symbol(name, namespace)
             except symbols.Error:
                 # TODO(nnorwitz): symbols from the current module
                 # should be added to the symbol table and then this
@@ -255,22 +255,22 @@ class WarningHunter(object):
             if name in file_uses:
                 file_uses[name] |= USES_DECLARATION
 
-        def _AddVariable(node, name, namespace):
+        def _addVariable(node, name, namespace):
             if not name:
                 # Assume that all the types without names are builtin.
                 return
             if node.reference or node.pointer:
-                _AddReference(name, namespace)
+                _addReference(name, namespace)
             else:
-                _AddUse(name, namespace)
+                _addUse(name, namespace)
             # This needs to recurse when the node is a templated type.
             for n in node.templated_types or ():
-                _AddVariable(n, n.name, namespace)
+                _addVariable(n, n.name, namespace)
 
-        def _ProcessFunction(function):
+        def _process_function(function):
             if function.return_type:
                 return_type = function.return_type
-                _AddVariable(return_type, return_type.name, function.namespace)
+                _addVariable(return_type, return_type.name, function.namespace)
             templated_types = function.templated_types or ()
             for p in function.parameters:
                 if p.type.name not in templated_types:
@@ -281,63 +281,63 @@ class WarningHunter(object):
                         # better to iterate through the body and determine
                         # actual uses based on local vars and data members
                         # used.
-                        _AddUse(p.type.name, function.namespace)
+                        _addUse(p.type.name, function.namespace)
                     else:
-                        _AddVariable(p.type, p.type.name, function.namespace)
+                        _addVariable(p.type, p.type.name, function.namespace)
 
-        def _ProcessFunctionBody(function, namespace):
+        def _process_functionBody(function, namespace):
             iterator = iter(function.body)
             for t in iterator:
                 if t.token_type == tokenize.NAME:
-                    if not keywords.IsKeyword(t.name):
+                    if not keywords.is_keyword(t.name):
                         # TODO(nnorwitz): handle :: names.
                         # TODO(nnorwitz): handle static function calls.
                         # TODO(nnorwitz): handle using statements in file.
                         # TODO(nnorwitz): handle using statements in function.
                         # TODO(nnorwitz): handle namespace assignment in file.
-                        _AddUse(t.name, namespace)
+                        _addUse(t.name, namespace)
                 elif t.name in ('.', '->'):
                     # Skip tokens after a dereference.
                     next(iterator)
 
-        def _AddTemplateUse(name, types, namespace):
+        def _addTemplateUse(name, types, namespace):
             if types:
                 for cls in types:
                     if name.endswith('_ptr'):
                         # Special case templated classes that end w/_ptr.
                         # These are things like auto_ptr which do
                         # not require the class definition, only decl.
-                        _AddReference(cls.name, namespace)
+                        _addReference(cls.name, namespace)
                     else:
-                        _AddUse(cls.name, namespace)
-                    _AddTemplateUse(cls.name, cls.templated_types, namespace)
+                        _addUse(cls.name, namespace)
+                    _addTemplateUse(cls.name, cls.templated_types, namespace)
 
         # Iterate through the source AST/tokens, marking each symbols use.
         ast_seq = [self.ast_list]
         while ast_seq:
             for node in ast_seq.pop():
                 if isinstance(node, ast.VariableDeclaration):
-                    _AddVariable(node.type, node.type.name, node.namespace)
-                    _AddTemplateUse(node.type.name,
+                    _addVariable(node.type, node.type.name, node.namespace)
+                    _addTemplateUse(node.type.name,
                                     node.type.templated_types, node.namespace)
                 elif isinstance(node, ast.Function):
-                    _ProcessFunction(node)
+                    _process_function(node)
                     if node.body:
-                        _ProcessFunctionBody(node, node.namespace)
+                        _process_functionBody(node, node.namespace)
                 elif isinstance(node, ast.Typedef):
                     alias = node.alias
                     if isinstance(alias, ast.Type):
-                        _AddUse(alias.name, node.namespace)
-                        _AddTemplateUse('<typedef>', alias.templated_types,
+                        _addUse(alias.name, node.namespace)
+                        _addTemplateUse('<typedef>', alias.templated_types,
                                         node.namespace)
                 elif isinstance(node, ast.Friend):
                     if node.expr and node.expr[0].name == 'class':
                         name = ''.join([n.name for n in node.expr[1:]])
-                        _AddReference(name, node.namespace)
+                        _addReference(name, node.namespace)
                 elif isinstance(node, ast.Class) and node.body is not None:
                     if node.body:
                         ast_seq.append(node.body)
-                    _AddTemplateUse('', node.bases, node.namespace)
+                    _addTemplateUse('', node.bases, node.namespace)
                 elif isinstance(node, ast.Struct) and node.body is not None:
                     pass  # TODO(nnorwitz): impl
                 elif isinstance(node, ast.Union) and node.fields:
@@ -345,23 +345,23 @@ class WarningHunter(object):
 
         return file_uses, decl_uses
 
-    def _FindUnusedWarnings(self):
-        included_files, forward_declarations = self._ReadAndParseIncludes()
+    def _find_unused_warnings(self):
+        included_files, forward_declarations = self._read_and_parse_includes()
         file_uses, decl_uses = \
-            self._DetermineUses(included_files, forward_declarations)
-        self._VerifyIncludes(included_files)
-        self._VerifyIncludeFilesUsed(file_uses, included_files)
-        self._VerifyForwardDeclarationsUsed(forward_declarations, decl_uses,
+            self._determine_uses(included_files, forward_declarations)
+        self._verify_includes(included_files)
+        self._verify_include_files_used(file_uses, included_files)
+        self._verify_forward_declarations_used(forward_declarations, decl_uses,
                                             file_uses)
 
-    def _FindHeaderWarnings(self):
-        self._FindUnusedWarnings()
+    def _find_header_warnings(self):
+        self._find_unused_warnings()
         # TODO(nnorwitz): other warnings to add:
         #   * too much non-template impl in header file
         #   * too many methods/data members
         #   * missing include for classes used for inheritenace
 
-    def _FindPublicFunctionWarnings(self, node, name, primary_header,
+    def _find_public_function_warnings(self, node, name, primary_header,
                                     public_symbols, all_headers):
         # Not found in the primary header, search all other headers.
         for header_node, header in all_headers.values():
@@ -373,7 +373,7 @@ class WarningHunter(object):
                         primary_header.filename != header.filename):
                     msg = ('expected to find %s in %s, but found in %s' %
                            (name, primary_header.filename, header.filename))
-                    self._AddWarning(msg, node)
+                    self._addWarning(msg, node)
                 break
         else:
             where = 'in any directly #included header'
@@ -381,9 +381,9 @@ class WarningHunter(object):
                 where = ('in expected header ' + primary_header.filename +
                          ' or any other directly #included header')
             if name != 'main':
-                self._AddWarning('%s not found %s' % (name, where), node)
+                self._addWarning('%s not found %s' % (name, where), node)
 
-    def _CheckPublicFunctions(self, primary_header, all_headers):
+    def _check_public_functions(self, primary_header, all_headers):
         # Verify all the public functions are also declared in a header file.
         public_symbols = ()
         declared_only_symbols = {}
@@ -406,9 +406,9 @@ class WarningHunter(object):
                 # Ensure that for Foo::Bar, Foo is *not* a namespace.
                 # If Foo is a namespace, we have a function and not a method.
                 names = [n.name for n in node.in_class]
-                if names != self.symbol_table.GetNamespace(names):
+                if names != self.symbol_table.get_namespace(names):
                     continue
-            if not (node.IsDefinition() and node.IsExportable()):
+            if not (node.is_definition() and node.is_exportable()):
                 continue
 
             # TODO(nnorwitz): need to handle using statements.
@@ -418,7 +418,7 @@ class WarningHunter(object):
             if name in public_symbols:
                 declared_only_symbols[name] = False
             else:
-                self._FindPublicFunctionWarnings(node, name, primary_header,
+                self._find_public_function_warnings(node, name, primary_header,
                                                  public_symbols, all_headers)
 
         for name, declared_only in declared_only_symbols.items():
@@ -426,9 +426,9 @@ class WarningHunter(object):
                 # TODO(nnorwitz): shouldn't warn if function is templatized.
                 node = public_symbols[name]
                 msg = '%s declared but not defined' % name
-                self._AddWarning(msg, node, primary_header.filename)
+                self._addWarning(msg, node, primary_header.filename)
 
-    def _GetPrimaryHeader(self, included_files):
+    def _get_primary_header(self, included_files):
         basename = os.path.splitext(self.normalized_filename)[0]
         primary_header = included_files.get(
             basename + PRIMARY_HEADER_EXTENSION)
@@ -438,28 +438,28 @@ class WarningHunter(object):
             return primary_header[1]
         return None
 
-    def _FindSourceWarnings(self):
-        included_files, forward_declarations = self._ReadAndParseIncludes()
+    def _find_source_warnings(self):
+        included_files, forward_declarations = self._read_and_parse_includes()
         if forward_declarations:
             # TODO(nnorwitz): This really isn't a problem, but might
             # be something to warn against.  I expect this will either
             # be configurable or removed in the future.  But it's easy
             # to check for now.
             msg = 'forward declarations not expected in source file'
-            self._AddWarning(msg, next(forward_declarations.values()))
+            self._addWarning(msg, next(forward_declarations.values()))
 
         # A primary header is optional.  However, when looking up
         # defined methods in the source, always look in the
         # primary_header first.  Expect that is the most likely location.
         # Use of primary_header is primarily an optimization.
-        primary_header = self._GetPrimaryHeader(included_files)
+        primary_header = self._get_primary_header(included_files)
         if not primary_header and not any(node for node in self.ast_list
                                           if isinstance(node, ast.Function) and
                                           node.name == 'main'):
             msg = 'unable to find header file with matching name'
-            self._AddWarning(msg, self.ast_list[0])
+            self._addWarning(msg, self.ast_list[0])
 
-        self._CheckPublicFunctions(primary_header, included_files)
+        self._check_public_functions(primary_header, included_files)
 
         # TODO(nnorwitz): other warnings to add:
         #   * unused forward decls for variables (globals)/classes
@@ -469,18 +469,18 @@ class WarningHunter(object):
 
 
 def get_line_number(metrics, node):
-    return metrics.GetLineNumber(node.start)
+    return metrics.get_line_number(node.start)
 
 
 def run(filenames):
     for filename in filenames:
-        source = utils.ReadFile(filename)
+        source = utils.read_file(filename)
         if source is None:
             continue
 
         print('Processing %s' % filename)
-        builder = ast.BuilderFromSource(source, filename)
-        entire_ast = list([_f for _f in builder.Generate() if _f])
+        builder = ast.builder_from_source(source, filename)
+        entire_ast = list([_f for _f in builder.generate() if _f])
         hunter = WarningHunter(filename, source, entire_ast)
-        hunter.FindWarnings()
-        hunter.ShowWarnings()
+        hunter.find_warnings()
+        hunter.show_warnings()

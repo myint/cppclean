@@ -45,8 +45,8 @@ class SymbolTable(object):
         # None is the global namespace.
         self.namespaces = {None: {}}
 
-    def _LookupNamespace(self, symbol, namespace, kind):
-        """Helper for LookupSymbol that only looks up variables in a namespace.
+    def _lookup_namespace(self, symbol, namespace, kind):
+        """Helper for lookup_symbol that only looks up variables in a namespace.
 
         Args:
           symbol: Symbol
@@ -65,8 +65,8 @@ class SymbolTable(object):
                 break
         return result
 
-    def _LookupGlobal(self, symbol):
-        """Helper for LookupSymbol that only looks up global variables.
+    def _lookup_global(self, symbol):
+        """Helper for lookup_symbol that only looks up global variables.
 
         Args:
           symbol: Symbol
@@ -79,19 +79,19 @@ class SymbolTable(object):
             namespace = self.namespaces[None]
         try:
             # Try to do a normal, global namespace lookup.
-            return self._LookupNamespace(symbol, namespace, 'global ')
+            return self._lookup_namespace(symbol, namespace, 'global ')
         except Error:
             orig_exc = sys.exc_info()[1]
             try:
                 # The normal lookup can fail if all of the parts aren't
                 # namespaces.  This happens with OuterClass::Inner.
                 namespace = self.namespaces[None]
-                return self._LookupNamespace(symbol, namespace, 'global ')
+                return self._lookup_namespace(symbol, namespace, 'global ')
             except Error:
                 raise orig_exc
 
-    def _LookupInAllNamespaces(self, symbol):
-        """Helper for LookupSymbol that looks for symbols in all namespaces.
+    def _lookup_in_all_namespaces(self, symbol):
+        """Helper for lookup_symbol that looks for symbols in all namespaces.
 
         Args:
           symbol: Symbol
@@ -110,12 +110,12 @@ class SymbolTable(object):
         # innermost namespace to outermost.
         for namespace in reversed(namespace_stack):
             try:
-                return self._LookupNamespace(symbol, namespace, '')
+                return self._lookup_namespace(symbol, namespace, '')
             except Error:
                 pass
         return None
 
-    def LookupSymbol(self, name, namespace_stack):
+    def lookup_symbol(self, name, namespace_stack):
         """Returns AST node and module for symbol if found.
 
         Args:
@@ -142,23 +142,23 @@ class SymbolTable(object):
             # Handle absolute (global) ::symbol_names.
             symbol.parts = symbol.parts[1:]
         elif namespace_stack is not None:
-            result = self._LookupInAllNamespaces(symbol)
+            result = self._lookup_in_all_namespaces(symbol)
             if result:
                 return result
 
-        return self._LookupGlobal(symbol)
+        return self._lookup_global(symbol)
 
-    def _Add(self, symbol_name, namespace, node, module):
+    def _add(self, symbol_name, namespace, node, module):
         """Helper function for adding symbols.
 
-        See AddSymbol().
+        See add_symbol().
 
         """
         result = symbol_name in namespace
         namespace[symbol_name] = node, module
         return not result
 
-    def AddSymbol(self, symbol_name, namespace_stack, node, module):
+    def add_symbol(self, symbol_name, namespace_stack, node, module):
         """Adds symbol_name defined in namespace_stack to the symbol table.
 
         Args:
@@ -179,9 +179,9 @@ class SymbolTable(object):
                 last_namespace = last_namespace.setdefault(namespace, {})
         else:
             last_namespace = self.namespaces[None]
-        return self._Add(symbol_name, last_namespace, node, module)
+        return self._add(symbol_name, last_namespace, node, module)
 
-    def GetNamespace(self, name_seq):
+    def get_namespace(self, name_seq):
         """Returns the prefix of names from name_seq that are known namespaces.
 
         Args:

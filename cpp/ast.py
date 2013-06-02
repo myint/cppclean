@@ -93,26 +93,26 @@ class Node(object):
         self.start = start
         self.end = end
 
-    def IsDeclaration(self):
+    def is_declaration(self):
         """Returns bool if this node is a declaration."""
         return False
 
-    def IsDefinition(self):
+    def is_definition(self):
         """Returns bool if this node is a definition."""
         return False
 
-    def IsExportable(self):
+    def is_exportable(self):
         """Returns bool if this node exportable from a header file."""
         return False
 
-    def Requires(self, node):
+    def requires(self, node):
         """Does this AST node require the definition of the node passed in?"""
         return False
 
     def XXX__str__(self):
-        return self._StringHelper(self.__class__.__name__, '')
+        return self._string_helper(self.__class__.__name__, '')
 
-    def _StringHelper(self, name, suffix):
+    def _string_helper(self, name, suffix):
         if not utils.DEBUG:
             return '%s(%s)' % (name, suffix)
         return '%s(%d, %d, %s)' % (name, self.start, self.end, suffix)
@@ -130,7 +130,7 @@ class Define(Node):
 
     def __str__(self):
         value = '%s %s' % (self.name, self.definition)
-        return self._StringHelper(self.__class__.__name__, value)
+        return self._string_helper(self.__class__.__name__, value)
 
 
 class Include(Node):
@@ -144,7 +144,7 @@ class Include(Node):
         fmt = '"%s"'
         if self.system:
             fmt = '<%s>'
-        return self._StringHelper(self.__class__.__name__, fmt % self.filename)
+        return self._string_helper(self.__class__.__name__, fmt % self.filename)
 
 
 class Goto(Node):
@@ -154,7 +154,7 @@ class Goto(Node):
         self.label = label
 
     def __str__(self):
-        return self._StringHelper(self.__class__.__name__, str(self.label))
+        return self._string_helper(self.__class__.__name__, str(self.label))
 
 
 class Expr(Node):
@@ -163,12 +163,12 @@ class Expr(Node):
         Node.__init__(self, start, end)
         self.expr = expr
 
-    def Requires(self, node):
+    def requires(self, node):
         # TODO(nnorwitz): impl.
         return False
 
     def __str__(self):
-        return self._StringHelper(self.__class__.__name__, str(self.expr))
+        return self._string_helper(self.__class__.__name__, str(self.expr))
 
 
 class Return(Expr):
@@ -193,7 +193,7 @@ class Using(Node):
         self.names = names
 
     def __str__(self):
-        return self._StringHelper(self.__class__.__name__, str(self.names))
+        return self._string_helper(self.__class__.__name__, str(self.names))
 
 
 class Parameter(Node):
@@ -204,7 +204,7 @@ class Parameter(Node):
         self.type = parameter_type
         self.default = default
 
-    def Requires(self, node):
+    def requires(self, node):
         # TODO(nnorwitz): handle namespaces, etc.
         return self.type.name == node.name
 
@@ -213,7 +213,7 @@ class Parameter(Node):
         suffix = '%s %s' % (name, self.name)
         if self.default:
             suffix += ' = ' + ''.join([d.name for d in self.default])
-        return self._StringHelper(self.__class__.__name__, suffix)
+        return self._string_helper(self.__class__.__name__, suffix)
 
 
 class _GenericDeclaration(Node):
@@ -223,17 +223,17 @@ class _GenericDeclaration(Node):
         self.name = name
         self.namespace = namespace[:]
 
-    def FullName(self):
+    def full_name(self):
         prefix = ''
         if self.namespace and self.namespace[-1]:
             prefix = '::'.join(self.namespace) + '::'
         return prefix + self.name
 
-    def _TypeStringHelper(self, suffix):
+    def _type_string_helper(self, suffix):
         if self.namespace:
             names = [n or '<anonymous>' for n in self.namespace]
             suffix += ' in ' + '::'.join(names)
-        return self._StringHelper(self.__class__.__name__, suffix)
+        return self._string_helper(self.__class__.__name__, suffix)
 
 
 # TODO(nnorwitz): merge with Parameter in some way?
@@ -244,11 +244,11 @@ class VariableDeclaration(_GenericDeclaration):
         self.type = var_type
         self.initial_value = initial_value
 
-    def Requires(self, node):
+    def requires(self, node):
         # TODO(nnorwitz): handle namespaces, etc.
         return self.type.name == node.name
 
-    def ToString(self):
+    def to_string(self):
         """Return a string that tries to reconstitute the variable decl."""
         suffix = '%s %s' % (self.type, self.name)
         if self.initial_value:
@@ -256,7 +256,7 @@ class VariableDeclaration(_GenericDeclaration):
         return suffix
 
     def __str__(self):
-        return self._StringHelper(self.__class__.__name__, self.ToString())
+        return self._string_helper(self.__class__.__name__, self.to_string())
 
 
 class Typedef(_GenericDeclaration):
@@ -265,13 +265,13 @@ class Typedef(_GenericDeclaration):
         _GenericDeclaration.__init__(self, start, end, name, namespace)
         self.alias = alias
 
-    def IsDefinition(self):
+    def is_definition(self):
         return True
 
-    def IsExportable(self):
+    def is_exportable(self):
         return True
 
-    def Requires(self, node):
+    def requires(self, node):
         # TODO(nnorwitz): handle namespaces, etc.
         name = node.name
         for token in self.alias:
@@ -281,7 +281,7 @@ class Typedef(_GenericDeclaration):
 
     def __str__(self):
         suffix = '%s, %s' % (self.name, self.alias)
-        return self._TypeStringHelper(suffix)
+        return self._type_string_helper(suffix)
 
 
 class _NestedType(_GenericDeclaration):
@@ -290,15 +290,15 @@ class _NestedType(_GenericDeclaration):
         _GenericDeclaration.__init__(self, start, end, name, namespace)
         self.fields = fields
 
-    def IsDefinition(self):
+    def is_definition(self):
         return True
 
-    def IsExportable(self):
+    def is_exportable(self):
         return True
 
     def __str__(self):
         suffix = '%s, {%s}' % (self.name, self.fields)
-        return self._TypeStringHelper(suffix)
+        return self._type_string_helper(suffix)
 
 
 class Union(_NestedType):
@@ -318,16 +318,16 @@ class Class(_GenericDeclaration):
         self.body = body
         self.templated_types = templated_types
 
-    def IsDeclaration(self):
+    def is_declaration(self):
         return self.bases is None and self.body is None
 
-    def IsDefinition(self):
-        return not self.IsDeclaration()
+    def is_definition(self):
+        return not self.is_declaration()
 
-    def IsExportable(self):
-        return not self.IsDeclaration()
+    def is_exportable(self):
+        return not self.is_declaration()
 
-    def Requires(self, node):
+    def requires(self, node):
         # TODO(nnorwitz): handle namespaces, etc.
         if self.bases:
             for token_list in self.bases:
@@ -343,7 +343,7 @@ class Class(_GenericDeclaration):
         if self.templated_types:
             name += '<%s>' % self.templated_types
         suffix = '%s, %s, %s' % (name, self.bases, self.body)
-        return self._TypeStringHelper(suffix)
+        return self._type_string_helper(suffix)
 
 
 class Struct(Class):
@@ -356,24 +356,24 @@ class Function(_GenericDeclaration):
                  modifiers, templated_types, body, namespace):
         _GenericDeclaration.__init__(self, start, end, name, namespace)
         converter = TypeConverter(namespace)
-        self.return_type = converter.CreateReturnType(return_type)
-        self.parameters = converter.ToParameters(parameters)
+        self.return_type = converter.create_return_type(return_type)
+        self.parameters = converter.to_parameters(parameters)
         self.modifiers = modifiers
         self.body = body
         self.templated_types = templated_types
 
-    def IsDeclaration(self):
+    def is_declaration(self):
         return self.body is None
 
-    def IsDefinition(self):
+    def is_definition(self):
         return self.body is not None
 
-    def IsExportable(self):
+    def is_exportable(self):
         if self.return_type and 'static' in self.return_type.modifiers:
             return False
         return None not in self.namespace
 
-    def Requires(self, node):
+    def requires(self, node):
         if self.parameters:
             # TODO(nnorwitz): parameters are tokens, do name comparison.
             for p in self.parameters:
@@ -387,7 +387,7 @@ class Function(_GenericDeclaration):
         suffix = ('%s %s(%s), 0x%02x, %s' %
                   (self.return_type, self.name, self.parameters,
                    self.modifiers, self.body))
-        return self._TypeStringHelper(suffix)
+        return self._type_string_helper(suffix)
 
 
 class Method(Function):
@@ -438,17 +438,17 @@ class Type(_GenericDeclaration):
             suffix += '*'
         if self.array:
             suffix += '[]'
-        return self._TypeStringHelper(suffix)
+        return self._type_string_helper(suffix)
 
     # By definition, Is* are always False.  A Type can only exist in
     # some sort of variable declaration, parameter, or return value.
-    def IsDeclaration(self):
+    def is_declaration(self):
         return False
 
-    def IsDefinition(self):
+    def is_definition(self):
         return False
 
-    def IsExportable(self):
+    def is_exportable(self):
         return False
 
 
@@ -457,7 +457,7 @@ class TypeConverter(object):
     def __init__(self, namespace_stack):
         self.namespace_stack = namespace_stack
 
-    def _GetTemplateEnd(self, tokens, start):
+    def _get_template_end(self, tokens, start):
         count = 1
         end = start
         while True:
@@ -471,7 +471,7 @@ class TypeConverter(object):
                     break
         return tokens[start:end - 1], end
 
-    def ToType(self, tokens):
+    def to_type(self, tokens):
         """Convert [Token,...] to [Class(...), ] useful for base classes.
 
         For example, code like class Foo : public Bar<x, y> { ... };
@@ -485,12 +485,12 @@ class TypeConverter(object):
         name_tokens = []
         reference = pointer = array = False
 
-        def AddType(templated_types):
+        def add_type(templated_types):
             # Partition tokens into name and modifier tokens.
             names = []
             modifiers = []
             for t in name_tokens:
-                if keywords.IsKeyword(t.name):
+                if keywords.is_keyword(t.name):
                     modifiers.append(t.name)
                 else:
                     names.append(t.name)
@@ -505,14 +505,14 @@ class TypeConverter(object):
         while i < end:
             token = tokens[i]
             if token.name == '<':
-                new_tokens, new_end = self._GetTemplateEnd(tokens, i + 1)
-                AddType(self.ToType(new_tokens))
+                new_tokens, new_end = self._get_template_end(tokens, i + 1)
+                add_type(self.to_type(new_tokens))
                 # If there is a comma after the template, we need to consume
                 # that here otherwise it becomes part of the name.
                 i = new_end
                 reference = pointer = array = False
             elif token.name == ',':
-                AddType([])
+                add_type([])
                 reference = pointer = array = False
             elif token.name == '*':
                 pointer = True
@@ -528,10 +528,10 @@ class TypeConverter(object):
 
         if name_tokens:
             # No '<' in the tokens, just a simple name and no template.
-            AddType([])
+            add_type([])
         return result
 
-    def DeclarationToParts(self, parts, needs_name_removed):
+    def declaration_to_parts(self, parts, needs_name_removed):
         name = None
         default = []
         if needs_name_removed:
@@ -561,11 +561,11 @@ class TypeConverter(object):
         end = len(parts)
         while i < end:
             p = parts[i]
-            if keywords.IsKeyword(p.name):
+            if keywords.is_keyword(p.name):
                 modifiers.append(p.name)
             elif p.name == '<':
-                templated_tokens, new_end = self._GetTemplateEnd(parts, i + 1)
-                templated_types = self.ToType(templated_tokens)
+                templated_tokens, new_end = self._get_template_end(parts, i + 1)
+                templated_types = self.to_type(templated_tokens)
                 i = new_end - 1
                 # Don't add a spurious :: to data members being initialized.
                 next_index = i + 1
@@ -596,7 +596,7 @@ class TypeConverter(object):
                 default,
                 other_tokens)
 
-    def ToParameters(self, tokens):
+    def to_parameters(self, tokens):
         if not tokens:
             return []
 
@@ -606,11 +606,11 @@ class TypeConverter(object):
         first_token = None
         default = []
 
-        def AddParameter():
+        def add_parameter():
             if default:
                 del default[0]  # Remove flag.
             end = type_modifiers[-1].end
-            parts = self.DeclarationToParts(type_modifiers, True)
+            parts = self.declaration_to_parts(type_modifiers, True)
             (name, type_name, templated_types, modifiers,
              _, __) = parts
             parameter_type = Type(first_token.start, first_token.end,
@@ -633,7 +633,7 @@ class TypeConverter(object):
                 continue
 
             if s.name == ',':
-                AddParameter()
+                add_parameter()
                 type_modifiers = []
                 pointer = reference = array = False
                 first_token = None
@@ -653,16 +653,16 @@ class TypeConverter(object):
                 default.append(s)
             else:
                 type_modifiers.append(s)
-        AddParameter()
+        add_parameter()
         return result
 
-    def CreateReturnType(self, return_type_seq):
+    def create_return_type(self, return_type_seq):
         if not return_type_seq:
             return None
         start = return_type_seq[0].start
         end = return_type_seq[-1].end
         _, name, templated_types, modifiers, default, other_tokens = \
-            self.DeclarationToParts(return_type_seq, False)
+            self.declaration_to_parts(return_type_seq, False)
         names = [n.name for n in other_tokens]
         reference = '&' in names
         pointer = '*' in names
@@ -670,7 +670,7 @@ class TypeConverter(object):
         return Type(start, end, name, templated_types, modifiers,
                     reference, pointer, array)
 
-    def GetTemplateIndices(self, names):
+    def get_template_indices(self, names):
         # names is a list of strings.
         start = names.index('<')
         end = len(names) - 1
@@ -705,14 +705,14 @@ class AstBuilder(object):
 
         self.converter = TypeConverter(self.namespace_stack)
 
-    def HandleError(self, msg, token):
+    def handle_error(self, msg, token):
         printable_queue = list(reversed(self.token_queue[-20:]))
         sys.stderr.write('Got %s in %s @ %s %s\n' %
                          (msg, self.filename, token, printable_queue))
 
-    def Generate(self):
+    def generate(self):
         while True:
-            token = self._GetNextToken()
+            token = self._get_next_token()
             if not token:
                 break
 
@@ -726,14 +726,14 @@ class AstBuilder(object):
                 continue
 
             try:
-                result = self._GenerateOne(token)
+                result = self._generateOne(token)
                 if result is not None:
                     yield result
             except:
-                self.HandleError('exception', token)
+                self.handle_error('exception', token)
                 raise
 
-    def _CreateVariable(self, pos_token, name, type_name, type_modifiers,
+    def _create_variable(self, pos_token, name, type_name, type_modifiers,
                         ref_pointer_name_seq, templated_types, value=None):
         reference = '&' in ref_pointer_name_seq
         pointer = '*' in ref_pointer_name_seq
@@ -744,33 +744,33 @@ class AstBuilder(object):
         return VariableDeclaration(pos_token.start, pos_token.end,
                                    name, var_type, value, self.namespace_stack)
 
-    def _GenerateOne(self, token):
+    def _generateOne(self, token):
         if token.token_type == tokenize.NAME:
-            if (keywords.IsKeyword(token.name) and
-                    not keywords.IsBuiltinType(token.name)):
+            if (keywords.is_keyword(token.name) and
+                    not keywords.is_builtin_type(token.name)):
                 method = getattr(self, 'handle_' + token.name)
                 return method()
             elif token.name == self.in_class_name_only:
                 # The token name is the same as the class, must be a ctor if
                 # there is a paren.  Otherwise, it's the return type.
                 # Peek ahead to get the next token to figure out which.
-                next = self._GetNextToken()
-                self._AddBackToken(next)
+                next = self._get_next_token()
+                self._addBackToken(next)
                 if next.token_type == tokenize.SYNTAX and next.name == '(':
-                    return self._GetMethod([token], FUNCTION_CTOR, None, True)
+                    return self._get_method([token], FUNCTION_CTOR, None, True)
                 # Fall through--handle like any other method.
 
             # Handle data or function declaration/definition.
             syntax = tokenize.SYNTAX
             temp_tokens, last_token = \
-                self._GetVarTokensUpTo(syntax, '(', ';', '{', '[')
+                self._get_var_tokens_up_to(syntax, '(', ';', '{', '[')
             temp_tokens.insert(0, token)
             if last_token.name == '(':
                 # If there is an assignment before the paren,
                 # this is an expression, not a method.
                 expr = bool([e for e in temp_tokens if e.name == '='])
                 if expr:
-                    new_temp = self._GetTokensUpTo(tokenize.SYNTAX, ';')
+                    new_temp = self._get_tokensUpTo(tokenize.SYNTAX, ';')
                     temp_tokens.append(last_token)
                     temp_tokens.extend(new_temp)
                     last_token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
@@ -780,29 +780,29 @@ class AstBuilder(object):
                 # TODO(nnorwitz): keep the size somewhere.
                 temp_tokens.append(last_token)
                 if temp_tokens[-2].name == 'operator':
-                    temp_tokens.append(self._GetNextToken())
+                    temp_tokens.append(self._get_next_token())
                 else:
                     temp_tokens2, last_token = \
-                        self._GetVarTokensUpTo(tokenize.SYNTAX, ';')
+                        self._get_var_tokens_up_to(tokenize.SYNTAX, ';')
                     temp_tokens.extend(temp_tokens2)
 
             if last_token.name == ';':
                 # Handle data, this isn't a method.
-                parts = self.converter.DeclarationToParts(temp_tokens, True)
+                parts = self.converter.declaration_to_parts(temp_tokens, True)
                 (name, type_name, templated_types, modifiers, default,
                  _) = parts
 
                 t0 = temp_tokens[0]
                 names = [t.name for t in temp_tokens]
                 if templated_types:
-                    start, end = self.converter.GetTemplateIndices(names)
+                    start, end = self.converter.get_template_indices(names)
                     names = names[:start] + names[end:]
                 default = ''.join([t.name for t in default])
-                return self._CreateVariable(t0, name, type_name, modifiers,
+                return self._create_variable(t0, name, type_name, modifiers,
                                             names, templated_types, default)
             if last_token.name == '{':
-                self._AddBackTokens(temp_tokens[1:])
-                self._AddBackToken(last_token)
+                self._addBackTokens(temp_tokens[1:])
+                self._addBackToken(last_token)
                 method_name = temp_tokens[0].name
                 method = getattr(self, 'handle_' + method_name, None)
                 if not method:
@@ -810,16 +810,16 @@ class AstBuilder(object):
                     # TODO(nnorwitz): handle the declaration.
                     return None
                 return method()
-            return self._GetMethod(temp_tokens, 0, None, False)
+            return self._get_method(temp_tokens, 0, None, False)
         elif token.token_type == tokenize.SYNTAX:
             if token.name == '~' and self.in_class:
                 # Must be a dtor (probably not in method body).
-                token = self._GetNextToken()
+                token = self._get_next_token()
                 # self.in_class can contain A::Name, but the dtor will only
                 # be Name.  Make sure to compare against the right value.
                 if (token.token_type == tokenize.NAME and
                         token.name == self.in_class_name_only):
-                    return self._GetMethod([token], FUNCTION_DTOR, None, True)
+                    return self._get_method([token], FUNCTION_DTOR, None, True)
             # TODO(nnorwitz): handle a lot more syntax.
         elif token.token_type == tokenize.PREPROCESSOR:
             # TODO(nnorwitz): handle more preprocessor directives.
@@ -851,29 +851,29 @@ class AstBuilder(object):
             if name.startswith('if') and name[2:3].isspace():
                 condition = name[3:].strip()
                 if condition.startswith('0') or condition.startswith('(0)'):
-                    self._SkipIf0Blocks()
+                    self._skip_if0blocks()
         return None
 
-    def _GetTokensUpTo(self, expected_token_type, expected_token):
-        return self._GetVarTokensUpTo(expected_token_type, expected_token)[0]
+    def _get_tokensUpTo(self, expected_token_type, expected_token):
+        return self._get_var_tokens_up_to(expected_token_type, expected_token)[0]
 
-    def _GetVarTokensUpTo(self, expected_token_type, *expected_tokens):
-        last_token = self._GetNextToken()
+    def _get_var_tokens_up_to(self, expected_token_type, *expected_tokens):
+        last_token = self._get_next_token()
         tokens = []
         while (last_token.token_type != expected_token_type or
                last_token.name not in expected_tokens):
             tokens.append(last_token)
-            last_token = self._GetNextToken()
+            last_token = self._get_next_token()
         return tokens, last_token
 
-    # TODO(nnorwitz): remove _IgnoreUpTo() it shouldn't be necessary.
-    def _IgnoreUpTo(self, token_type, token):
-        self._GetTokensUpTo(token_type, token)
+    # TODO(nnorwitz): remove _ignore_up_to() it shouldn't be necessary.
+    def _ignore_up_to(self, token_type, token):
+        self._get_tokensUpTo(token_type, token)
 
-    def _SkipIf0Blocks(self):
+    def _skip_if0blocks(self):
         count = 1
         while True:
-            token = self._GetNextToken()
+            token = self._get_next_token()
             if token.token_type != tokenize.PREPROCESSOR:
                 continue
 
@@ -885,9 +885,9 @@ class AstBuilder(object):
             elif name.startswith('if'):
                 count += 1
 
-    def _GetMatchingChar(self, open_paren, close_paren, GetNextToken=None):
+    def _get_matching_char(self, open_paren, close_paren, GetNextToken=None):
         if GetNextToken is None:
-            GetNextToken = self._GetNextToken
+            GetNextToken = self._get_next_token
         # Assumes the current token is open_paren and we will consume
         # and return up to the close_paren.
         count = 1
@@ -904,18 +904,18 @@ class AstBuilder(object):
             token = GetNextToken()
         yield token
 
-    def _GetParameters(self):
-        return self._GetMatchingChar('(', ')')
+    def _get_parameters(self):
+        return self._get_matching_char('(', ')')
 
-    def GetScope(self):
-        return self._GetMatchingChar('{', '}')
+    def get_scope(self):
+        return self._get_matching_char('{', '}')
 
-    def _GetNextToken(self):
+    def _get_next_token(self):
         if self.token_queue:
             return self.token_queue.pop()
         return next(self.tokens)
 
-    def _AddBackToken(self, token):
+    def _addBackToken(self, token):
         if token.whence == tokenize.WHENCE_STREAM:
             token.whence = tokenize.WHENCE_QUEUE
             self.token_queue.insert(0, token)
@@ -923,7 +923,7 @@ class AstBuilder(object):
             assert token.whence == tokenize.WHENCE_QUEUE, token
             self.token_queue.append(token)
 
-    def _AddBackTokens(self, tokens):
+    def _addBackTokens(self, tokens):
         if tokens:
             if tokens[-1].whence == tokenize.WHENCE_STREAM:
                 for token in tokens:
@@ -933,9 +933,9 @@ class AstBuilder(object):
                 assert tokens[-1].whence == tokenize.WHENCE_QUEUE, tokens
                 self.token_queue.extend(reversed(tokens))
 
-    def GetName(self, seq=None):
+    def get_name(self, seq=None):
         """Returns ([tokens], next_token_info)."""
-        GetNextToken = self._GetNextToken
+        GetNextToken = self._get_next_token
         if seq is not None:
             it = iter(seq)
             GetNextToken = lambda: next(it)
@@ -953,29 +953,29 @@ class AstBuilder(object):
             tokens.append(next_token)
             # Handle templated names.
             if next_token.name == '<':
-                tokens.extend(self._GetMatchingChar('<', '>', GetNextToken))
+                tokens.extend(self._get_matching_char('<', '>', GetNextToken))
                 last_token_was_name = True
             next_token = GetNextToken()
         return tokens, next_token
 
-    def GetMethod(self, modifiers, templated_types):
-        return_type_and_name = self._GetTokensUpTo(tokenize.SYNTAX, '(')
+    def get_method(self, modifiers, templated_types):
+        return_type_and_name = self._get_tokensUpTo(tokenize.SYNTAX, '(')
         assert len(return_type_and_name) >= 1
-        return self._GetMethod(
+        return self._get_method(
             return_type_and_name, modifiers, templated_types,
             False)
 
-    def _GetMethod(self, return_type_and_name, modifiers, templated_types,
+    def _get_method(self, return_type_and_name, modifiers, templated_types,
                    get_paren):
         template_portion = None
         if get_paren:
-            token = self._GetNextToken()
+            token = self._get_next_token()
             assert token.token_type == tokenize.SYNTAX, token
             if token.name == '<':
                 # Handle templatized dtors.
                 template_portion = [token]
-                template_portion.extend(self._GetMatchingChar('<', '>'))
-                token = self._GetNextToken()
+                template_portion.extend(self._get_matching_char('<', '>'))
+                token = self._get_next_token()
             assert token.token_type == tokenize.SYNTAX, token
             assert token.name == '(', token
 
@@ -996,8 +996,8 @@ class AstBuilder(object):
             del return_type_and_name[-2:]
             name = tokenize.Token(tokenize.NAME, 'operator[]',
                                   name_seq[0].start, name.end)
-            # Get the open paren so _GetParameters() below works.
-            self._GetNextToken()
+            # Get the open paren so _get_parameters() below works.
+            self._get_next_token()
 
         # TODO(nnorwitz): store template_portion.
         return_type = return_type_and_name
@@ -1008,20 +1008,20 @@ class AstBuilder(object):
         # Force ctor for templatized ctors.
         if name.name == self.in_class and not modifiers:
             modifiers |= FUNCTION_CTOR
-        parameters = list(self._GetParameters())
+        parameters = list(self._get_parameters())
         del parameters[-1]              # Remove trailing ')'.
 
         # Handling operator() is especially weird.
         if name.name == 'operator' and not parameters:
-            token = self._GetNextToken()
+            token = self._get_next_token()
             assert token.name == '(', token
-            parameters = list(self._GetParameters())
+            parameters = list(self._get_parameters())
             del parameters[-1]          # Remove trailing ')'.
 
-        token = self._GetNextToken()
+        token = self._get_next_token()
         while token.token_type == tokenize.NAME:
             modifier_token = token
-            token = self._GetNextToken()
+            token = self._get_next_token()
             if modifier_token.name == 'const':
                 modifiers |= FUNCTION_CONST
             elif modifier_token.name == '__attribute__':
@@ -1029,27 +1029,27 @@ class AstBuilder(object):
                 modifiers |= FUNCTION_ATTRIBUTE
                 assert token.name == '(', token
                 # Consume everything between the (parens).
-                list(self._GetMatchingChar('(', ')'))
-                token = self._GetNextToken()
+                list(self._get_matching_char('(', ')'))
+                token = self._get_next_token()
             elif modifier_token.name == 'throw':
                 modifiers |= FUNCTION_THROW
                 assert token.name == '(', token
                 # Consume everything between the (parens).
-                list(self._GetMatchingChar('(', ')'))
-                token = self._GetNextToken()
+                list(self._get_matching_char('(', ')'))
+                token = self._get_next_token()
             elif modifier_token.name == modifier_token.name.upper():
                 # HACK(nnorwitz):  assume that all upper-case names
                 # are some macro we aren't expanding.
                 modifiers |= FUNCTION_UNKNOWN_ANNOTATION
             else:
-                self.HandleError('unexpected token', modifier_token)
+                self.handle_error('unexpected token', modifier_token)
 
         assert token.token_type == tokenize.SYNTAX, token
         # Handle ctor initializers.
         if token.name == ':':
             # TODO(nnorwitz): anything else to handle for initializer list?
             while token.name != ';' and token.name != '{':
-                token = self._GetNextToken()
+                token = self._get_next_token()
 
         # Handle pointer to functions that are really data but look
         # like method declarations.
@@ -1060,13 +1060,13 @@ class AstBuilder(object):
                 # parameters contains the name of the data.
                 modifiers = [p.name for p in parameters]
                 # Already at the ( to open the parameter list.
-                function_parameters = list(self._GetMatchingChar('(', ')'))
+                function_parameters = list(self._get_matching_char('(', ')'))
                 del function_parameters[-1]  # Remove trailing ')'.
                 # TODO(nnorwitz): store the function_parameters.
-                token = self._GetNextToken()
+                token = self._get_next_token()
                 assert token.token_type == tokenize.SYNTAX, token
                 assert token.name == ';', token
-                return self._CreateVariable(indices, name.name, indices.name,
+                return self._create_variable(indices, name.name, indices.name,
                                             modifiers, '', None)
             # At this point, we got something like:
             #  return_type (type::*name_)(params);
@@ -1077,35 +1077,35 @@ class AstBuilder(object):
             # TODO(nnorwitz): this isn't even close to being correct.
             # Just put in something so we don't crash and can move on.
             real_name = parameters[-1]
-            modifiers = [p.name for p in self._GetParameters()]
+            modifiers = [p.name for p in self._get_parameters()]
             del modifiers[-1]           # Remove trailing ')'.
-            return self._CreateVariable(indices, real_name.name, indices.name,
+            return self._create_variable(indices, real_name.name, indices.name,
                                         modifiers, '', None)
 
         if token.name == '{':
-            body = list(self.GetScope())
+            body = list(self.get_scope())
             del body[-1]                # Remove trailing '}'.
         else:
             body = None
             if token.name == '=':
-                token = self._GetNextToken()
+                token = self._get_next_token()
                 assert token.token_type == tokenize.CONSTANT, token
                 assert token.name == '0', token
                 modifiers |= FUNCTION_PURE_VIRTUAL
-                token = self._GetNextToken()
+                token = self._get_next_token()
 
             if token.name == '[':
                 # TODO(nnorwitz): store tokens and improve parsing.
                 # template <typename T, size_t N> char (&ASH(T (&seq)[N]))[N];
-                list(self._GetMatchingChar('[', ']'))
-                token = self._GetNextToken()
+                list(self._get_matching_char('[', ']'))
+                token = self._get_next_token()
 
             assert token.name == ';', (token, return_type_and_name, parameters)
 
         # Looks like we got a method, not a function.
         if len(return_type) > 2 and return_type[-1].name == '::':
             return_type, in_class = \
-                self._GetReturnTypeAndClassName(return_type)
+                self._get_return_type_and_class_name(return_type)
             return Method(indices.start, indices.end, name.name, in_class,
                           return_type, parameters, modifiers, templated_types,
                           body, self.namespace_stack)
@@ -1113,7 +1113,7 @@ class AstBuilder(object):
                         parameters, modifiers, templated_types, body,
                         self.namespace_stack)
 
-    def _GetReturnTypeAndClassName(self, token_seq):
+    def _get_return_type_and_class_name(self, token_seq):
         # Splitting the return type from the class name in a method
         # can be tricky.  For example, Return::Type::Is::Hard::To::Find().
         # Where is the return type and where is the class name?
@@ -1132,14 +1132,14 @@ class AstBuilder(object):
             end -= 1
 
         # Make a copy of the sequence so we can append a sentinel
-        # value. This is required for GetName will has to have some
+        # value. This is required for get_name will has to have some
         # terminating condition beyond the last name.
         seq_copy = token_seq[i:end]
         seq_copy.append(tokenize.Token(tokenize.SYNTAX, '', 0, 0))
         names = []
         while i < end:
             # Iterate through the sequence parsing out each name.
-            new_name, next = self.GetName(seq_copy[i:])
+            new_name, next = self.get_name(seq_copy[i:])
             assert new_name, 'Got empty new_name, next=%s' % next
             # We got a pointer or ref.  Add it to the name.
             if next and next.token_type == tokenize.SYNTAX:
@@ -1190,9 +1190,9 @@ class AstBuilder(object):
     def handle_signed(self):
         pass
 
-    def _GetNestedType(self, ctor):
+    def _get_nested_type(self, ctor):
         name = None
-        name_tokens, token = self.GetName()
+        name_tokens, token = self.get_name()
         if name_tokens:
             name = ''.join([t.name for t in name_tokens])
 
@@ -1202,15 +1202,15 @@ class AstBuilder(object):
                         self.namespace_stack)
 
         if token.token_type == tokenize.NAME and self._handling_typedef:
-            self._AddBackToken(token)
+            self._addBackToken(token)
             return ctor(token.start, token.end, name, None,
                         self.namespace_stack)
 
         # Must be the type declaration.
-        fields = list(self._GetMatchingChar('{', '}'))
+        fields = list(self._get_matching_char('{', '}'))
         del fields[-1]                  # Remove trailing '}'.
         if token.token_type == tokenize.SYNTAX and token.name == '{':
-            next = self._GetNextToken()
+            next = self._get_next_token()
             new_type = ctor(token.start, token.end, name, fields,
                             self.namespace_stack)
             # A name means this is an anonymous type and the name
@@ -1222,14 +1222,14 @@ class AstBuilder(object):
 
         # Must be variable declaration using the type prefixed with keyword.
         assert token.token_type == tokenize.NAME, token
-        return self._CreateVariable(token, token.name, name, [], '', None)
+        return self._create_variable(token, token.name, name, [], '', None)
 
     def handle_struct(self):
         # Special case the handling typedef/aliasing of structs here.
         # It would be a pain to handle in the class code.
-        name_tokens, var_token = self.GetName()
+        name_tokens, var_token = self.get_name()
         if name_tokens:
-            next_token = self._GetNextToken()
+            next_token = self._get_next_token()
             is_syntax = (var_token.token_type == tokenize.SYNTAX and
                          var_token.name[0] in '*&')
             is_variable = (var_token.token_type == tokenize.NAME and
@@ -1237,7 +1237,7 @@ class AstBuilder(object):
             variable = var_token
             if is_syntax and not is_variable:
                 variable = next_token
-                temp = self._GetNextToken()
+                temp = self._get_next_token()
                 if temp.token_type == tokenize.SYNTAX and temp.name == '(':
                     # Handle methods declared to return a struct.
                     t0 = name_tokens[0]
@@ -1246,25 +1246,25 @@ class AstBuilder(object):
                     type_and_name = [struct]
                     type_and_name.extend(name_tokens)
                     type_and_name.extend((var_token, next_token))
-                    return self._GetMethod(type_and_name, 0, None, False)
+                    return self._get_method(type_and_name, 0, None, False)
                 assert temp.name == ';', (temp, name_tokens, var_token)
             if is_syntax or (is_variable and not self._handling_typedef):
                 modifiers = ['struct']
                 type_name = ''.join([t.name for t in name_tokens])
                 position = name_tokens[0]
-                return self._CreateVariable(position, variable.name, type_name,
+                return self._create_variable(position, variable.name, type_name,
                                             modifiers, var_token.name, None)
             name_tokens.extend((var_token, next_token))
-            self._AddBackTokens(name_tokens)
+            self._addBackTokens(name_tokens)
         else:
-            self._AddBackToken(var_token)
-        return self._GetClass(Struct, VISIBILITY_PUBLIC, None)
+            self._addBackToken(var_token)
+        return self._get_class(Struct, VISIBILITY_PUBLIC, None)
 
     def handle_union(self):
-        return self._GetNestedType(Union)
+        return self._get_nested_type(Union)
 
     def handle_enum(self):
-        return self._GetNestedType(Enum)
+        return self._get_nested_type(Enum)
 
     def handle_auto(self):
         # TODO(nnorwitz): warn about using auto?  Probably not since it
@@ -1288,18 +1288,18 @@ class AstBuilder(object):
 
     def handle_virtual(self):
         # What follows must be a method.
-        token = token2 = self._GetNextToken()
+        token = token2 = self._get_next_token()
         if token.name == 'inline':
             # HACK(nnorwitz): handle inline dtors by ignoring 'inline'.
-            token2 = self._GetNextToken()
+            token2 = self._get_next_token()
         if token2.token_type == tokenize.SYNTAX and token2.name == '~':
-            return self.GetMethod(FUNCTION_VIRTUAL + FUNCTION_DTOR, None)
+            return self.get_method(FUNCTION_VIRTUAL + FUNCTION_DTOR, None)
         assert token.token_type == tokenize.NAME or token.name == '::', token
-        return_type_and_name = self._GetTokensUpTo(tokenize.SYNTAX, '(')
+        return_type_and_name = self._get_tokensUpTo(tokenize.SYNTAX, '(')
         return_type_and_name.insert(0, token)
         if token2 is not token:
             return_type_and_name.insert(1, token2)
-        return self._GetMethod(return_type_and_name, FUNCTION_VIRTUAL,
+        return self._get_method(return_type_and_name, FUNCTION_VIRTUAL,
                                None, False)
 
     def handle_volatile(self):
@@ -1321,7 +1321,7 @@ class AstBuilder(object):
         self.visibility = VISIBILITY_PRIVATE
 
     def handle_friend(self):
-        tokens = self._GetTokensUpTo(tokenize.SYNTAX, ';')
+        tokens = self._get_tokensUpTo(tokenize.SYNTAX, ';')
         assert tokens
         t0 = tokens[0]
         return Friend(t0.start, t0.end, tokens, self.namespace_stack)
@@ -1342,14 +1342,14 @@ class AstBuilder(object):
         pass
 
     def handle_delete(self):
-        tokens = self._GetTokensUpTo(tokenize.SYNTAX, ';')
+        tokens = self._get_tokensUpTo(tokenize.SYNTAX, ';')
         assert tokens
         return Delete(tokens[0].start, tokens[0].end, tokens)
 
     def handle_typedef(self):
-        token = self._GetNextToken()
+        token = self._get_next_token()
         if (token.token_type == tokenize.NAME and
-                keywords.IsKeyword(token.name)):
+                keywords.is_keyword(token.name)):
             # Token must be struct/enum/union/class.
             method = getattr(self, 'handle_' + token.name)
             self._handling_typedef = True
@@ -1359,7 +1359,7 @@ class AstBuilder(object):
             tokens = [token]
 
         # Get the remainder of the typedef up to the semi-colon.
-        tokens.extend(self._GetTokensUpTo(tokenize.SYNTAX, ';'))
+        tokens.extend(self._get_tokensUpTo(tokenize.SYNTAX, ';'))
 
         # TODO(nnorwitz): clean all this up.
         assert tokens
@@ -1382,7 +1382,7 @@ class AstBuilder(object):
                 name = tokens[1]
         new_type = tokens
         if tokens and isinstance(tokens[0], tokenize.Token):
-            new_type = self.converter.ToType(tokens)[0]
+            new_type = self.converter.to_type(tokens)[0]
         return Typedef(indices.start, indices.end, name.name,
                        new_type, self.namespace_stack)
 
@@ -1392,22 +1392,22 @@ class AstBuilder(object):
     def handle_typename(self):
         pass  # Not needed yet.
 
-    def _GetTemplatedTypes(self):
+    def _get_templated_types(self):
         result = {}
-        tokens = list(self._GetMatchingChar('<', '>'))
+        tokens = list(self._get_matching_char('<', '>'))
         len_tokens = len(tokens) - 1    # Ignore trailing '>'.
         i = 0
         while i < len_tokens:
             key = tokens[i].name
             i += 1
-            if keywords.IsKeyword(key) or key == ',':
+            if keywords.is_keyword(key) or key == ',':
                 continue
             type_name = default = None
             if i < len_tokens:
                 i += 1
                 if tokens[i - 1].name == '=':
                     assert i < len_tokens, '%s %s' % (i, tokens)
-                    default, _ = self.GetName(tokens[i:])
+                    default, _ = self.get_name(tokens[i:])
                     i += len(default)
                 else:
                     if tokens[i - 1].name != ',':
@@ -1420,29 +1420,29 @@ class AstBuilder(object):
         return result
 
     def handle_template(self):
-        token = self._GetNextToken()
+        token = self._get_next_token()
         assert token.token_type == tokenize.SYNTAX, token
         assert token.name == '<', token
-        templated_types = self._GetTemplatedTypes()
+        templated_types = self._get_templated_types()
         # TODO(nnorwitz): for now, just ignore the template params.
-        token = self._GetNextToken()
+        token = self._get_next_token()
         if token.token_type == tokenize.NAME:
             if token.name == 'class':
-                return self._GetClass(Class,
+                return self._get_class(Class,
                                       VISIBILITY_PRIVATE,
                                       templated_types)
             elif token.name == 'struct':
-                return self._GetClass(Struct,
+                return self._get_class(Struct,
                                       VISIBILITY_PUBLIC,
                                       templated_types)
             elif token.name == 'friend':
                 return self.handle_friend()
-        self._AddBackToken(token)
-        tokens, last = self._GetVarTokensUpTo(tokenize.SYNTAX, '(', ';')
+        self._addBackToken(token)
+        tokens, last = self._get_var_tokens_up_to(tokenize.SYNTAX, '(', ';')
         tokens.append(last)
-        self._AddBackTokens(tokens)
+        self._addBackTokens(tokens)
         if last.name == '(':
-            return self.GetMethod(FUNCTION_NONE, templated_types)
+            return self.get_method(FUNCTION_NONE, templated_types)
         # Must be a variable definition.
         return None
 
@@ -1456,30 +1456,30 @@ class AstBuilder(object):
         pass  # Not needed yet.
 
     def handle_class(self):
-        return self._GetClass(Class, VISIBILITY_PRIVATE, None)
+        return self._get_class(Class, VISIBILITY_PRIVATE, None)
 
-    def _GetBases(self):
+    def _get_bases(self):
         # Get base classes.
         bases = []
         while True:
-            token = self._GetNextToken()
+            token = self._get_next_token()
             assert token.token_type == tokenize.NAME, token
             # TODO(nnorwitz): store kind of inheritance...maybe.
             if token.name not in ('public', 'protected', 'private'):
                 # If inheritance type is not specified, it is private.
                 # Just put the token back so we can form a name.
                 # TODO(nnorwitz): it would be good to warn about this.
-                self._AddBackToken(token)
+                self._addBackToken(token)
             else:
                 # Check for virtual inheritance.
-                token = self._GetNextToken()
+                token = self._get_next_token()
                 if token.name != 'virtual':
-                    self._AddBackToken(token)
+                    self._addBackToken(token)
                 else:
                     # TODO(nnorwitz): store that we got virtual for this base.
                     pass
-            base, next_token = self.GetName()
-            bases_ast = self.converter.ToType(base)
+            base, next_token = self.get_name()
+            bases_ast = self.converter.to_type(base)
             assert len(bases_ast) == 1, bases_ast
             bases.append(bases_ast[0])
             assert next_token.token_type == tokenize.SYNTAX, next_token
@@ -1490,15 +1490,15 @@ class AstBuilder(object):
             assert next_token.name == ',', next_token
         return bases, token
 
-    def _GetClass(self, class_type, visibility, templated_types):
+    def _get_class(self, class_type, visibility, templated_types):
         class_name = None
-        class_token = self._GetNextToken()
+        class_token = self._get_next_token()
         if class_token.token_type != tokenize.NAME:
             assert class_token.token_type == tokenize.SYNTAX, class_token
             token = class_token
         else:
-            self._AddBackToken(class_token)
-            name_tokens, token = self.GetName()
+            self._addBackToken(class_token)
+            name_tokens, token = self.get_name()
             class_name = ''.join([t.name for t in name_tokens])
         bases = None
         if token.token_type == tokenize.SYNTAX:
@@ -1509,33 +1509,33 @@ class AstBuilder(object):
                                   self.namespace_stack)
             if token.name in '*&':
                 # Inline forward declaration.  Could be method or data.
-                name_token = self._GetNextToken()
-                next_token = self._GetNextToken()
+                name_token = self._get_next_token()
+                next_token = self._get_next_token()
                 if next_token.name == ';':
                     # Handle data
                     modifiers = ['class']
-                    return self._CreateVariable(class_token, name_token.name,
+                    return self._create_variable(class_token, name_token.name,
                                                 class_name,
                                                 modifiers, token.name, None)
                 else:
                     # Assume this is a method.
                     tokens = (class_token, token, name_token, next_token)
-                    self._AddBackTokens(tokens)
-                    return self.GetMethod(FUNCTION_NONE, None)
+                    self._addBackTokens(tokens)
+                    return self.get_method(FUNCTION_NONE, None)
             if token.name == ':':
-                bases, token = self._GetBases()
+                bases, token = self._get_bases()
 
         body = None
         if token.token_type == tokenize.SYNTAX and token.name == '{':
             assert token.token_type == tokenize.SYNTAX, token
             assert token.name == '{', token
 
-            ast = AstBuilder(self.GetScope(), self.filename, class_name,
+            ast = AstBuilder(self.get_scope(), self.filename, class_name,
                              visibility, self.namespace_stack)
-            body = list(ast.Generate())
+            body = list(ast.generate())
 
             if not self._handling_typedef:
-                token = self._GetNextToken()
+                token = self._get_next_token()
                 if token.token_type != tokenize.NAME:
                     assert token.token_type == tokenize.SYNTAX, token
                     assert token.name == ';', token
@@ -1545,24 +1545,24 @@ class AstBuilder(object):
                                            body, self.namespace_stack)
 
                     modifiers = []
-                    return self._CreateVariable(class_token,
+                    return self._create_variable(class_token,
                                                 token.name, new_class,
                                                 modifiers, token.name, None)
         else:
             if not self._handling_typedef:
-                self.HandleError('non-typedef token', token)
-            self._AddBackToken(token)
+                self.handle_error('non-typedef token', token)
+            self._addBackToken(token)
 
         return class_type(class_token.start, class_token.end, class_name,
                           bases, None, body, self.namespace_stack)
 
     def handle_namespace(self):
-        token = self._GetNextToken()
+        token = self._get_next_token()
         # Support anonymous namespaces.
         name = None
         if token.token_type == tokenize.NAME:
             name = token.name
-            token = self._GetNextToken()
+            token = self._get_next_token()
         self.namespace_stack.append(name)
         assert token.token_type == tokenize.SYNTAX, token
         # Create an internal token that denotes when the namespace is complete.
@@ -1571,20 +1571,20 @@ class AstBuilder(object):
         internal_token.whence = token.whence
         if token.name == '=':
             # TODO(nnorwitz): handle aliasing namespaces.
-            name, next_token = self.GetName()
+            name, next_token = self.get_name()
             assert next_token.name == ';', next_token
-            self._AddBackToken(internal_token)
+            self._addBackToken(internal_token)
         else:
             assert token.name == '{', token
-            tokens = list(self.GetScope())
+            tokens = list(self.get_scope())
             # Replace the trailing } with the internal namespace pop token.
             tokens[-1] = internal_token
             # Handle namespace with nothing in it.
-            self._AddBackTokens(tokens)
+            self._addBackTokens(tokens)
         return None
 
     def handle_using(self):
-        tokens = self._GetTokensUpTo(tokenize.SYNTAX, ';')
+        tokens = self._get_tokensUpTo(tokenize.SYNTAX, ';')
         assert tokens
         return Using(tokens[0].start, tokens[0].end, tokens)
 
@@ -1593,7 +1593,7 @@ class AstBuilder(object):
         # Nothing much to do.
         # TODO(nnorwitz): maybe verify the method name == class name.
         # This must be a ctor.
-        return self.GetMethod(FUNCTION_CTOR, None)
+        return self.get_method(FUNCTION_CTOR, None)
 
     def handle_this(self):
         pass  # Nothing to do.
@@ -1612,7 +1612,7 @@ class AstBuilder(object):
         pass
 
     def handle_default(self):
-        token = self._GetNextToken()
+        token = self._get_next_token()
         assert token.token_type == tokenize.SYNTAX
         assert token.name == ':'
 
@@ -1623,7 +1623,7 @@ class AstBuilder(object):
         pass
 
     def handle_return(self):
-        tokens = self._GetTokensUpTo(tokenize.SYNTAX, ';')
+        tokens = self._get_tokensUpTo(tokenize.SYNTAX, ';')
         if not tokens:
             return Return(self.current_token.start,
                           self.current_token.end,
@@ -1631,7 +1631,7 @@ class AstBuilder(object):
         return Return(tokens[0].start, tokens[0].end, tokens)
 
     def handle_goto(self):
-        tokens = self._GetTokensUpTo(tokenize.SYNTAX, ';')
+        tokens = self._get_tokensUpTo(tokenize.SYNTAX, ';')
         assert len(tokens) == 1, str(tokens)
         return Goto(tokens[0].start, tokens[0].end, tokens[0].name)
 
@@ -1654,13 +1654,13 @@ class AstBuilder(object):
         pass
 
     def handle_break(self):
-        self._IgnoreUpTo(tokenize.SYNTAX, ';')
+        self._ignore_up_to(tokenize.SYNTAX, ';')
 
     def handle_continue(self):
-        self._IgnoreUpTo(tokenize.SYNTAX, ';')
+        self._ignore_up_to(tokenize.SYNTAX, ';')
 
 
-def BuilderFromSource(source, filename):
+def builder_from_source(source, filename):
     """Utility method that returns an AstBuilder from source code.
 
     Args:
@@ -1671,10 +1671,10 @@ def BuilderFromSource(source, filename):
       AstBuilder
 
     """
-    return AstBuilder(tokenize.GetTokens(source), filename)
+    return AstBuilder(tokenize.get_tokens(source), filename)
 
 
-def PrintIndentifiers(filename, should_print):
+def print_indentifiers(filename, should_print):
     """Prints all identifiers for a C++ source file.
 
     Args:
@@ -1682,14 +1682,14 @@ def PrintIndentifiers(filename, should_print):
       should_print: predicate with signature: bool Function(token)
 
     """
-    source = utils.ReadFile(filename, False)
+    source = utils.read_file(filename, False)
     if source is None:
         sys.stderr.write('Unable to find: %s\n' % filename)
         return
 
-    builder = BuilderFromSource(source, filename)
+    builder = builder_from_source(source, filename)
     try:
-        for node in builder.Generate():
+        for node in builder.generate():
             if should_print(node):
                 print(node.name)
     except KeyboardInterrupt:
@@ -1698,7 +1698,7 @@ def PrintIndentifiers(filename, should_print):
         pass
 
 
-def PrintAllIndentifiers(filenames, should_print):
+def print_all_indentifiers(filenames, should_print):
     """Prints all identifiers for each C++ source file in filenames.
 
     Args:
@@ -1707,4 +1707,4 @@ def PrintAllIndentifiers(filenames, should_print):
 
     """
     for path in filenames:
-        PrintIndentifiers(path, should_print)
+        print_indentifiers(path, should_print)

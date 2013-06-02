@@ -29,7 +29,7 @@ import sys
 DEBUG = True
 
 
-def ReadFile(filename, print_error=True):
+def read_file(filename, print_error=True):
     """Returns the contents of a file."""
     try:
         fp = open(filename)

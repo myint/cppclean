@@ -44,11 +44,11 @@ ALL = (TYPES | TYPE_MODIFIERS | ACCESS | CASTS | OTHERS | OTHER_TYPES |
        CONTROL | EXCEPTION | LOOP)
 
 
-def IsKeyword(token):
+def is_keyword(token):
     return token in ALL
 
 
-def IsBuiltinType(token):
+def is_builtin_type(token):
     if token in ('virtual', 'inline'):
         # These only apply to methods, they can't be types by themselves.
         return False

@@ -27,111 +27,111 @@ from cpp import symbols
 
 class SymbolTableTest(unittest.TestCase):
 
-    def _AddSymbol(self, st, name, ns_stack):
-        """Helper for the LookupSymbol test methods."""
+    def _add_symbol(self, st, name, ns_stack):
+        """Helper for the lookup_symbol test methods."""
         node = object()
         module = object()
-        st.AddSymbol(name, ns_stack, node, module)
+        st.add_symbol(name, ns_stack, node, module)
         return node, module
 
-    def testLookupSymbolWithGlobalThatDoesNotExist(self):
+    def testlookup_symbolWithGlobalThatDoesNotExist(self):
         st = symbols.SymbolTable()
-        self.assertRaises(symbols.Error, st.LookupSymbol, 'foo', None)
+        self.assertRaises(symbols.Error, st.lookup_symbol, 'foo', None)
 
-    def testLookupSymbolWithNamespaceThatDoesNotExist(self):
+    def testlookup_symbolWithNamespaceThatDoesNotExist(self):
         st = symbols.SymbolTable()
-        self.assertRaises(symbols.Error, st.LookupSymbol, 'foo', ['n'])
+        self.assertRaises(symbols.Error, st.lookup_symbol, 'foo', ['n'])
 
-    def testLookupSymbolWithGlobalThatExists(self):
+    def testlookup_symbolWithGlobalThatExists(self):
         st = symbols.SymbolTable()
-        node, module = self._AddSymbol(st, 'foo', None)
-        self.assertEqual((node, module), st.LookupSymbol('foo', None))
+        node, module = self._add_symbol(st, 'foo', None)
+        self.assertEqual((node, module), st.lookup_symbol('foo', None))
 
-    def testLookupSymbolWithComplexGlobalThatExists(self):
+    def testlookup_symbolWithComplexGlobalThatExists(self):
         st = symbols.SymbolTable()
-        node, module = self._AddSymbol(st, 'foo', ['ns1', 'ns2'])
+        node, module = self._add_symbol(st, 'foo', ['ns1', 'ns2'])
         self.assertEqual((node, module),
-                         st.LookupSymbol('::ns1::ns2::foo', None))
+                         st.lookup_symbol('::ns1::ns2::foo', None))
         self.assertEqual((node, module),
-                         st.LookupSymbol('ns1::ns2::foo', None))
+                         st.lookup_symbol('ns1::ns2::foo', None))
 
-    def testLookupSymbolInNamespaces(self):
+    def testlookup_symbolInNamespaces(self):
         st = symbols.SymbolTable()
 
         # 3 nested namespaces, all contain the same symbol (foo).
         ns = ['ns1', 'ns2', 'ns3']
-        AddSymbol = self._AddSymbol
+        add_symbol = self._add_symbol
         # Also add foo to the global namespace.
-        ns_symbols = [AddSymbol(st, 'foo', None)] + \
-                     [AddSymbol(st, 'foo', ns[:i + 1]) for i in range(len(ns))]
+        ns_symbols = [add_symbol(st, 'foo', None)] + \
+                     [add_symbol(st, 'foo', ns[:i + 1]) for i in range(len(ns))]
 
         # Verify global lookup works.
-        self.assertEqual(ns_symbols[0], st.LookupSymbol('::foo', ns))
+        self.assertEqual(ns_symbols[0], st.lookup_symbol('::foo', ns))
 
         # Verify looking up relative symbols work.
-        self.assertEqual(ns_symbols[1], st.LookupSymbol('foo', ns[:1]))
-        self.assertEqual(ns_symbols[2], st.LookupSymbol('foo', ns[:2]))
-        self.assertEqual(ns_symbols[3], st.LookupSymbol('foo', ns[:3]))
+        self.assertEqual(ns_symbols[1], st.lookup_symbol('foo', ns[:1]))
+        self.assertEqual(ns_symbols[2], st.lookup_symbol('foo', ns[:2]))
+        self.assertEqual(ns_symbols[3], st.lookup_symbol('foo', ns[:3]))
         bigger = ns + ['ns4', 'ns5']
-        self.assertEqual(ns_symbols[3], st.LookupSymbol('foo', bigger))
+        self.assertEqual(ns_symbols[3], st.lookup_symbol('foo', bigger))
 
         # Remove ns2 and verify that when looking for foo in ns2 it finds ns1.
         ns1 = st.namespaces['ns1']
         del ns1['ns2']
-        self.assertEqual(ns_symbols[1], st.LookupSymbol('foo', ns[:2]))
+        self.assertEqual(ns_symbols[1], st.lookup_symbol('foo', ns[:2]))
 
-    def test_Add(self):
+    def test_add(self):
         st = symbols.SymbolTable()
         node = object()
         module = object()
         namespace = {}
         symbol_name = 'foo'
 
-        self.assertEqual(True, st._Add(symbol_name, namespace, node, module))
+        self.assertEqual(True, st._add(symbol_name, namespace, node, module))
         self.assertEqual(1, len(namespace))
         self.assertEqual(['foo'], list(namespace.keys()))
 
         # Adding again should return False.
-        self.assertEqual(False, st._Add(symbol_name, namespace, node, module))
+        self.assertEqual(False, st._add(symbol_name, namespace, node, module))
 
-    def testAddSymbolInGlobalNamespace(self):
+    def testadd_symbolInGlobalNamespace(self):
         st = symbols.SymbolTable()
         node = object()
         module = object()
         ns_stack = None
         name = 'foo'
 
-        self.assertEqual(True, st.AddSymbol(name, ns_stack, node, module))
+        self.assertEqual(True, st.add_symbol(name, ns_stack, node, module))
         # Verify the symbol was added properly to the symbol table namespaces.
         self.assertTrue('foo' in st.namespaces[None])
         self.assertEqual((node, module), st.namespaces[None]['foo'])
 
         # Already added, verify we get false.
-        self.assertEqual(False, st.AddSymbol(name, ns_stack, node, module))
+        self.assertEqual(False, st.add_symbol(name, ns_stack, node, module))
 
-    def testAddSymbolInNamespaceWithOneLevel(self):
+    def testadd_symbolInNamespaceWithOneLevel(self):
         st = symbols.SymbolTable()
         node = object()
         module = object()
         ns_stack = ['ns-foo']
         name = 'foo'
-        self.assertEqual(True, st.AddSymbol(name, ns_stack, node, module))
+        self.assertEqual(True, st.add_symbol(name, ns_stack, node, module))
         # Verify the symbol was added properly to the symbol table namespaces.
         self.assertTrue('ns-foo' in st.namespaces)
         self.assertTrue('foo' in st.namespaces['ns-foo'])
         self.assertEqual((node, module), st.namespaces['ns-foo']['foo'])
 
         # Already added, verify we get false.
-        self.assertEqual(False, st.AddSymbol(name, ns_stack, node, module))
+        self.assertEqual(False, st.add_symbol(name, ns_stack, node, module))
 
-    def testAddSymbolInNamespaceWithThreeLevels(self):
+    def testadd_symbolInNamespaceWithThreeLevels(self):
         st = symbols.SymbolTable()
         node = object()
         module = object()
         ns_stack = ['ns1', 'ns2', 'ns3']
         name = 'foo'
 
-        self.assertEqual(True, st.AddSymbol(name, ns_stack, node, module))
+        self.assertEqual(True, st.add_symbol(name, ns_stack, node, module))
         # Verify the symbol was added properly to the symbol table namespaces.
         self.assertTrue('ns1' in st.namespaces)
         self.assertTrue('ns2' in st.namespaces['ns1'])
@@ -143,21 +143,21 @@ class SymbolTableTest(unittest.TestCase):
         # Now add something to ns1 and verify.
         ns_stack = ['ns1']
         name = 'something'
-        self.assertEqual(True, st.AddSymbol(name, ns_stack, node, module))
+        self.assertEqual(True, st.add_symbol(name, ns_stack, node, module))
         self.assertTrue('something' in st.namespaces['ns1'])
         self.assertEqual((node, module), st.namespaces['ns1']['something'])
 
         # Now add something to ns1::ns2 and verify.
         ns_stack = ['ns1', 'ns2']
         name = 'else'
-        self.assertEqual(True, st.AddSymbol(name, ns_stack, node, module))
+        self.assertEqual(True, st.add_symbol(name, ns_stack, node, module))
         self.assertTrue('else' in st.namespaces['ns1']['ns2'])
         self.assertEqual((node, module), st.namespaces['ns1']['ns2']['else'])
 
         # Now add something to the global namespace and verify.
         ns_stack = None
         name = 'global'
-        self.assertEqual(True, st.AddSymbol(name, ns_stack, node, module))
+        self.assertEqual(True, st.add_symbol(name, ns_stack, node, module))
         self.assertTrue('global' in st.namespaces[None])
         self.assertEqual((node, module), st.namespaces[None]['global'])
 
@@ -170,26 +170,26 @@ class SymbolTableTest(unittest.TestCase):
         # Verify ns3 still has 1 element ('foo').
         self.assertEqual(1, len(st.namespaces['ns1']['ns2']['ns3']))
 
-    def testGetNamespace(self):
+    def testget_namespace(self):
         # Setup.
         st = symbols.SymbolTable()
         node = object()
         module = object()
         ns_stack = ['ns1', 'ns2', 'ns3']
         name = 'foo'
-        self.assertEqual(True, st.AddSymbol(name, ns_stack, node, module))
+        self.assertEqual(True, st.add_symbol(name, ns_stack, node, module))
 
         # Verify.
-        self.assertEqual([], st.GetNamespace([]))
-        self.assertEqual(['ns1'], st.GetNamespace(['ns1']))
-        self.assertEqual(['ns1'], st.GetNamespace(['ns1', 'foo']))
-        self.assertEqual(['ns1'], st.GetNamespace(['ns1', 'foo']))
-        self.assertEqual(['ns1'], st.GetNamespace(['ns1', 'foo', 'ns2']))
-        self.assertEqual(['ns1', 'ns2'], st.GetNamespace(['ns1', 'ns2']))
-        self.assertEqual(['ns1', 'ns2'], st.GetNamespace(['ns1', 'ns2', 'f']))
-        self.assertEqual(['ns1', 'ns2'], st.GetNamespace(['ns1', 'ns2', 'f']))
+        self.assertEqual([], st.get_namespace([]))
+        self.assertEqual(['ns1'], st.get_namespace(['ns1']))
+        self.assertEqual(['ns1'], st.get_namespace(['ns1', 'foo']))
+        self.assertEqual(['ns1'], st.get_namespace(['ns1', 'foo']))
+        self.assertEqual(['ns1'], st.get_namespace(['ns1', 'foo', 'ns2']))
+        self.assertEqual(['ns1', 'ns2'], st.get_namespace(['ns1', 'ns2']))
+        self.assertEqual(['ns1', 'ns2'], st.get_namespace(['ns1', 'ns2', 'f']))
+        self.assertEqual(['ns1', 'ns2'], st.get_namespace(['ns1', 'ns2', 'f']))
         self.assertEqual(['ns1', 'ns2', 'ns3'],
-                         st.GetNamespace(['ns1', 'ns2', 'ns3', 'f']))
+                         st.get_namespace(['ns1', 'ns2', 'ns3', 'f']))
 
 
 if __name__ == '__main__':

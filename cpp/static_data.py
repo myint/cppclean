@@ -24,18 +24,18 @@ from . import metrics
 from . import utils
 
 
-def _FindWarnings(filename, source, ast_list, static_is_optional):
-    def PrintWarning(node, name):
+def _find_warnings(filename, source, ast_list, static_is_optional):
+    def print_warning(node, name):
         lines = metrics.Metrics(source)
-        print('%s:%d' % (filename, lines.GetLineNumber(node.start)), end=' ')
+        print('%s:%d' % (filename, lines.get_line_number(node.start)), end=' ')
         print('static data:', name)
 
-    def FindStatic(function_node):
+    def find_static(function_node):
         for node in function_node.body:
             if node.name == 'static':
                 # TODO(nnorwitz): should ignore const.  Is static const common
                 # here?
-                PrintWarning(node, function_node.name)
+                print_warning(node, function_node.name)
 
     for node in ast_list:
         if isinstance(node, ast.VariableDeclaration):
@@ -43,28 +43,28 @@ def _FindWarnings(filename, source, ast_list, static_is_optional):
             is_static = 'static' in node.type.modifiers
             is_not_const = 'const' not in node.type.modifiers
             if is_not_const and (static_is_optional or is_static):
-                PrintWarning(node, node.name)
+                print_warning(node, node.name)
         elif isinstance(node, ast.Function):
             if node.body:
-                FindStatic(node)
+                find_static(node)
         elif isinstance(node, ast.Class) and node.body:
-            _FindWarnings(filename, source, node.body, False)
+            _find_warnings(filename, source, node.body, False)
 
 
 def run(filenames):
     for filename in filenames:
-        source = utils.ReadFile(filename)
+        source = utils.read_file(filename)
         if source is None:
             continue
 
         print('Processing', filename)
-        builder = ast.BuilderFromSource(source, filename)
+        builder = ast.builder_from_source(source, filename)
         try:
-            entire_ast = [_f for _f in builder.Generate() if _f]
+            entire_ast = [_f for _f in builder.generate() if _f]
         except KeyboardInterrupt:
             return
         except:
             # An error message was already printed since we couldn't parse.
             pass
         else:
-            _FindWarnings(filename, source, entire_ast, True)
+            _find_warnings(filename, source, entire_ast, True)

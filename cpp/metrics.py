@@ -33,17 +33,17 @@ class Metrics(object):
     def __init__(self, source):
         self.source = source
 
-    def GetLineNumber(self, index):
+    def get_line_number(self, index):
         """Return the line number in the source based on the index."""
         return 1 + self.source.count('\n', 0, index)
 
-    def GetLineCount(self, token_stream):
+    def get_line_count(self, token_stream):
         """Return the number of lines for the method in the token_stream."""
-        first_line = self.GetLineNumber(token_stream[0].start)
-        last_line = self.GetLineNumber(token_stream[-1].end)
+        first_line = self.get_line_number(token_stream[0].start)
+        last_line = self.get_line_number(token_stream[-1].end)
         return last_line - first_line
 
-    def GetComplexity(self, token_stream):
+    def get_complexity(self, token_stream):
         """Return cyclomatic complexity for the method in the token_stream."""
         complexity = 1
         for token in token_stream:

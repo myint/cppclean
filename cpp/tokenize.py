@@ -74,7 +74,7 @@ class Token(object):
     __repr__ = __str__
 
 
-def _GetString(source, start, i):
+def _get_string(source, start, i):
     i = source.find('"', i + 1)
     while source[i - 1] == '\\':
         # Count the trailing backslashes.
@@ -90,7 +90,7 @@ def _GetString(source, start, i):
     return i + 1
 
 
-def _GetChar(source, start, i):
+def _get_char(source, start, i):
     # NOTE(nnorwitz): may not be quite correct, should be good enough.
     i = source.find("'", i + 1)
     while source[i - 1] == '\\':
@@ -104,7 +104,7 @@ def _GetChar(source, start, i):
     return i + 1
 
 
-def GetTokens(source):
+def get_tokens(source):
     """Returns a sequence of Tokens.
 
     Args:
@@ -146,10 +146,10 @@ def GetTokens(source):
                     source[start:i] in 'uUL'):
                 # u, U, and L are valid C++0x character preffixes.
                 token_type = CONSTANT
-                i = _GetChar(source, start, i)
+                i = _get_char(source, start, i)
             elif source[i] == "'" and source[start:i] in _STR_PREFIXES:
                 token_type = CONSTANT
-                i = _GetString(source, start, i)
+                i = _get_string(source, start, i)
         elif c == '/' and source[i + 1] == '/':    # Find // comments.
             i = source.find('\n', i)
             if i == -1:  # Handle EOF.
@@ -199,10 +199,10 @@ def GetTokens(source):
                     break
         elif c == '"':                           # Find string.
             token_type = CONSTANT
-            i = _GetString(source, start, i)
+            i = _get_string(source, start, i)
         elif c == "'":                           # Find char.
             token_type = CONSTANT
-            i = _GetChar(source, start, i)
+            i = _get_char(source, start, i)
         elif c == '#':                           # Find pre-processor command.
             token_type = PREPROCESSOR
             got_if = source[i:i + 3] == '#if' and source[i + 3:i + 4].isspace()

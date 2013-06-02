@@ -35,18 +35,18 @@ _TRANSITIVE = getattr(siteheaders, 'TRANSITIVE', False)
 GetIncludeDirs = getattr(siteheaders, 'GetIncludeDirs', lambda fn: ['.'])
 
 
-def ReadSource(relative_filename):
+def read_source(relative_filename):
     source = None
     for path in GetIncludeDirs(relative_filename):
         filename = os.path.join(path, relative_filename)
-        source = utils.ReadFile(filename, False)
+        source = utils.read_file(filename, False)
         if source is not None:
             return source, filename
     return None, relative_filename
 
 
-def GetHeaders(filename):
-    source, actual_filename = ReadSource(filename)
+def get_headers(filename):
+    source, actual_filename = read_source(filename)
     if source is None:
         print('Unable to find %s' % filename)
         return []
@@ -54,8 +54,8 @@ def GetHeaders(filename):
     included_files = []
 
     print('Processing %s' % actual_filename)
-    builder = ast.BuilderFromSource(source, filename)
-    for node in builder.Generate():
+    builder = ast.builder_from_source(source, filename)
+    for node in builder.generate():
         if isinstance(node, ast.Include):
             if not node.system:
                 print(node.filename)
@@ -64,5 +64,5 @@ def GetHeaders(filename):
     # Transitively process all the files that were included.
     if _TRANSITIVE:
         for filename in included_files:
-            included_files.extend(GetHeaders(filename))
+            included_files.extend(get_headers(filename))
     return included_files

@@ -24,14 +24,14 @@ from . import metrics
 from . import utils
 
 
-def _FindWarnings(filename, source, ast_list):
+def _find_warnings(filename, source, ast_list):
     for node in ast_list:
         if isinstance(node, ast.Class) and node.body:
             class_node = node
             has_virtuals = False
             for node in node.body:
                 if isinstance(node, ast.Class) and node.body:
-                    _FindWarnings(filename, source, [node])
+                    _find_warnings(filename, source, [node])
                 elif (isinstance(node, ast.Function) and
                       node.modifiers & ast.FUNCTION_VIRTUAL):
                     has_virtuals = True
@@ -43,7 +43,7 @@ def _FindWarnings(filename, source, ast_list):
                     print(
                         '%s:%d' % (
                             filename,
-                            lines.GetLineNumber(
+                            lines.get_line_number(
                                 class_node.start)),
                         end=' ')
                     print(
@@ -53,18 +53,18 @@ def _FindWarnings(filename, source, ast_list):
 
 def run(filenames):
     for filename in filenames:
-        source = utils.ReadFile(filename)
+        source = utils.read_file(filename)
         if source is None:
             continue
 
         print('Processing', filename)
-        builder = ast.BuilderFromSource(source, filename)
+        builder = ast.builder_from_source(source, filename)
         try:
-            entire_ast = [_f for _f in builder.Generate() if _f]
+            entire_ast = [_f for _f in builder.generate() if _f]
         except KeyboardInterrupt:
             return
         except:
             # An error message was already printed since we couldn't parse.
             pass
         else:
-            _FindWarnings(filename, source, entire_ast)
+            _find_warnings(filename, source, entire_ast)
