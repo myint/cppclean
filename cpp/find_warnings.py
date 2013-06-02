@@ -128,11 +128,9 @@ class WarningHunter(object):
             self._update_symbol_table(module)
             return module
 
-        directory_relative_filename = os.path.join(
-            os.path.dirname(self.filename), filename)
+        filename = os.path.join(os.path.dirname(self.filename), filename)
 
-        source, actual_filename = headers.read_source(
-            directory_relative_filename)
+        source, actual_filename = headers.read_source(filename)
 
         if source is None:
             module = Module(filename, None)
@@ -434,8 +432,10 @@ class WarningHunter(object):
 
     def _get_primary_header(self, included_files):
         basename = os.path.splitext(self.normalized_filename)[0]
+
         primary_header = included_files.get(
             basename + PRIMARY_HEADER_EXTENSION)
+
         if not primary_header:
             primary_header = included_files.get(basename)
         if primary_header:
