@@ -564,7 +564,8 @@ class TypeConverter(object):
             if keywords.is_keyword(p.name):
                 modifiers.append(p.name)
             elif p.name == '<':
-                templated_tokens, new_end = self._get_template_end(parts, i + 1)
+                templated_tokens, new_end = self._get_template_end(
+                    parts, i + 1)
                 templated_types = self.to_type(templated_tokens)
                 i = new_end - 1
                 # Don't add a spurious :: to data members being initialized.
@@ -734,7 +735,7 @@ class AstBuilder(object):
                 raise
 
     def _create_variable(self, pos_token, name, type_name, type_modifiers,
-                        ref_pointer_name_seq, templated_types, value=None):
+                         ref_pointer_name_seq, templated_types, value=None):
         reference = '&' in ref_pointer_name_seq
         pointer = '*' in ref_pointer_name_seq
         array = '[' in ref_pointer_name_seq
@@ -799,7 +800,7 @@ class AstBuilder(object):
                     names = names[:start] + names[end:]
                 default = ''.join([t.name for t in default])
                 return self._create_variable(t0, name, type_name, modifiers,
-                                            names, templated_types, default)
+                                             names, templated_types, default)
             if last_token.name == '{':
                 self._addBackTokens(temp_tokens[1:])
                 self._addBackToken(last_token)
@@ -966,7 +967,7 @@ class AstBuilder(object):
             False)
 
     def _get_method(self, return_type_and_name, modifiers, templated_types,
-                   get_paren):
+                    get_paren):
         template_portion = None
         if get_paren:
             token = self._get_next_token()
@@ -1067,7 +1068,7 @@ class AstBuilder(object):
                 assert token.token_type == tokenize.SYNTAX, token
                 assert token.name == ';', token
                 return self._create_variable(indices, name.name, indices.name,
-                                            modifiers, '', None)
+                                             modifiers, '', None)
             # At this point, we got something like:
             #  return_type (type::*name_)(params);
             # This is a data member called name_ that is a function pointer.
@@ -1080,7 +1081,7 @@ class AstBuilder(object):
             modifiers = [p.name for p in self._get_parameters()]
             del modifiers[-1]           # Remove trailing ')'.
             return self._create_variable(indices, real_name.name, indices.name,
-                                        modifiers, '', None)
+                                         modifiers, '', None)
 
         if token.name == '{':
             body = list(self.get_scope())
@@ -1252,8 +1253,9 @@ class AstBuilder(object):
                 modifiers = ['struct']
                 type_name = ''.join([t.name for t in name_tokens])
                 position = name_tokens[0]
-                return self._create_variable(position, variable.name, type_name,
-                                            modifiers, var_token.name, None)
+                return self._create_variable(
+                    position, variable.name, type_name,
+                    modifiers, var_token.name, None)
             name_tokens.extend((var_token, next_token))
             self._addBackTokens(name_tokens)
         else:
@@ -1300,7 +1302,7 @@ class AstBuilder(object):
         if token2 is not token:
             return_type_and_name.insert(1, token2)
         return self._get_method(return_type_and_name, FUNCTION_VIRTUAL,
-                               None, False)
+                                None, False)
 
     def handle_volatile(self):
         pass
@@ -1429,12 +1431,12 @@ class AstBuilder(object):
         if token.token_type == tokenize.NAME:
             if token.name == 'class':
                 return self._get_class(Class,
-                                      VISIBILITY_PRIVATE,
-                                      templated_types)
+                                       VISIBILITY_PRIVATE,
+                                       templated_types)
             elif token.name == 'struct':
                 return self._get_class(Struct,
-                                      VISIBILITY_PUBLIC,
-                                      templated_types)
+                                       VISIBILITY_PUBLIC,
+                                       templated_types)
             elif token.name == 'friend':
                 return self.handle_friend()
         self._addBackToken(token)
@@ -1515,8 +1517,8 @@ class AstBuilder(object):
                     # Handle data
                     modifiers = ['class']
                     return self._create_variable(class_token, name_token.name,
-                                                class_name,
-                                                modifiers, token.name, None)
+                                                 class_name,
+                                                 modifiers, token.name, None)
                 else:
                     # Assume this is a method.
                     tokens = (class_token, token, name_token, next_token)
@@ -1546,8 +1548,8 @@ class AstBuilder(object):
 
                     modifiers = []
                     return self._create_variable(class_token,
-                                                token.name, new_class,
-                                                modifiers, token.name, None)
+                                                 token.name, new_class,
+                                                 modifiers, token.name, None)
         else:
             if not self._handling_typedef:
                 self.handle_error('non-typedef token', token)

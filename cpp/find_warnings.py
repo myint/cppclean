@@ -200,8 +200,9 @@ class WarningHunter(object):
                         msg += '.  Use references instead'
                     self._addWarning(msg, node)
 
-    def _verify_forward_declarations_used(self, forward_declarations, decl_uses,
-                                       file_uses):
+    def _verify_forward_declarations_used(
+        self, forward_declarations, decl_uses,
+            file_uses):
         # Find all the forward declarations that are not used.
         for cls in forward_declarations:
             if decl_uses[cls] == UNUSED:
@@ -352,7 +353,7 @@ class WarningHunter(object):
         self._verify_includes(included_files)
         self._verify_include_files_used(file_uses, included_files)
         self._verify_forward_declarations_used(forward_declarations, decl_uses,
-                                            file_uses)
+                                               file_uses)
 
     def _find_header_warnings(self):
         self._find_unused_warnings()
@@ -362,7 +363,7 @@ class WarningHunter(object):
         #   * missing include for classes used for inheritenace
 
     def _find_public_function_warnings(self, node, name, primary_header,
-                                    public_symbols, all_headers):
+                                       public_symbols, all_headers):
         # Not found in the primary header, search all other headers.
         for header_node, header in all_headers.values():
             if name in header.public_symbols:
@@ -419,7 +420,7 @@ class WarningHunter(object):
                 declared_only_symbols[name] = False
             else:
                 self._find_public_function_warnings(node, name, primary_header,
-                                                 public_symbols, all_headers)
+                                                    public_symbols, all_headers)
 
         for name, declared_only in declared_only_symbols.items():
             if declared_only:

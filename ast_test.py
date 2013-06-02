@@ -51,18 +51,18 @@ def _install_equal_methods():
     """Install __eq__ methods on the appropriate objects used for testing."""
     _install_generic_equal(tokenize.Token, 'name')
     _install_generic_equal(ast.Class,
-                         'name bases templated_types namespace body')
+                           'name bases templated_types namespace body')
     _install_generic_equal(ast.Struct,
-                         'name bases templated_types namespace body')
+                           'name bases templated_types namespace body')
     _install_generic_equal(ast.Type, ('name templated_types modifiers '
-                                    'reference pointer array'))
+                                      'reference pointer array'))
     _install_generic_equal(ast.Parameter, 'name type default')
     _install_generic_equal(ast.Function, ('name return_type parameters '
+                                          'modifiers templated_types '
+                                          'body namespace'))
+    _install_generic_equal(ast.Method, ('name in_class return_type parameters '
                                         'modifiers templated_types '
                                         'body namespace'))
-    _install_generic_equal(ast.Method, ('name in_class return_type parameters '
-                                      'modifiers templated_types '
-                                      'body namespace'))
     _install_generic_equal(ast.Include, 'filename system')
 _install_equal_methods()
 

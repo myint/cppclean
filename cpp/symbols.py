@@ -46,7 +46,8 @@ class SymbolTable(object):
         self.namespaces = {None: {}}
 
     def _lookup_namespace(self, symbol, namespace, kind):
-        """Helper for lookup_symbol that only looks up variables in a namespace.
+        """Helper for lookup_symbol that only looks up variables in a
+        namespace.
 
         Args:
           symbol: Symbol
