@@ -144,7 +144,8 @@ class Include(Node):
         fmt = '"%s"'
         if self.system:
             fmt = '<%s>'
-        return self._string_helper(self.__class__.__name__, fmt % self.filename)
+        return self._string_helper(self.__class__.__name__,
+                                   fmt % self.filename)
 
 
 class Goto(Node):
@@ -856,7 +857,8 @@ class AstBuilder(object):
         return None
 
     def _get_tokensUpTo(self, expected_token_type, expected_token):
-        return self._get_var_tokens_up_to(expected_token_type, expected_token)[0]
+        return self._get_var_tokens_up_to(expected_token_type,
+                                          expected_token)[0]
 
     def _get_var_tokens_up_to(self, expected_token_type, *expected_tokens):
         last_token = self._get_next_token()

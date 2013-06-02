@@ -419,8 +419,11 @@ class WarningHunter(object):
             if name in public_symbols:
                 declared_only_symbols[name] = False
             else:
-                self._find_public_function_warnings(node, name, primary_header,
-                                                    public_symbols, all_headers)
+                self._find_public_function_warnings(node,
+                                                    name,
+                                                    primary_header,
+                                                    public_symbols,
+                                                    all_headers)
 
         for name, declared_only in declared_only_symbols.items():
             if declared_only:
