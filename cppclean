@@ -24,6 +24,7 @@ import fnmatch
 import os
 import sys
 
+from cpp import ast
 from cpp import find_warnings
 from cpp import nonvirtual_dtors
 from cpp import static_data
@@ -81,7 +82,11 @@ def main():
         for module in [find_warnings,
                        nonvirtual_dtors,
                        static_data]:
-            module.run(filename)
+            try:
+                module.run(filename)
+            except (ast.ParseError, UnicodeDecodeError) as exception:
+                print('{}: parsing error {}'.format(filename, exception),
+                      file=sys.stderr)
 
 
 sys.exit(main())

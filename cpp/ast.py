@@ -77,6 +77,11 @@ _INTERNAL_TOKEN = 'internal'
 _NAMESPACE_POP = 'ns-pop'
 
 
+class ParseError(Exception):
+
+    """Raise exception on parsing problems."""
+
+
 # TODO(nnorwitz): use this as a singleton for templated_types, etc
 # where we don't want to create a new empty dict each time.  It is also const.
 class _NullDict(object):
@@ -791,6 +796,9 @@ class AstBuilder(object):
                 (name, type_name, templated_types, modifiers, default,
                  _) = parts
 
+                if not temp_tokens:
+                    raise ParseError('not enough tokens')
+
                 t0 = temp_tokens[0]
                 names = [t.name for t in temp_tokens]
                 if templated_types:
@@ -831,8 +839,8 @@ class AstBuilder(object):
                 # Handle #include \<newline> "header-on-second-line.h".
                 if name.startswith('\\'):
                     name = name[1:].strip()
-                assert name[0] in '<"', token
-                assert name[-1] in '>"', token
+                if name[0] not in '<"' or name[-1] not in '>"':
+                    raise ParseError(token)
                 system = name[0] == '<'
                 filename = name[1:-1]
                 return Include(token.start, token.end, filename, system)
@@ -1044,7 +1052,8 @@ class AstBuilder(object):
             else:
                 self.handle_error('unexpected token', modifier_token)
 
-        assert token.token_type == tokenize.SYNTAX, token
+        if token.token_type != tokenize.SYNTAX:
+            raise ParseError(token)
         # Handle ctor initializers.
         if token.name == ':':
             # TODO(nnorwitz): anything else to handle for initializer list?
@@ -1065,7 +1074,8 @@ class AstBuilder(object):
                 # TODO(nnorwitz): store the function_parameters.
                 token = self._get_next_token()
                 assert token.token_type == tokenize.SYNTAX, token
-                assert token.name == ';', token
+                if token.name != ';':
+                    raise ParseError(token)
                 return self._create_variable(indices, name.name, indices.name,
                                              modifiers, '', None)
             # At this point, we got something like:
@@ -1100,7 +1110,8 @@ class AstBuilder(object):
                 list(self._get_matching_char('[', ']'))
                 token = self._get_next_token()
 
-            assert token.name == ';', (token, return_type_and_name, parameters)
+            if token.name != ';':
+                raise ParseError((token, return_type_and_name, parameters))
 
         # Looks like we got a method, not a function.
         if len(return_type) > 2 and return_type[-1].name == '::':
@@ -1247,7 +1258,8 @@ class AstBuilder(object):
                     type_and_name.extend(name_tokens)
                     type_and_name.extend((var_token, next_token))
                     return self._get_method(type_and_name, 0, None, False)
-                assert temp.name == ';', (temp, name_tokens, var_token)
+                if temp.name != ';':
+                    raise ParseError((temp, name_tokens, var_token))
             if is_syntax or (is_variable and not self._handling_typedef):
                 modifiers = ['struct']
                 type_name = ''.join([t.name for t in name_tokens])
@@ -1310,7 +1322,8 @@ class AstBuilder(object):
         pass
 
     def handle_public(self):
-        assert self.in_class
+        if not self.in_class:
+            raise ParseError('expected to be in a class')
         self.visibility = VISIBILITY_PUBLIC
 
     def handle_protected(self):
@@ -1539,7 +1552,8 @@ class AstBuilder(object):
                 token = self._get_next_token()
                 if token.token_type != tokenize.NAME:
                     assert token.token_type == tokenize.SYNTAX, token
-                    assert token.name == ';', token
+                    if token.name != ';':
+                        raise ParseError(token)
                 else:
                     new_class = class_type(class_token.start, class_token.end,
                                            class_name, bases, None,
@@ -1573,7 +1587,8 @@ class AstBuilder(object):
         if token.name == '=':
             # TODO(nnorwitz): handle aliasing namespaces.
             name, next_token = self.get_name()
-            assert next_token.name == ';', next_token
+            if next_token.name != ';':
+                raise ParseError(next_token)
             self._addBackToken(internal_token)
         else:
             assert token.name == '{', token
