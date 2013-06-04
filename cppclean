@@ -28,6 +28,7 @@ from cpp import ast
 from cpp import find_warnings
 from cpp import nonvirtual_dtors
 from cpp import static_data
+from cpp import tokenize
 
 
 def match_file(filename, exclude):
@@ -84,7 +85,9 @@ def main():
                        static_data]:
             try:
                 module.run(filename)
-            except (ast.ParseError, UnicodeDecodeError) as exception:
+            except (ast.ParseError,
+                    tokenize.TokenError,
+                    UnicodeDecodeError) as exception:
                 print('{}: parsing error {}'.format(filename, exception),
                       file=sys.stderr)
 

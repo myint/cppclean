@@ -47,6 +47,11 @@ PREPROCESSOR = 'PREPROCESSOR'
 WHENCE_STREAM, WHENCE_QUEUE = list(range(2))
 
 
+class TokenError(Exception):
+
+    """Raised when tokenization fails."""
+
+
 class Token(object):
 
     """Data container to represent a C++ token.
@@ -251,7 +256,7 @@ def get_tokens(source):
         else:
             sys.stderr.write('Got invalid token in %s @ %d token:%s: %r\n' %
                              ('?', i, c, source[i - 10:i + 10]))
-            raise RuntimeError('unexpected token')
+            raise TokenError('unexpected token')
 
         if i <= 0:
             print('Invalid index, exiting now.')
