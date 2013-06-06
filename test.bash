@@ -2,7 +2,7 @@
 
 for test in *test.py
 do
-    ./$test
+    ./"$test"
 done
 
 rm -f '.tmp'
