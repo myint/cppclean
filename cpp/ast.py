@@ -1239,6 +1239,12 @@ class AstBuilder(object):
         # It would be a pain to handle in the class code.
         name_tokens, var_token = self.get_name()
         if name_tokens:
+            # Forward declaration.
+            if var_token.name == ';':
+                return Struct(name_tokens[0].start, name_tokens[0].end,
+                              name_tokens[0].name, None, None, None,
+                              self.namespace_stack)
+
             next_token = self._get_next_token()
             is_syntax = (var_token.token_type == tokenize.SYNTAX and
                          var_token.name[0] in '*&')
