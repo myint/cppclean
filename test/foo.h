@@ -114,17 +114,17 @@ class def_var {
 
 namespace {
 class LaunchNameEquals {
- public: 
+ public:
   bool operator()(void* launch) {
     return true;
-  } 
+  }
 };
 }  // namespace
 
 enum {boo};
 
 class Blashdfdf {
- public: 
+ public:
   bool operator()(void* launch) const = 0;
 };
 
@@ -247,6 +247,11 @@ public:
   Copy();  // normal ctor
   Copy& operator=(const Copy& other);  // copy ctor
 };
+
+Copy& Copy::operator=(const Copy& rhs)
+{
+  return *this;
+}
 
 struct Flag;
 class StructMethod {
