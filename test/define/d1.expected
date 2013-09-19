@@ -1,4 +1,0 @@
-Processing d1.cc
-d1.cc:11: SomeFunction1 not found in expected header d1.h or any other directly #included header
-d1.cc:15: expected to find SomeOtherFunction1 in d1.h, but found in other_defined1.h
-d1.h:4: OnlyDeclared declared but not defined
