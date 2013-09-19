@@ -1,5 +1,0 @@
-Processing need-class.h
-need-class.h:4: 'Bar' forward declared, but needs to be #included
-need-class.h:5: 'Baz' forward declared, but needs to be #included
-need-class.h:6: 'Bong' forward declared, but needs to be #included
-need-class.h:7: 'Bling' forward declared, but needs to be #included

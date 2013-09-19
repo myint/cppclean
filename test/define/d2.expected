@@ -1,3 +1,0 @@
-Processing d2.cc
-d2.cc:2: SomeFunction not found in any directly #included header
-d2.cc:2: unable to find header file with matching name
