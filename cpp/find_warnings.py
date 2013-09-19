@@ -105,7 +105,10 @@ class WarningHunter(object):
     def show_warnings(self):
         self.warnings.sort()
         for filename, line_num, msg in self.warnings:
-            print('%s:%d: %s' % (filename, line_num, msg))
+            if line_num == 0:
+                print('%s: %s' % (filename, msg))
+            else:
+                print('%s:%d: %s' % (filename, line_num, msg))
 
     def find_warnings(self):
         if _is_header_file(self.filename):
@@ -462,8 +465,8 @@ class WarningHunter(object):
         if not primary_header and not any(node for node in self.ast_list
                                           if isinstance(node, ast.Function) and
                                           node.name == 'main'):
-            msg = 'unable to find header file with matching name'
-            self._addWarning(msg, self.ast_list[0])
+            msg = 'Unable to find header file with matching name'
+            self.warnings.append((self.filename, 0, msg))
 
         self._check_public_functions(primary_header, included_files)
 
