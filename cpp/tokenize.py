@@ -42,7 +42,7 @@ CONSTANT = 'CONSTANT'
 NAME = 'NAME'
 PREPROCESSOR = 'PREPROCESSOR'
 
-# Where the token originated from.  This can be used for backtracking.
+# Where the token originated from. This can be used for backtracking.
 # It is always set to WHENCE_STREAM in this code.
 WHENCE_STREAM, WHENCE_QUEUE = list(range(2))
 
@@ -247,10 +247,10 @@ def get_tokens(source):
             i += 1
             continue
         elif ignore_errors:
-            # The tokenizer seems to be in pretty good shape.  This
+            # The tokenizer seems to be in pretty good shape. This
             # raise is conditionally disabled so that bogus code
-            # in an #if 0 block can be handled.  Since we will ignore
-            # it anyways, this is probably fine.  So disable the
+            # in an #if 0 block can be handled. Since we will ignore
+            # it anyways, this is probably fine. So disable the
             # exception and  return the bogus char.
             i += 1
         else:

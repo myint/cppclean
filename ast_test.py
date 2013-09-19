@@ -451,8 +451,7 @@ class AstBuilderIntegrationTest(unittest.TestCase):
     """Unlike the other test cases in this file, this test case is meant to be
     an integration test.
 
-    It doesn't test any individual
-    method.  It tests whole code blocks.
+    It doesn't test any individual method. It tests whole code blocks.
 
     """
 
@@ -579,7 +578,7 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         nodes = list(MakeBuilder(code).generate())
         self.assertEqual(1, len(nodes))
         # TODO(nnorwitz): this doesn't parse correctly, but at least
-        # it doesn't raise an exception anymore.  Improve the parsing.
+        # it doesn't raise an exception anymore. Improve the parsing.
 
     def test_method_with_template_class_works(self):
         code = """

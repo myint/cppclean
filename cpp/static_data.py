@@ -33,7 +33,7 @@ def _find_warnings(filename, source, ast_list, static_is_optional):
     def find_static(function_node):
         for node in function_node.body:
             if node.name == 'static':
-                # TODO(nnorwitz): should ignore const.  Is static const common
+                # TODO(nnorwitz): should ignore const. Is static const common
                 # here?
                 print_warning(node, function_node.name)
 

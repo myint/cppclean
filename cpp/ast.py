@@ -52,7 +52,7 @@ FUNCTION_UNKNOWN_ANNOTATION = 0x40
 FUNCTION_THROW = 0x80
 
 """
-These are currently unused.  Should really handle these properly at some point.
+These are currently unused. Should really handle these properly at some point.
 
 TYPE_MODIFIER_INLINE   = 0x010000
 TYPE_MODIFIER_EXTERN   = 0x020000
@@ -83,7 +83,7 @@ class ParseError(Exception):
 
 
 # TODO(nnorwitz): use this as a singleton for templated_types, etc
-# where we don't want to create a new empty dict each time.  It is also const.
+# where we don't want to create a new empty dict each time. It is also const.
 class _NullDict(object):
     __contains__ = lambda self: False
     keys = values = items = iterkeys = itervalues = iteritems = lambda self: ()
@@ -443,7 +443,7 @@ class Type(_GenericDeclaration):
             suffix += '[]'
         return self._type_string_helper(suffix)
 
-    # By definition, Is* are always False.  A Type can only exist in
+    # By definition, Is* are always False. A Type can only exist in
     # some sort of variable declaration, parameter, or return value.
     def is_declaration(self):
         return False
@@ -651,7 +651,7 @@ class TypeConverter(object):
             elif s.name == ']':
                 pass  # Just don't add to type_modifiers.
             elif s.name == '=':
-                # Got a default value.  Add any value (None) as a flag.
+                # Got a default value. Add any value (None) as a flag.
                 default.append(None)
             elif default:
                 default.append(s)
@@ -756,7 +756,7 @@ class AstBuilder(object):
                 return method()
             elif token.name == self.in_class_name_only:
                 # The token name is the same as the class, must be a ctor if
-                # there is a paren.  Otherwise, it's the return type.
+                # there is a paren. Otherwise, it's the return type.
                 # Peek ahead to get the next token to figure out which.
                 next = self._get_next_token()
                 self._addBackToken(next)
@@ -772,7 +772,10 @@ class AstBuilder(object):
             if last_token.name == '(':
                 # If there is an assignment before the paren,
                 # this is an expression, not a method.
-                if temp_tokens[-1].name == '=' and temp_tokens[-2].name != 'operator':
+                if (
+                    temp_tokens[-1].name == '=' and
+                    temp_tokens[-2].name != 'operator'
+                ):
                     new_temp = self._get_tokensUpTo(tokenize.SYNTAX, ';')
                     temp_tokens.append(last_token)
                     temp_tokens.extend(new_temp)
@@ -822,7 +825,7 @@ class AstBuilder(object):
                 # Must be a dtor (probably not in method body).
                 token = self._get_next_token()
                 # self.in_class can contain A::Name, but the dtor will only
-                # be Name.  Make sure to compare against the right value.
+                # be Name. Make sure to compare against the right value.
                 if (token.token_type == tokenize.NAME and
                         token.name == self.in_class_name_only):
                     return self._get_method([token], FUNCTION_DTOR, None, True)
@@ -1125,7 +1128,7 @@ class AstBuilder(object):
 
     def _get_return_type_and_class_name(self, token_seq):
         # Splitting the return type from the class name in a method
-        # can be tricky.  For example, Return::Type::Is::Hard::To::Find().
+        # can be tricky. For example, Return::Type::Is::Hard::To::Find().
         # Where is the return type and where is the class name?
         # The heuristic used is to pull the last name as the class name.
         # This includes all the templated type info.
@@ -1151,7 +1154,7 @@ class AstBuilder(object):
             # Iterate through the sequence parsing out each name.
             new_name, next = self.get_name(seq_copy[i:])
             assert new_name, 'Got empty new_name, next=%s' % next
-            # We got a pointer or ref.  Add it to the name.
+            # We got a pointer or ref. Add it to the name.
             if next and next.token_type == tokenize.SYNTAX:
                 new_name.append(next)
             names.append(new_name)
@@ -1527,7 +1530,7 @@ class AstBuilder(object):
                                   class_name, None, templated_types, None,
                                   self.namespace_stack)
             if token.name in '*&':
-                # Inline forward declaration.  Could be method or data.
+                # Inline forward declaration. Could be method or data.
                 name_token = self._get_next_token()
                 next_token = self._get_next_token()
                 if next_token.name == ';':

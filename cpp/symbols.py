@@ -85,7 +85,7 @@ class SymbolTable(object):
             orig_exc = sys.exc_info()[1]
             try:
                 # The normal lookup can fail if all of the parts aren't
-                # namespaces.  This happens with OuterClass::Inner.
+                # namespaces. This happens with OuterClass::Inner.
                 namespace = self.namespaces[None]
                 return self._lookup_namespace(symbol, namespace, 'global ')
             except Error:
@@ -107,7 +107,7 @@ class SymbolTable(object):
                 break
             namespace_stack.append(namespace)
 
-        # Iterate through the stack in reverse order.  Need to go from
+        # Iterate through the stack in reverse order. Need to go from
         # innermost namespace to outermost.
         for namespace in reversed(namespace_stack):
             try:
@@ -131,9 +131,9 @@ class SymbolTable(object):
 
         """
         # TODO(nnorwitz): a convenient API for this depends on the
-        # representation of the name.  e.g., does symbol_name contain
+        # representation of the name. e.g., does symbol_name contain
         # ::, is symbol_name a list of colon separated names, how are
-        # names prefixed with :: handled.  These have different lookup
+        # names prefixed with :: handled. These have different lookup
         # semantics (if leading ::) or change the desirable API.
 
         # For now assume that the symbol_name contains :: and parse it.

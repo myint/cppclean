@@ -16,8 +16,8 @@
 """Find warnings for C++ code.
 
 TODO(nnorwitz): provide a mechanism to configure which warnings should
-be generated and which should be suppressed.  Currently, all possible
-warnings will always be displayed.  There is no way to suppress any.
+be generated and which should be suppressed. Currently, all possible
+warnings will always be displayed. There is no way to suppress any.
 There also needs to be a way to use annotations in the source code to
 suppress warnings.
 
@@ -158,7 +158,7 @@ class WarningHunter(object):
         # Map declaration-name: AST node.
         forward_declarations = {}
         for node in self.ast_list:
-            # Ignore #include <> files.  Only handle #include "".
+            # Ignore #include <> files. Only handle #include "".
             # Assume that <> are used for only basic C/C++ headers.
             if isinstance(node, ast.Include) and not node.system:
                 module = self._get_module(node.filename)
@@ -195,7 +195,7 @@ class WarningHunter(object):
                 if module.ast_list is not None:
                     msg = module.filename + ' does not need to be #included'
                     if use == USES_REFERENCE:
-                        msg += '.  Use references instead'
+                        msg += '. Use references instead'
                     self._addWarning(msg, node)
 
     def _verify_forward_declarations_used(
@@ -366,7 +366,7 @@ class WarningHunter(object):
         for header_node, header in all_headers.values():
             if name in header.public_symbols:
                 # If the primary.filename == header.filename, it probably
-                # indicates an error elsewhere.  It sucks to mask it,
+                # indicates an error elsewhere. It sucks to mask it,
                 # but false positives are worse.
                 if (primary_header and
                         primary_header.filename != header.filename):
@@ -446,15 +446,15 @@ class WarningHunter(object):
         included_files, forward_declarations = self._read_and_parse_includes()
         if forward_declarations:
             # TODO(nnorwitz): This really isn't a problem, but might
-            # be something to warn against.  I expect this will either
-            # be configurable or removed in the future.  But it's easy
+            # be something to warn against. I expect this will either
+            # be configurable or removed in the future. But it's easy
             # to check for now.
             msg = 'forward declarations not expected in source file'
             self._addWarning(msg, next(forward_declarations.values()))
 
-        # A primary header is optional.  However, when looking up
+        # A primary header is optional. However, when looking up
         # defined methods in the source, always look in the
-        # primary_header first.  Expect that is the most likely location.
+        # primary_header first. Expect that is the most likely location.
         # Use of primary_header is primarily an optimization.
         primary_header = self._get_primary_header(included_files)
         if not primary_header and not any(node for node in self.ast_list

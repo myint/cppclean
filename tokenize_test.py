@@ -407,7 +407,7 @@ class TokenizeTest(unittest.TestCase):
     # []
     # () and function calls
     # comma operator
-    # identifiers (e.g., _).  what to do about dollar signs?
+    # identifiers (e.g., _). what to do about dollar signs?
 
 
 if __name__ == '__main__':
