@@ -77,11 +77,11 @@ namespace noname {
 enum nn {
   bar,
 };
-};
+}
 
 namespace {
 // Anon namespace
-};
+}
 
 #include "bar.h"  // foo
 #include <string>  // foo
@@ -94,7 +94,7 @@ class Fool : public Bar, public Baz {};
 namespace {
 // Anon namespace with something
 void lkjsdfkd();
-};
+}
 
 class TT : public TTbase<Bar> {};
 
