@@ -119,7 +119,8 @@ class WarningHunter(object):
         for name, node in module.public_symbols.items():
             self.symbol_table.add_symbol(name, node.namespace, node, module)
 
-    def _get_module(self, filename):
+    def _get_module(self, node):
+        filename = node.filename
         if filename in self._module_cache:
             # The cache survives across all instances, but the symbol table
             # is per instance, so we need to make sure the symbol table
@@ -134,7 +135,8 @@ class WarningHunter(object):
 
         if source is None:
             module = Module(filename, None)
-            print('Unable to find %s' % filename)
+            msg = 'Unable to find %s' % filename
+            self._addWarning(msg, node)
         else:
             builder = ast.builder_from_source(source, filename)
             try:
@@ -161,7 +163,7 @@ class WarningHunter(object):
             # Ignore #include <> files. Only handle #include "".
             # Assume that <> are used for only basic C/C++ headers.
             if isinstance(node, ast.Include) and not node.system:
-                module = self._get_module(node.filename)
+                module = self._get_module(node)
                 included_files[module.normalized_filename] = node, module
             if isinstance(node, DECLARATION_TYPES) and node.is_declaration():
                 forward_declarations[node.full_name()] = node
