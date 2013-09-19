@@ -772,8 +772,7 @@ class AstBuilder(object):
             if last_token.name == '(':
                 # If there is an assignment before the paren,
                 # this is an expression, not a method.
-                expr = bool([e for e in temp_tokens if e.name == '='])
-                if expr:
+                if temp_tokens[-1].name == '=' and temp_tokens[-2].name != 'operator':
                     new_temp = self._get_tokensUpTo(tokenize.SYNTAX, ';')
                     temp_tokens.append(last_token)
                     temp_tokens.extend(new_temp)
@@ -1240,6 +1239,12 @@ class AstBuilder(object):
         # It would be a pain to handle in the class code.
         name_tokens, var_token = self.get_name()
         if name_tokens:
+            # Forward declaration.
+            if var_token.name == ';':
+                return Struct(name_tokens[0].start, name_tokens[0].end,
+                              name_tokens[0].name, None, None, None,
+                              self.namespace_stack)
+
             next_token = self._get_next_token()
             is_syntax = (var_token.token_type == tokenize.SYNTAX and
                          var_token.name[0] in '*&')

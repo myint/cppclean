@@ -463,10 +463,20 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(1, len(nodes))
         self.assertEqual(Class('Foo', body=None), nodes[0])
 
+    def test_struct_forward_declaration(self):
+        nodes = list(MakeBuilder('struct Foo;').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Struct('Foo', body=None), nodes[0])
+
     def test_class_empty_body(self):
         nodes = list(MakeBuilder('class Foo {};').generate())
         self.assertEqual(1, len(nodes))
         self.assertEqual(Class('Foo', body=[]), nodes[0])
+
+    def test_struct_empty_body(self):
+        nodes = list(MakeBuilder('struct Foo {};').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Struct('Foo', body=[]), nodes[0])
 
     def test_class_in_namespace_single(self):
         nodes = list(MakeBuilder('namespace N { class Foo; }').generate())
