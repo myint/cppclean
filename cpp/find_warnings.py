@@ -34,7 +34,6 @@ from . import keywords
 from . import metrics
 from . import symbols
 from . import tokenize
-from . import utils
 
 
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
@@ -481,13 +480,7 @@ def get_line_number(metrics, node):
     return metrics.get_line_number(node.start)
 
 
-def run(filename):
-    source = utils.read_file(filename)
-    if source is None:
-        return
-
-    builder = ast.builder_from_source(source, filename)
-    entire_ast = list([_f for _f in builder.generate() if _f])
+def run(filename, source, entire_ast):
     hunter = WarningHunter(filename, source, entire_ast)
     hunter.find_warnings()
     hunter.show_warnings()
