@@ -1486,6 +1486,8 @@ class AstBuilder(object):
         while True:
             token = self._get_next_token()
             assert token.token_type == tokenize.NAME, token
+            if token.name == 'virtual':
+                token = self._get_next_token()
             # TODO(nnorwitz): store kind of inheritance...maybe.
             if token.name not in ('public', 'protected', 'private'):
                 # If inheritance type is not specified, it is private.
