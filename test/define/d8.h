@@ -7,4 +7,3 @@ class Foo {
   auto_ptr<OneReg> saved_;
 };
 }  // namespace ns
-
