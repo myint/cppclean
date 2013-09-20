@@ -242,9 +242,9 @@ class _GenericDeclaration(Node):
 # TODO(nnorwitz): merge with Parameter in some way?
 class VariableDeclaration(_GenericDeclaration):
 
-    def __init__(self, start, end, name, var_type, initial_value, namespace):
+    def __init__(self, start, end, name, type, initial_value, namespace):
         _GenericDeclaration.__init__(self, start, end, name, namespace)
-        self.type = var_type
+        self.type = type
         self.initial_value = initial_value
 
     def requires(self, node):
@@ -614,9 +614,8 @@ class TypeConverter(object):
             if default:
                 del default[0]  # Remove flag.
             end = type_modifiers[-1].end
-            parts = self.declaration_to_parts(type_modifiers, True)
-            (name, type_name, templated_types, modifiers,
-             _, __) = parts
+            name, type_name, templated_types, modifiers, _, __ = \
+                self.declaration_to_parts(type_modifiers, True)
             parameter_type = Type(first_token.start, first_token.end,
                                   type_name, templated_types, modifiers,
                                   reference, pointer, array)
@@ -738,7 +737,7 @@ class AstBuilder(object):
                 raise
 
     def _create_variable(self, pos_token, name, type_name, type_modifiers,
-                         ref_pointer_name_seq, templated_types, value=None):
+                         ref_pointer_name_seq, templated_types=[], value=''):
         reference = '&' in ref_pointer_name_seq
         pointer = '*' in ref_pointer_name_seq
         array = '[' in ref_pointer_name_seq
@@ -794,9 +793,8 @@ class AstBuilder(object):
 
             if last_token.name == ';':
                 # Handle data, this isn't a method.
-                parts = self.converter.declaration_to_parts(temp_tokens, True)
-                (name, type_name, templated_types, modifiers, default,
-                 _) = parts
+                name, type_name, templated_types, modifiers, default, _ = \
+                    self.converter.declaration_to_parts(temp_tokens, True)
 
                 if not temp_tokens:
                     raise ParseError('not enough tokens')
@@ -1079,7 +1077,7 @@ class AstBuilder(object):
                 if token.name != ';':
                     raise ParseError(token)
                 return self._create_variable(indices, name.name, indices.name,
-                                             modifiers, '', None)
+                                             modifiers, '')
             # At this point, we got something like:
             #  return_type (type::*name_)(params);
             # This is a data member called name_ that is a function pointer.
@@ -1092,7 +1090,7 @@ class AstBuilder(object):
             modifiers = [p.name for p in self._get_parameters()]
             del modifiers[-1]           # Remove trailing ')'.
             return self._create_variable(indices, real_name.name, indices.name,
-                                         modifiers, '', None)
+                                         modifiers, '')
 
         if token.name == '{':
             body = list(self.get_scope())
@@ -1235,7 +1233,7 @@ class AstBuilder(object):
 
         # Must be variable declaration using the type prefixed with keyword.
         assert token.token_type == tokenize.NAME, token
-        return self._create_variable(token, token.name, name, [], '', None)
+        return self._create_variable(token, token.name, name, [], '')
 
     def handle_struct(self):
         # Special case the handling typedef/aliasing of structs here.
@@ -1274,7 +1272,7 @@ class AstBuilder(object):
                 position = name_tokens[0]
                 return self._create_variable(
                     position, variable.name, type_name,
-                    modifiers, var_token.name, None)
+                    modifiers, var_token.name)
             name_tokens.extend((var_token, next_token))
             self._addBackTokens(name_tokens)
         else:
@@ -1540,7 +1538,7 @@ class AstBuilder(object):
                     modifiers = ['class']
                     return self._create_variable(class_token, name_token.name,
                                                  class_name,
-                                                 modifiers, token.name, None)
+                                                 modifiers, token.name)
                 else:
                     # Assume this is a method.
                     tokens = (class_token, token, name_token, next_token)
@@ -1572,7 +1570,7 @@ class AstBuilder(object):
                     modifiers = []
                     return self._create_variable(class_token,
                                                  token.name, new_class,
-                                                 modifiers, token.name, None)
+                                                 modifiers, token.name)
         else:
             if not self._handling_typedef:
                 self.handle_error('non-typedef token', token)
