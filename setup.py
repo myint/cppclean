@@ -2,6 +2,8 @@
 
 """Setup for cppclean."""
 
+from __future__ import absolute_import
+
 import ast
 from distutils import core
 import os

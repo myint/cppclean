@@ -17,9 +17,12 @@
 
 """Symbol Table utility code."""
 
-__author__ = 'nnorwitz@google.com (Neal Norwitz)'
+from __future__ import absolute_import
 
 import sys
+
+
+__author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
 class Error(BaseException):

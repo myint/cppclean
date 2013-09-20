@@ -15,7 +15,15 @@
 
 """Generate an Abstract Syntax Tree (AST) for C++."""
 
+from __future__ import absolute_import
 from __future__ import print_function
+
+import sys
+
+from . import keywords
+from . import tokenize
+from . import utils
+
 
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
@@ -30,13 +38,6 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 # TODO much, much later:
 # * Handle #define
 #  * exceptions
-
-
-import sys
-
-from . import keywords
-from . import tokenize
-from . import utils
 
 
 VISIBILITY_PUBLIC, VISIBILITY_PROTECTED, VISIBILITY_PRIVATE = list(range(3))

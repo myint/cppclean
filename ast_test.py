@@ -17,12 +17,15 @@
 
 """AST test."""
 
-__author__ = 'nnorwitz@google.com (Neal Norwitz)'
+from __future__ import absolute_import
 
 import unittest
 
 from cpp import ast
 from cpp import tokenize
+
+
+__author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
 def _install_generic_equal(cls, attrs):

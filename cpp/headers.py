@@ -15,14 +15,16 @@
 
 """Find and print the headers #include'd in a source file."""
 
+from __future__ import absolute_import
 from __future__ import print_function
-
-__author__ = 'nnorwitz@google.com (Neal Norwitz)'
-
 
 import os
 
 from . import utils
+
+
+__author__ = 'nnorwitz@google.com (Neal Norwitz)'
+
 
 # Allow a site to override the defaults if they choose.
 # Just put a siteheaders.py somewhere in the PYTHONPATH.
