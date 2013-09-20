@@ -83,13 +83,6 @@ class ParseError(Exception):
     """Raise exception on parsing problems."""
 
 
-# TODO(nnorwitz): use this as a singleton for templated_types, etc
-# where we don't want to create a new empty dict each time. It is also const.
-class _NullDict(object):
-    __contains__ = lambda self: False
-    keys = values = items = iterkeys = itervalues = iteritems = lambda self: ()
-
-
 # TODO(nnorwitz): move AST nodes into a separate module.
 class Node(object):
 
