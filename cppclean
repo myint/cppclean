@@ -94,7 +94,8 @@ def main():
         except (ast.ParseError,
                 tokenize.TokenError,
                 UnicodeDecodeError) as exception:
-            print('{}: parsing error {}'.format(filename, exception), file=sys.stderr)
+            print('{}: parsing error {}'.format(filename, exception),
+                  file=sys.stderr)
 
         for module in [find_warnings,
                        nonvirtual_dtors,

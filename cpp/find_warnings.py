@@ -273,7 +273,10 @@ class WarningHunter(object):
         def _process_function(function):
             if function.return_type:
                 return_type = function.return_type
-                _add_variable(return_type, return_type.name, function.namespace)
+                _add_variable(return_type,
+                              return_type.name,
+                              function.namespace)
+
             templated_types = function.templated_types or ()
             for p in function.parameters:
                 if p.type.name not in templated_types:
@@ -322,7 +325,8 @@ class WarningHunter(object):
                 if isinstance(node, ast.VariableDeclaration):
                     _add_variable(node.type, node.type.name, node.namespace)
                     _add_template_use(node.type.name,
-                                    node.type.templated_types, node.namespace)
+                                      node.type.templated_types,
+                                      node.namespace)
                 elif isinstance(node, ast.Function):
                     _process_function(node)
                     if node.body:
@@ -332,7 +336,7 @@ class WarningHunter(object):
                     if isinstance(alias, ast.Type):
                         _add_use(alias.name, node.namespace)
                         _add_template_use('<typedef>', alias.templated_types,
-                                        node.namespace)
+                                          node.namespace)
                 elif isinstance(node, ast.Friend):
                     if node.expr and node.expr[0].name == 'class':
                         name = ''.join([n.name for n in node.expr[1:]])
