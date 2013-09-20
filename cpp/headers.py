@@ -26,20 +26,7 @@ from . import utils
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
-# FIXME: Is anyone using this?
-# Allow a site to override the defaults if they choose.
-# Just put a siteheaders.py somewhere in the PYTHONPATH.
-try:
-    import siteheaders
-    GetIncludeDirs = getattr(siteheaders, 'GetIncludeDirs', lambda fn: ['.'])
-except ImportError:
-    siteheaders = None
-
-
 def read_source(relative_filename, include_paths):
-    if siteheaders:
-        include_paths = GetIncludeDirs(relative_filename)
-
     source = None
     for path in include_paths:
         filename = os.path.join(path, relative_filename)
