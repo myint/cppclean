@@ -14,7 +14,8 @@ Unused code can be unused functions, methods, data members, types, etc
 to unnecessary #include directives. Unnecessary #includes can cause
 considerable extra compiles increasing the edit-compile-run cycle.
 
-The project home page is: http://code.google.com/p/cppclean/
+This is a fork of the original project. The original project home page is:
+http://code.google.com/p/cppclean/
 
 
 Features
@@ -69,10 +70,3 @@ Non-goals
 - Parsing all valid C++ source
 - Handling invalid C++ source gracefully
 - Compiling to machine code (or anything beyond an AST)
-
-
-Contact
-=======
-If you used cppclean, I would love to hear about your experiences
-cppclean@googlegroups.com. Even if you don't use cppclean, I'd like to
-hear from you. :-) (You can contact me directly at: nnorwitz@gmail.com)
