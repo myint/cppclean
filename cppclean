@@ -105,8 +105,12 @@ def main():
         for module in [find_warnings,
                        nonvirtual_dtors,
                        static_data]:
-            module.run(filename, source, entire_ast,
-                       include_paths=args.include_paths)
+            try:
+                module.run(filename, source, entire_ast,
+                           include_paths=args.include_paths)
+            except UnicodeDecodeError as exception:
+                print('{}: {}'.format(filename, exception),
+                      file=sys.stderr)
 
 
 sys.exit(main())
