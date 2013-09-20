@@ -34,7 +34,6 @@ from . import keywords
 from . import metrics
 from . import symbols
 from . import tokenize
-from . import utils
 
 
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
@@ -105,7 +104,10 @@ class WarningHunter(object):
     def show_warnings(self):
         self.warnings.sort()
         for filename, line_num, msg in self.warnings:
-            print('%s:%d: %s' % (filename, line_num, msg))
+            if line_num == 0:
+                print('%s: %s' % (filename, msg))
+            else:
+                print('%s:%d: %s' % (filename, line_num, msg))
 
     def find_warnings(self):
         if _is_header_file(self.filename):
@@ -119,7 +121,8 @@ class WarningHunter(object):
         for name, node in module.public_symbols.items():
             self.symbol_table.add_symbol(name, node.namespace, node, module)
 
-    def _get_module(self, filename):
+    def _get_module(self, node):
+        filename = node.filename
         if filename in self._module_cache:
             # The cache survives across all instances, but the symbol table
             # is per instance, so we need to make sure the symbol table
@@ -134,7 +137,8 @@ class WarningHunter(object):
 
         if source is None:
             module = Module(filename, None)
-            print('Unable to find %s' % filename)
+            msg = 'Unable to find %s' % filename
+            self._addWarning(msg, node)
         else:
             builder = ast.builder_from_source(source, filename)
             try:
@@ -161,7 +165,7 @@ class WarningHunter(object):
             # Ignore #include <> files. Only handle #include "".
             # Assume that <> are used for only basic C/C++ headers.
             if isinstance(node, ast.Include) and not node.system:
-                module = self._get_module(node.filename)
+                module = self._get_module(node)
                 included_files[module.normalized_filename] = node, module
             if isinstance(node, DECLARATION_TYPES) and node.is_declaration():
                 forward_declarations[node.full_name()] = node
@@ -460,8 +464,8 @@ class WarningHunter(object):
         if not primary_header and not any(node for node in self.ast_list
                                           if isinstance(node, ast.Function) and
                                           node.name == 'main'):
-            msg = 'unable to find header file with matching name'
-            self._addWarning(msg, self.ast_list[0])
+            msg = 'Unable to find header file with matching name'
+            self.warnings.append((self.filename, 0, msg))
 
         self._check_public_functions(primary_header, included_files)
 
@@ -476,13 +480,7 @@ def get_line_number(metrics, node):
     return metrics.get_line_number(node.start)
 
 
-def run(filename):
-    source = utils.read_file(filename)
-    if source is None:
-        return
-
-    builder = ast.builder_from_source(source, filename)
-    entire_ast = list([_f for _f in builder.generate() if _f])
+def run(filename, source, entire_ast):
     hunter = WarningHunter(filename, source, entire_ast)
     hunter.find_warnings()
     hunter.show_warnings()

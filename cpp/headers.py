@@ -31,7 +31,6 @@ try:
     import siteheaders
 except ImportError:
     siteheaders = None
-_TRANSITIVE = getattr(siteheaders, 'TRANSITIVE', False)
 GetIncludeDirs = getattr(siteheaders, 'GetIncludeDirs', lambda fn: ['.'])
 
 
@@ -43,26 +42,3 @@ def read_source(relative_filename):
         if source is not None:
             return source, filename
     return None, relative_filename
-
-
-def get_headers(filename):
-    source, actual_filename = read_source(filename)
-    if source is None:
-        print('Unable to find %s' % filename)
-        return []
-
-    included_files = []
-
-    print('Processing %s' % actual_filename)
-    builder = ast.builder_from_source(source, filename)
-    for node in builder.generate():
-        if isinstance(node, ast.Include):
-            if not node.system:
-                print(node.filename)
-                included_files.append(node.filename)
-
-    # Transitively process all the files that were included.
-    if _TRANSITIVE:
-        for filename in included_files:
-            included_files.extend(get_headers(filename))
-    return included_files

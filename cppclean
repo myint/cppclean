@@ -29,6 +29,7 @@ from cpp import find_warnings
 from cpp import nonvirtual_dtors
 from cpp import static_data
 from cpp import tokenize
+from cpp import utils
 
 
 def match_file(filename, exclude):
@@ -80,16 +81,25 @@ def main():
         if args.verbose:
             print('Processing', filename, file=sys.stderr)
 
+        try:
+            source = utils.read_file(filename)
+            if source is None:
+                continue
+
+            builder = ast.builder_from_source(source, filename)
+            entire_ast = list([_f for _f in builder.generate() if _f])
+        except (ast.ParseError,
+                tokenize.TokenError,
+                UnicodeDecodeError) as exception:
+            print('{}: parsing error {}'.format(filename, exception), file=sys.stderr)
+
         for module in [find_warnings,
                        nonvirtual_dtors,
                        static_data]:
             try:
-                module.run(filename)
-            except (ast.ParseError,
-                    tokenize.TokenError,
-                    UnicodeDecodeError) as exception:
-                print('{}: parsing error {}'.format(filename, exception),
-                      file=sys.stderr)
+                module.run(filename, source, entire_ast)
+            except:
+                continue
 
 
 sys.exit(main())

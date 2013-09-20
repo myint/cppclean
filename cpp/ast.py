@@ -1486,6 +1486,8 @@ class AstBuilder(object):
         while True:
             token = self._get_next_token()
             assert token.token_type == tokenize.NAME, token
+            if token.name == 'virtual':
+                token = self._get_next_token()
             # TODO(nnorwitz): store kind of inheritance...maybe.
             if token.name not in ('public', 'protected', 'private'):
                 # If inheritance type is not specified, it is private.
@@ -1696,39 +1698,3 @@ def builder_from_source(source, filename):
 
     """
     return AstBuilder(tokenize.get_tokens(source), filename)
-
-
-def print_indentifiers(filename, should_print):
-    """Prints all identifiers for a C++ source file.
-
-    Args:
-      filename: 'file1'
-      should_print: predicate with signature: bool Function(token)
-
-    """
-    source = utils.read_file(filename, False)
-    if source is None:
-        sys.stderr.write('Unable to find: %s\n' % filename)
-        return
-
-    builder = builder_from_source(source, filename)
-    try:
-        for node in builder.generate():
-            if should_print(node):
-                print(node.name)
-    except KeyboardInterrupt:
-        return
-    except:
-        pass
-
-
-def print_all_indentifiers(filenames, should_print):
-    """Prints all identifiers for each C++ source file in filenames.
-
-    Args:
-      filenames: ['file1', 'file2', ...]
-      should_print: predicate with signature: bool Function(token)
-
-    """
-    for path in filenames:
-        print_indentifiers(path, should_print)
