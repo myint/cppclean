@@ -7,4 +7,4 @@ done
 
 rm -f '.tmp'
 ./cppclean 'test' > '.tmp'
-diff --unified '.tmp' 'test/expected.txt' && rm -f '.tmp'
+diff --unified 'test/expected.txt' '.tmp' && rm -f '.tmp'
