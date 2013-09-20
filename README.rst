@@ -40,7 +40,7 @@ Installation
 ============
 ::
 
-    $ pip install --upgrade git+https://github.com/myint/cppclean.git
+    $ pip install --upgrade cppclean
 
 
 Run
