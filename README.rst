@@ -14,8 +14,8 @@ Unused code can be unused functions, methods, data members, types, etc
 to unnecessary #include directives. Unnecessary #includes can cause
 considerable extra compiles increasing the edit-compile-run cycle.
 
-This is a fork of the original project. The original project home page is:
-http://code.google.com/p/cppclean/
+This is a fork of the original cppclean project. The original project home
+page, (which no longer contains code) is: https://code.google.com/p/cppclean/
 
 
 Features
