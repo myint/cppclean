@@ -133,10 +133,14 @@ class WarningHunter(object):
             self._update_symbol_table(module)
             return module
 
-        filename = os.path.join(os.path.dirname(self.filename), filename)
-
         source, actual_filename = headers.read_source(
             filename, include_paths=self.include_paths)
+
+        if source is None:
+            filename = os.path.join(os.path.dirname(self.filename), filename)
+
+            source, actual_filename = headers.read_source(
+                filename, include_paths=self.include_paths)
 
         if source is None:
             module = Module(filename, None)

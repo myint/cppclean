@@ -6,5 +6,5 @@ do
 done
 
 rm -f '.tmp'
-./cppclean 'test' > '.tmp'
+./cppclean --include-path='test/external' 'test' > '.tmp'
 diff --unified 'test/expected.txt' '.tmp' && rm -f '.tmp'
