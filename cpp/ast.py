@@ -1521,6 +1521,10 @@ class AstBuilder(object):
         else:
             self._addBackToken(class_token)
             name_tokens, token = self.get_name()
+            # Handle attribute.
+            if not self._handling_typedef and token.token_type == tokenize.NAME:
+                self._addBackToken(token)
+                name_tokens, token = self.get_name()
             class_name = ''.join([t.name for t in name_tokens])
         bases = None
         if token.token_type == tokenize.SYNTAX:
