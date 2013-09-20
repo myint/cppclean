@@ -22,7 +22,6 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 import os
 
-from . import ast
 from . import utils
 
 # Allow a site to override the defaults if they choose.
