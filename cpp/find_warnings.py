@@ -461,7 +461,7 @@ class WarningHunter(object):
             # be configurable or removed in the future. But it's easy
             # to check for now.
             msg = 'forward declarations not expected in source file'
-            self._add_warning(msg, next(forward_declarations.values()))
+            self._add_warning(msg, list(forward_declarations.values())[0])
 
         # A primary header is optional. However, when looking up
         # defined methods in the source, always look in the
