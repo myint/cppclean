@@ -120,6 +120,9 @@ def get_tokens(source):
       Token that represents the next token in the source.
 
     """
+    if not source.endswith('\n'):
+        source += '\n'
+
     # Cache various valid character sets for speed.
     valid_identifier_chars = VALID_IDENTIFIER_CHARS
     hex_digits = HEX_DIGITS
@@ -230,10 +233,7 @@ def get_tokens(source):
                 i = min([x for x in (i1, i2, i3, i4, end) if x != -1])
 
                 # Handle #include "dir//foo.h" properly.
-                if (
-                    i < len(source) and  # Handle files with missing newline.
-                    source[i] == '"'
-                ):
+                if source[i] == '"':
                     i = source.find('"', i + 1) + 1
                     assert i > 0
                     continue
