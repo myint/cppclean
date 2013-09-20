@@ -105,11 +105,8 @@ def main():
         for module in [find_warnings,
                        nonvirtual_dtors,
                        static_data]:
-            try:
-                module.run(filename, source, entire_ast,
-                           include_paths=args.include_paths)
-            except:
-                continue
+            module.run(filename, source, entire_ast,
+                       include_paths=args.include_paths)
 
 
 sys.exit(main())
