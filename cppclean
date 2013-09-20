@@ -70,6 +70,9 @@ def main():
     parser.add_argument('--exclude', metavar='globs',
                         help='exclude files/directories that match these '
                              'comma-separated globs')
+    parser.add_argument('--include-path', '-i', '-I', action='append',
+                        dest='include_paths', default=[],
+                        help='add a header include path')
     parser.add_argument('--verbose', action='store_true',
                         help='print verbose messages')
     parser.add_argument('--version', action='version',
@@ -80,6 +83,8 @@ def main():
         args.exclude = args.exclude.split(',')
     else:
         args.exclude = []
+
+    args.include_paths.append('.')
 
     for filename in find_files(args.files, exclude=args.exclude):
         if args.verbose:
@@ -102,7 +107,8 @@ def main():
                        nonvirtual_dtors,
                        static_data]:
             try:
-                module.run(filename, source, entire_ast)
+                module.run(filename, source, entire_ast,
+                           include_paths=args.include_paths)
             except:
                 continue
 

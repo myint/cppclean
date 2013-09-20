@@ -81,11 +81,12 @@ class WarningHunter(object):
     # Cache filename: ast_list
     _module_cache = {}
 
-    def __init__(self, filename, source, ast_list):
+    def __init__(self, filename, source, ast_list, include_paths):
         self.filename = filename
         self.normalized_filename = os.path.abspath(filename)
         self.source = source
         self.ast_list = ast_list
+        self.include_paths = include_paths[:]
         self.symbol_table = symbols.SymbolTable()
 
         self.metrics = metrics.Metrics(source)
@@ -134,7 +135,8 @@ class WarningHunter(object):
 
         filename = os.path.join(os.path.dirname(self.filename), filename)
 
-        source, actual_filename = headers.read_source(filename)
+        source, actual_filename = headers.read_source(
+            filename, include_paths=self.include_paths)
 
         if source is None:
             module = Module(filename, None)
@@ -485,7 +487,8 @@ def get_line_number(metrics, node):
     return metrics.get_line_number(node.start)
 
 
-def run(filename, source, entire_ast):
-    hunter = WarningHunter(filename, source, entire_ast)
+def run(filename, source, entire_ast, include_paths):
+    hunter = WarningHunter(filename, source, entire_ast,
+                           include_paths=include_paths)
     hunter.find_warnings()
     hunter.show_warnings()
