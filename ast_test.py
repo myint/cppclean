@@ -64,6 +64,8 @@ def _install_equal_methods():
                                         'modifiers templated_types '
                                         'body namespace'))
     _install_generic_equal(ast.Include, 'filename system')
+    _install_generic_equal(ast.Typedef, 'name alias namespace')
+    _install_generic_equal(ast.VariableDeclaration, 'name type initial_value namespace')
 _install_equal_methods()
 
 
@@ -85,50 +87,41 @@ def Include(filename, system=False, start=0, end=0):
 
 
 def Class(name, start=0, end=0, bases=None, body=None, templated_types=None,
-          namespace=None):
-    if namespace is None:
-        namespace = []
+          namespace=[]):
     return ast.Class(start, end, name, bases, templated_types, body, namespace)
 
 
 def Struct(name, start=0, end=0, bases=None, body=None, templated_types=None,
-           namespace=None):
-    if namespace is None:
-        namespace = []
-    return ast.Struct(start, end, name, bases, templated_types, body,
-                      namespace)
+           namespace=[]):
+    return ast.Struct(start, end, name, bases, templated_types, body, namespace)
 
 
-def Type(name, start=0, end=0, templated_types=None, modifiers=None,
+def Type(name, start=0, end=0, templated_types=[], modifiers=[],
          reference=False, pointer=False, array=False):
-    if templated_types is None:
-        templated_types = []
-    if modifiers is None:
-        modifiers = []
     return ast.Type(start, end, name, templated_types, modifiers,
                     reference, pointer, array)
 
 
 def Function(name, return_type, parameters, start=0, end=0,
-             modifiers=0, templated_types=None, body=None, namespace=None):
+             modifiers=0, templated_types=None, body=None, namespace=[]):
     # TODO(nnorwitz): why are body & templated_types different
     # for Functions and Methods?
-    if namespace is None:
-        namespace = []
     return ast.Function(start, end, name, return_type, parameters,
                         modifiers, templated_types, body, namespace)
 
 
 def Method(name, in_class, return_type, parameters, start=0, end=0,
-           modifiers=0, templated_types=None, body=None, namespace=None):
-    if templated_types is None:
-        templated_types = []
-    if body is None:
-        body = []
-    if namespace is None:
-        namespace = []
+           modifiers=0, templated_types=[], body=[], namespace=[]):
     return ast.Method(start, end, name, in_class, return_type, parameters,
                       modifiers, templated_types, body, namespace)
+
+
+def Typedef(name, start=0, end=0, alias=[], namespace=[]):
+    return ast.Typedef(start, end, name, alias, namespace)
+
+
+def VariableDeclaration(name, type, start=0, end=0, initial_value='', namespace=[]):
+    return ast.VariableDeclaration(start, end, name, type, initial_value, namespace)
 
 
 class TypeConverterDeclarationToPartsTest(unittest.TestCase):
@@ -457,6 +450,16 @@ class AstBuilderIntegrationTest(unittest.TestCase):
 
     # TODO(nnorwitz): add lots more tests.
 
+    def test_anon_typedef(self):
+        nodes = list(MakeBuilder('typedef struct { int zz; } AnonStruct;').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Typedef('AnonStruct', alias=[Struct(None, body=[VariableDeclaration('zz', Type('int'))])]), nodes[0])
+
+    def test_typedef(self):
+        nodes = list(MakeBuilder('typedef struct _IplImage IplImage;').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Typedef('IplImage', alias=[Struct('_IplImage')]), nodes[0])
+
     def test_class_forward_declaration(self):
         nodes = list(MakeBuilder('class Foo;').generate())
         self.assertEqual(1, len(nodes))
@@ -504,6 +507,19 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         nodes = list(MakeBuilder(code).generate())
         self.assertEqual(1, len(nodes))
         self.assertEqual(Class('Foo', namespace=['A', None, 'B']), nodes[0])
+
+    def test_template_typedef(self):
+        code = 'class Foo; typedef Bar<Foo*> v;'
+        nodes = list(MakeBuilder(code).generate())
+        self.assertEqual(2, len(nodes))
+        self.assertEqual(Class('Foo'), nodes[0])
+        self.assertEqual(Typedef('v', alias=Type('Bar', templated_types=[Type('Foo', pointer=True)])), nodes[1])
+
+    def test_operator(self):
+        code = 'void Foo::operator=() { }'
+        nodes = list(MakeBuilder(code).generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Type('Foo::', modifiers=['void', 'operator']), nodes[0].return_type)
 
     def test_class_no_anonymous_namespace(self):
         nodes = list(MakeBuilder('class Foo;').generate())
