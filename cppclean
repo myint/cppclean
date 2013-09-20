@@ -72,6 +72,7 @@ def main():
                              'comma-separated globs')
     parser.add_argument('--include-path', '-i', '-I', action='append',
                         dest='include_paths', default=[],
+                        metavar='path',
                         help='add a header include path')
     parser.add_argument('--verbose', action='store_true',
                         help='print verbose messages')
