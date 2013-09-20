@@ -450,6 +450,11 @@ class AstBuilderIntegrationTest(unittest.TestCase):
 
     # TODO(nnorwitz): add lots more tests.
 
+    def test_struct_variable_declaration(self):
+        nodes = list(MakeBuilder('struct Foo foo;').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(VariableDeclaration('foo', Type('Foo', modifiers=['struct'])), nodes[0])
+
     def test_anon_typedef(self):
         nodes = list(MakeBuilder('typedef struct { int zz; } AnonStruct;').generate())
         self.assertEqual(1, len(nodes))
@@ -477,6 +482,16 @@ class AstBuilderIntegrationTest(unittest.TestCase):
 
     def test_struct_empty_body(self):
         nodes = list(MakeBuilder('struct Foo {};').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Struct('Foo', body=[]), nodes[0])
+
+    def test_class_exported(self):
+        nodes = list(MakeBuilder('class DLLEXPORT Foo {};').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Class('Foo', body=[]), nodes[0])
+
+    def test_struct_exported(self):
+        nodes = list(MakeBuilder('struct DLLEXPORT Foo {};').generate())
         self.assertEqual(1, len(nodes))
         self.assertEqual(Struct('Foo', body=[]), nodes[0])
 
