@@ -18,6 +18,7 @@ test/need-class.h:4: 'Bar' forward declared, but needs to be #included
 test/need-class.h:5: 'Baz' forward declared, but needs to be #included
 test/need-class.h:6: 'Bong' forward declared, but needs to be #included
 test/need-class.h:7: 'Bling' forward declared, but needs to be #included
+test/typedef.h:1: 'Foo' forward declared, but needs to be #included
 test/define/d1.cc:11: SomeFunction1 not found in expected header test/define/d1.h or any other directly #included header
 test/define/d1.cc:15: expected to find SomeOtherFunction1 in test/define/d1.h, but found in test/define/other_defined1.h
 test/define/d1.h:4: OnlyDeclared declared but not defined
