@@ -23,5 +23,7 @@ with open('README.rst') as readme:
                description='Find problems in C++ source that slow development '
                            'of large code bases.',
                long_description=readme.read(),
+               license='Apache license',
+               url='https://github.com/myint/cppclean',
                packages=['cpp'],
                scripts=['cppclean'])
