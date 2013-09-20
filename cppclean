@@ -24,6 +24,7 @@ import fnmatch
 import os
 import sys
 
+from cpp import __version__
 from cpp import ast
 from cpp import find_warnings
 from cpp import nonvirtual_dtors
@@ -70,6 +71,8 @@ def main():
                              'comma-separated globs')
     parser.add_argument('--verbose', action='store_true',
                         help='print verbose messages')
+    parser.add_argument('--version', action='version',
+                        version='%(prog)s ' + __version__)
     args = parser.parse_args()
 
     if args.exclude:
