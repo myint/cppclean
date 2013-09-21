@@ -695,7 +695,6 @@ class AstBuilder(object):
         else:
             self.in_class_name_only = in_class.split('::')[-1]
         self.visibility = visibility
-        self.in_function = False
         self.current_token = None
         # Keep the state whether we are currently handling a typedef or not.
         self._handling_typedef = False
