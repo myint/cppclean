@@ -34,12 +34,12 @@ from cpp import tokenize
 from cpp import utils
 
 
-def match_file(filename, exclude):
+def match_file(filename, exclude_patterns):
     """Return True if file is a C++ file."""
     if os.path.basename(filename).startswith('.'):
         return False
 
-    for pattern in exclude:
+    for pattern in exclude_patterns:
         if fnmatch.fnmatch(filename, pattern):
             return False
 
@@ -50,14 +50,14 @@ def match_file(filename, exclude):
     return False
 
 
-def find_files(filenames, exclude):
+def find_files(filenames, exclude_patterns):
     """Yield filenames."""
     while filenames:
         name = filenames.pop(0)
         if os.path.isdir(name):
             for root, directories, children in os.walk(name):
                 filenames += [os.path.join(root, f) for f in sorted(children)
-                              if match_file(f, exclude)]
+                              if match_file(f, exclude_patterns)]
                 directories[:] = [d for d in directories
                                   if not d.startswith('.')]
         else:
@@ -67,25 +67,25 @@ def find_files(filenames, exclude):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('files', nargs='+')
-    parser.add_argument('--exclude', metavar='globs',
-                        help='exclude files/directories that match these '
-                             'comma-separated globs')
+    parser.add_argument('--exclude', action='append',
+                        dest='exclude_patterns', default=[], metavar='pattern',
+                        help='exclude files/directories this pattern; '
+                             'specify this multiple times for multiple '
+                             'patterns')
     parser.add_argument('--include-path', '-i', '-I', action='append',
                         dest='include_paths', default=['.'],
                         metavar='path',
-                        help='add a header include path')
+                        help='add a header include path; '
+                             'specify this multiple times for multiple '
+                             'include paths')
     parser.add_argument('--verbose', action='store_true',
                         help='print verbose messages')
     parser.add_argument('--version', action='version',
                         version='%(prog)s ' + __version__)
     args = parser.parse_args()
 
-    if args.exclude:
-        args.exclude = args.exclude.split(',')
-    else:
-        args.exclude = []
-
-    for filename in find_files(args.files, exclude=args.exclude):
+    for filename in find_files(args.files,
+                               exclude_patterns=args.exclude_patterns):
         if args.verbose:
             print('Processing', filename, file=sys.stderr)
 
