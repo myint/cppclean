@@ -67,12 +67,12 @@ class Module(object):
 
 
 def _is_header_file(filename):
-    base, ext = os.path.splitext(filename)
+    _, ext = os.path.splitext(filename)
     return ext.lower() in ('.h', '.hpp', '.h++', '.hxx')
 
 
 def _is_cpp_file(filename):
-    base, ext = os.path.splitext(filename)
+    _, ext = os.path.splitext(filename)
     return ext.lower() in ('.c', '.cc', '.cpp', '.c++', '.cxx')
 
 
@@ -374,7 +374,7 @@ class WarningHunter(object):
     def _find_public_function_warnings(self, node, name, primary_header,
                                        public_symbols, all_headers):
         # Not found in the primary header, search all other headers.
-        for header_node, header in all_headers.values():
+        for _, header in all_headers.values():
             if name in header.public_symbols:
                 # If the primary.filename == header.filename, it probably
                 # indicates an error elsewhere. It sucks to mask it,
@@ -483,8 +483,8 @@ class WarningHunter(object):
         #   * primitive member variables not initialized in ctor
 
 
-def get_line_number(metrics, node):
-    return metrics.get_line_number(node.start)
+def get_line_number(metrics_instance, node):
+    return metrics_instance.get_line_number(node.start)
 
 
 def run(filename, source, entire_ast, include_paths):

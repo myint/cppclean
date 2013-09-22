@@ -658,8 +658,10 @@ class TypeConverter(object):
             return None
         start = return_type_seq[0].start
         end = return_type_seq[-1].end
-        _, name, templated_types, modifiers, default, other_tokens = \
-            self.declaration_to_parts(return_type_seq, False)
+
+        _, name, templated_types, modifiers, __, other_tokens = (
+            self.declaration_to_parts(return_type_seq, False))
+
         names = [n.name for n in other_tokens]
         reference = '&' in names
         pointer = '*' in names
