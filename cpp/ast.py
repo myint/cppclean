@@ -236,9 +236,9 @@ class _GenericDeclaration(Node):
 # TODO(nnorwitz): merge with Parameter in some way?
 class VariableDeclaration(_GenericDeclaration):
 
-    def __init__(self, start, end, name, type, initial_value, namespace):
+    def __init__(self, start, end, name, var_type, initial_value, namespace):
         _GenericDeclaration.__init__(self, start, end, name, namespace)
-        self.type = type
+        self.type = var_type
         self.initial_value = initial_value
 
     def requires(self, node):
@@ -1145,11 +1145,11 @@ class AstBuilder(object):
         names = []
         while i < end:
             # Iterate through the sequence parsing out each name.
-            new_name, next = self.get_name(seq_copy[i:])
-            assert new_name, 'Got empty new_name, next=%s' % next
+            new_name, next_item = self.get_name(seq_copy[i:])
+            assert new_name, 'Got empty new_name, next=%s' % next_item
             # We got a pointer or ref. Add it to the name.
-            if next and next.token_type == tokenize.SYNTAX:
-                new_name.append(next)
+            if next_item and next_item.token_type == tokenize.SYNTAX:
+                new_name.append(next_item)
             names.append(new_name)
             i += len(new_name)
 
