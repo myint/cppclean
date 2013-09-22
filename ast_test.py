@@ -152,12 +152,12 @@ def Typedef(name, start=0, end=0, alias=None, namespace=None):
     return ast.Typedef(start, end, name, alias, namespace)
 
 
-def VariableDeclaration(name, type, start=0, end=0, initial_value='',
+def VariableDeclaration(name, var_type, start=0, end=0, initial_value='',
                         namespace=None):
     if namespace is None:
         namespace = []
 
-    return ast.VariableDeclaration(start, end, name, type, initial_value,
+    return ast.VariableDeclaration(start, end, name, var_type, initial_value,
                                    namespace)
 
 
