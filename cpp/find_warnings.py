@@ -372,7 +372,7 @@ class WarningHunter(object):
         #   * missing include for classes used for inheritenace
 
     def _find_public_function_warnings(self, node, name, primary_header,
-                                       public_symbols, all_headers):
+                                       all_headers):
         # Not found in the primary header, search all other headers.
         for _, header in all_headers.values():
             if name in header.public_symbols:
@@ -431,7 +431,6 @@ class WarningHunter(object):
                 self._find_public_function_warnings(node,
                                                     name,
                                                     primary_header,
-                                                    public_symbols,
                                                     all_headers)
 
         for name, declared_only in declared_only_symbols.items():
