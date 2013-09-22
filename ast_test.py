@@ -68,7 +68,8 @@ def _install_equal_methods():
                                         'body namespace'))
     _install_generic_equal(ast.Include, 'filename system')
     _install_generic_equal(ast.Typedef, 'name alias namespace')
-    _install_generic_equal(ast.VariableDeclaration, 'name type initial_value namespace')
+    _install_generic_equal(ast.VariableDeclaration,
+                           'name type initial_value namespace')
 _install_equal_methods()
 
 
@@ -98,11 +99,12 @@ def Class(name, start=0, end=0, bases=None, body=None, templated_types=None,
 
 
 def Struct(name, start=0, end=0, bases=None, body=None, templated_types=None,
-          namespace=None):
+           namespace=None):
     if namespace is None:
         namespace = []
 
-    return ast.Struct(start, end, name, bases, templated_types, body, namespace)
+    return ast.Struct(start, end, name, bases, templated_types, body,
+                      namespace)
 
 
 def Type(name, start=0, end=0, templated_types=None, modifiers=None,
@@ -490,17 +492,27 @@ class AstBuilderIntegrationTest(unittest.TestCase):
     def test_struct_variable_declaration(self):
         nodes = list(MakeBuilder('struct Foo foo;').generate())
         self.assertEqual(1, len(nodes))
-        self.assertEqual(VariableDeclaration('foo', Type('Foo', modifiers=['struct'])), nodes[0])
+        self.assertEqual(
+            VariableDeclaration('foo', Type('Foo', modifiers=['struct'])),
+            nodes[0])
 
     def test_anon_typedef(self):
-        nodes = list(MakeBuilder('typedef struct { int zz; } AnonStruct;').generate())
+        nodes = list(
+            MakeBuilder('typedef struct { int zz; } AnonStruct;').generate())
         self.assertEqual(1, len(nodes))
-        self.assertEqual(Typedef('AnonStruct', alias=[Struct(None, body=[VariableDeclaration('zz', Type('int'))])]), nodes[0])
+        self.assertEqual(
+            Typedef('AnonStruct',
+                    alias=[Struct(None,
+                                  body=[VariableDeclaration('zz',
+                                                            Type('int'))])]),
+            nodes[0])
 
     def test_typedef(self):
-        nodes = list(MakeBuilder('typedef struct _IplImage IplImage;').generate())
+        nodes = list(
+            MakeBuilder('typedef struct _IplImage IplImage;').generate())
         self.assertEqual(1, len(nodes))
-        self.assertEqual(Typedef('IplImage', alias=[Struct('_IplImage')]), nodes[0])
+        self.assertEqual(Typedef('IplImage', alias=[Struct('_IplImage')]),
+                         nodes[0])
 
     def test_class_forward_declaration(self):
         nodes = list(MakeBuilder('class Foo;').generate())
@@ -565,13 +577,18 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         nodes = list(MakeBuilder(code).generate())
         self.assertEqual(2, len(nodes))
         self.assertEqual(Class('Foo'), nodes[0])
-        self.assertEqual(Typedef('v', alias=Type('Bar', templated_types=[Type('Foo', pointer=True)])), nodes[1])
+        self.assertEqual(
+            Typedef('v',
+                    alias=Type('Bar',
+                               templated_types=[Type('Foo', pointer=True)])),
+            nodes[1])
 
     def test_operator(self):
         code = 'void Foo::operator=() { }'
         nodes = list(MakeBuilder(code).generate())
         self.assertEqual(1, len(nodes))
-        self.assertEqual(Type('Foo::', modifiers=['void', 'operator']), nodes[0].return_type)
+        self.assertEqual(Type('Foo::', modifiers=['void', 'operator']),
+                         nodes[0].return_type)
 
     def test_class_no_anonymous_namespace(self):
         nodes = list(MakeBuilder('class Foo;').generate())
