@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 
-for test in *test.py
+for test in test_*.py
 do
     ./"$test"
 done
