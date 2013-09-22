@@ -736,9 +736,12 @@ class AstBuilder(object):
                 # The token name is the same as the class, must be a ctor if
                 # there is a paren. Otherwise, it's the return type.
                 # Peek ahead to get the next token to figure out which.
-                next = self._get_next_token()
-                self._add_back_token(next)
-                if next.token_type == tokenize.SYNTAX and next.name == '(':
+                next_item = self._get_next_token()
+                self._add_back_token(next_item)
+                if (
+                    next_item.token_type == tokenize.SYNTAX and
+                    next_item.name == '('
+                ):
                     return self._get_method([token], FUNCTION_CTOR, None, True)
                 # Fall through--handle like any other method.
 
@@ -1200,15 +1203,15 @@ class AstBuilder(object):
         fields = list(self._get_matching_char('{', '}'))
         del fields[-1]                  # Remove trailing '}'.
         if token.token_type == tokenize.SYNTAX and token.name == '{':
-            next = self._get_next_token()
+            next_item = self._get_next_token()
             new_type = ctor(token.start, token.end, name, fields,
                             self.namespace_stack)
             # A name means this is an anonymous type and the name
             # is the variable declaration.
-            if next.token_type != tokenize.NAME:
+            if next_item.token_type != tokenize.NAME:
                 return new_type
             name = new_type
-            token = next
+            token = next_item
 
         # Must be variable declaration using the type prefixed with keyword.
         assert token.token_type == tokenize.NAME, token
