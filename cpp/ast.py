@@ -661,7 +661,10 @@ class TypeConverter(object):
 class AstBuilder(object):
 
     def __init__(self, token_stream, filename, in_class='', visibility=None,
-                 namespace_stack=[]):
+                 namespace_stack=None):
+        if namespace_stack is None:
+            namespace_stack = []
+
         self.tokens = token_stream
         self.filename = filename
         # TODO(nnorwitz): use a better data structure (deque) for the queue.
@@ -710,7 +713,10 @@ class AstBuilder(object):
                 raise
 
     def _create_variable(self, pos_token, name, type_name, type_modifiers,
-                         ref_pointer_name_seq, templated_types=[], value=''):
+                         ref_pointer_name_seq, templated_types=None, value=''):
+        if templated_types is None:
+            templated_types = []
+
         reference = '&' in ref_pointer_name_seq
         pointer = '*' in ref_pointer_name_seq
         array = '[' in ref_pointer_name_seq

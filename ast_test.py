@@ -90,23 +90,37 @@ def Include(filename, system=False, start=0, end=0):
 
 
 def Class(name, start=0, end=0, bases=None, body=None, templated_types=None,
-          namespace=[]):
+          namespace=None):
+    if namespace is None:
+        namespace = []
+
     return ast.Class(start, end, name, bases, templated_types, body, namespace)
 
 
 def Struct(name, start=0, end=0, bases=None, body=None, templated_types=None,
-           namespace=[]):
+          namespace=None):
+    if namespace is None:
+        namespace = []
+
     return ast.Struct(start, end, name, bases, templated_types, body, namespace)
 
 
-def Type(name, start=0, end=0, templated_types=[], modifiers=[],
+def Type(name, start=0, end=0, templated_types=None, modifiers=None,
          reference=False, pointer=False, array=False):
+    if templated_types is None:
+        templated_types = []
+
+    if modifiers is None:
+        modifiers = []
+
     return ast.Type(start, end, name, templated_types, modifiers,
                     reference, pointer, array)
 
 
 def Function(name, return_type, parameters, start=0, end=0,
-             modifiers=0, templated_types=None, body=None, namespace=[]):
+             modifiers=0, templated_types=None, body=None, namespace=None):
+    if namespace is None:
+        namespace = []
     # TODO(nnorwitz): why are body & templated_types different
     # for Functions and Methods?
     return ast.Function(start, end, name, return_type, parameters,
@@ -114,17 +128,37 @@ def Function(name, return_type, parameters, start=0, end=0,
 
 
 def Method(name, in_class, return_type, parameters, start=0, end=0,
-           modifiers=0, templated_types=[], body=[], namespace=[]):
+           modifiers=0, templated_types=None, body=None, namespace=None):
+    if templated_types is None:
+        templated_types = []
+
+    if body is None:
+        body = []
+
+    if namespace is None:
+        namespace = []
+
     return ast.Method(start, end, name, in_class, return_type, parameters,
                       modifiers, templated_types, body, namespace)
 
 
-def Typedef(name, start=0, end=0, alias=[], namespace=[]):
+def Typedef(name, start=0, end=0, alias=None, namespace=None):
+    if alias is None:
+        alias = []
+
+    if namespace is None:
+        namespace = []
+
     return ast.Typedef(start, end, name, alias, namespace)
 
 
-def VariableDeclaration(name, type, start=0, end=0, initial_value='', namespace=[]):
-    return ast.VariableDeclaration(start, end, name, type, initial_value, namespace)
+def VariableDeclaration(name, type, start=0, end=0, initial_value='',
+                        namespace=None):
+    if namespace is None:
+        namespace = []
+
+    return ast.VariableDeclaration(start, end, name, type, initial_value,
+                                   namespace)
 
 
 class TypeConverterDeclarationToPartsTest(unittest.TestCase):
