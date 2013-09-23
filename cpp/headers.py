@@ -15,28 +15,20 @@
 
 """Find and print the headers #include'd in a source file."""
 
+from __future__ import absolute_import
 from __future__ import print_function
+
+import os
+
+from . import utils
+
 
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
-import os
-
-from . import ast
-from . import utils
-
-# Allow a site to override the defaults if they choose.
-# Just put a siteheaders.py somewhere in the PYTHONPATH.
-try:
-    import siteheaders
-except ImportError:
-    siteheaders = None
-GetIncludeDirs = getattr(siteheaders, 'GetIncludeDirs', lambda fn: ['.'])
-
-
-def read_source(relative_filename):
+def read_source(relative_filename, include_paths):
     source = None
-    for path in GetIncludeDirs(relative_filename):
+    for path in include_paths:
         filename = os.path.join(path, relative_filename)
         source = utils.read_file(filename, False)
         if source is not None:

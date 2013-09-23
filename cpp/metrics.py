@@ -15,10 +15,10 @@
 
 """Calculate metrics for C++ code."""
 
-__author__ = 'nnorwitz@google.com (Neal Norwitz)'
-
-
 from . import keywords
+
+
+__author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
 # A set of every keyword that increases the cyclomatic complexity.

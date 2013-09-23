@@ -17,12 +17,14 @@
 
 """Symbol Table test."""
 
-__author__ = 'nnorwitz@google.com (Neal Norwitz)'
-
+from __future__ import absolute_import
 
 import unittest
 
 from cpp import symbols
+
+
+__author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
 class SymbolTableTest(unittest.TestCase):

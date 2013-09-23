@@ -15,6 +15,7 @@
 
 """Tokenize C++ source code."""
 
+from __future__ import absolute_import
 from __future__ import print_function
 
 import sys
@@ -79,7 +80,7 @@ class Token(object):
     __repr__ = __str__
 
 
-def _get_string(source, start, i):
+def _get_string(source, i):
     i = source.find('"', i + 1)
     while source[i - 1] == '\\':
         # Count the trailing backslashes.
@@ -119,6 +120,9 @@ def get_tokens(source):
       Token that represents the next token in the source.
 
     """
+    if not source.endswith('\n'):
+        source += '\n'
+
     # Cache various valid character sets for speed.
     valid_identifier_chars = VALID_IDENTIFIER_CHARS
     hex_digits = HEX_DIGITS
@@ -154,7 +158,7 @@ def get_tokens(source):
                 i = _get_char(source, start, i)
             elif source[i] == "'" and source[start:i] in _STR_PREFIXES:
                 token_type = CONSTANT
-                i = _get_string(source, start, i)
+                i = _get_string(source, i)
         elif c == '/' and source[i + 1] == '/':    # Find // comments.
             i = source.find('\n', i)
             if i == -1:  # Handle EOF.
@@ -204,7 +208,7 @@ def get_tokens(source):
                     break
         elif c == '"':                           # Find string.
             token_type = CONSTANT
-            i = _get_string(source, start, i)
+            i = _get_string(source, i)
         elif c == "'":                           # Find char.
             token_type = CONSTANT
             i = _get_char(source, start, i)

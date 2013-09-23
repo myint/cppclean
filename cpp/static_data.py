@@ -50,5 +50,5 @@ def _find_warnings(filename, source, ast_list, static_is_optional):
             _find_warnings(filename, source, node.body, False)
 
 
-def run(filename, source, entire_ast):
+def run(filename, source, entire_ast, include_paths):
     _find_warnings(filename, source, entire_ast, True)

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright 2007 Neal Norwitz
 # Portions Copyright 2007 Google Inc.
 #
@@ -17,12 +15,13 @@
 
 """Generic utilities for C++ parsing."""
 
+from __future__ import absolute_import
 from __future__ import print_function
 
-__author__ = 'nnorwitz@google.com (Neal Norwitz)'
-
-
 import sys
+
+
+__author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
 # Set to True to see the start/end token indices.

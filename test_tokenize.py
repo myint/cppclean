@@ -17,12 +17,15 @@
 
 """Tokenize test."""
 
-__author__ = 'nnorwitz@google.com (Neal Norwitz)'
-
+from __future__ import absolute_import
 
 import unittest
 
 from cpp import tokenize
+
+
+__author__ = 'nnorwitz@google.com (Neal Norwitz)'
+
 
 # For convenience, add factories and __eq__ to test the module.
 

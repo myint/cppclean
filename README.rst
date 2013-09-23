@@ -14,7 +14,8 @@ Unused code can be unused functions, methods, data members, types, etc
 to unnecessary #include directives. Unnecessary #includes can cause
 considerable extra compiles increasing the edit-compile-run cycle.
 
-The project home page is: http://code.google.com/p/cppclean/
+This is a fork of the original cppclean project. The original project home
+page, (which no longer contains code) is: https://code.google.com/p/cppclean/
 
 
 Features
@@ -40,7 +41,7 @@ Installation
 ============
 ::
 
-    $ pip install --upgrade git+https://github.com/myint/cppclean.git
+    $ pip install --upgrade cppclean
 
 
 Run
@@ -50,27 +51,9 @@ Run
     $ cppclean <path>
 
 
-Configure
-=========
-You can add a ``siteheaders.py`` file in /cppclean/cpp to configure where
-to look for other headers (typically -I options passed to a compiler).
-Currently two values are supported: ``_TRANSITIVE`` and ``GetIncludeDirs``.
-``_TRANSITIVE`` should be set to a boolean value (``True`` or ``False``)
-indicating whether to transitively process all header files. The default is
-``False``.
+Multiple include paths can be specified::
 
-``GetIncludeDirs`` is a function that takes a single argument and returns
-a sequence of directories to include. This can be a generator or
-return a static list::
-
-    def GetIncludeDirs(filename):
-        return ['/some/path/with/other/headers']
-
-    # Here is a more complicated example.
-    def GetIncludeDirs(filename):
-        yield '/path1'
-        yield os.path.join('/path2', os.path.dirname(filename))
-        yield '/path3'
+    $ cppclean --include-path=directory1 --include-path=directory2 <path>
 
 
 Current status
@@ -87,10 +70,3 @@ Non-goals
 - Parsing all valid C++ source
 - Handling invalid C++ source gracefully
 - Compiling to machine code (or anything beyond an AST)
-
-
-Contact
-=======
-If you used cppclean, I would love to hear about your experiences
-cppclean@googlegroups.com. Even if you don't use cppclean, I'd like to
-hear from you. :-) (You can contact me directly at: nnorwitz@gmail.com)

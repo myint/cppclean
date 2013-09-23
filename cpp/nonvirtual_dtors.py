@@ -16,11 +16,11 @@
 
 from __future__ import print_function
 
-__author__ = 'nnorwitz@google.com (Neal Norwitz)'
-
-
 from . import ast
 from . import metrics
+
+
+__author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
 def _find_warnings(filename, source, ast_list):
@@ -50,5 +50,5 @@ def _find_warnings(filename, source, ast_list):
                         'has virtual methods without a virtual dtor')
 
 
-def run(filename, source, entire_ast):
+def run(filename, source, entire_ast, include_paths):
     _find_warnings(filename, source, entire_ast)

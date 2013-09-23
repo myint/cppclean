@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright 2007 Neal Norwitz
 # Portions Copyright 2007 Google Inc.
 #
@@ -17,9 +15,12 @@
 
 """Symbol Table utility code."""
 
-__author__ = 'nnorwitz@google.com (Neal Norwitz)'
+from __future__ import absolute_import
 
 import sys
+
+
+__author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
 class Error(BaseException):
