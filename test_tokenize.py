@@ -105,7 +105,7 @@ class TokenizeTest(unittest.TestCase):
 
     def testget_tokens_logical_operators(self):
         for operator in ('&&', '||'):
-            #                        012345
+            #                        0123456
             tokens = self.get_tokens('a %s b' % operator)
             self.assertEqual(3, len(tokens), tokens)
             self.assertEqual(Name('a', 0, 1), tokens[0])
@@ -117,6 +117,15 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(2, len(tokens), tokens)
         self.assertEqual(Syntax('!', 0, 1), tokens[0])
         self.assertEqual(Name('not', 1, 4), tokens[1])
+
+    def testget_tokens_operators(self):
+        for operator in ('+=', '-=', '*=', '==', '!='):
+            #                        0123456
+            tokens = self.get_tokens('a %s b' % operator)
+            self.assertEqual(3, len(tokens), tokens)
+            self.assertEqual(Name('a', 0, 1), tokens[0])
+            self.assertEqual(Syntax(operator, 2, 4), tokens[1])
+            self.assertEqual(Name('b', 5, 6), tokens[2])
 
     def testget_tokens_ones_complement(self):
         #                        01234
