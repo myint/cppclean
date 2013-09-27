@@ -167,7 +167,7 @@ def get_tokens(source):
         elif c == '/' and source[i + 1] == '*':    # Find /* comments. */
             i = source.find('*/', i) + 2
             continue
-        elif c in ':+-<>&|*=':                   # : or :: (plus other chars).
+        elif c in ':+-<>&!|*=':                   # : or :: (plus other chars).
             token_type = SYNTAX
             i += 1
             new_ch = source[i]
@@ -177,7 +177,7 @@ def get_tokens(source):
                 i += 1
             elif new_ch == '=':
                 i += 1
-        elif c in '()[]{}~!?^%;/.,':             # Handle single char tokens.
+        elif c in '()[]{}~?^%;/.,':             # Handle single char tokens.
             token_type = SYNTAX
             i += 1
             if c == '.' and source[i].isdigit():

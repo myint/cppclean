@@ -583,8 +583,15 @@ class AstBuilderIntegrationTest(unittest.TestCase):
                                templated_types=[Type('Foo', pointer=True)])),
             nodes[1])
 
-    def test_operator(self):
+    def test_assignment_operator(self):
         code = 'void Foo::operator=() { }'
+        nodes = list(MakeBuilder(code).generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Type('Foo::', modifiers=['void', 'operator']),
+                         nodes[0].return_type)
+
+    def test_operator_not_equal(self):
+        code = 'void Foo::operator!=() { }'
         nodes = list(MakeBuilder(code).generate())
         self.assertEqual(1, len(nodes))
         self.assertEqual(Type('Foo::', modifiers=['void', 'operator']),
