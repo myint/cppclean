@@ -22,12 +22,5 @@ check:
 	check-manifest --ignore='.travis.yml,Makefile,test*'
 	python setup.py --long-description | rst2html.py --strict > /dev/null
 
-coverage:
-	@coverage erase
-	@coverage run test_autoflake.py
-	@coverage report
-	@coverage html
-	@python -m webbrowser -n "file://${PWD}/htmlcov/index.html"
-
 readme:
 	@restview --long-description --strict
