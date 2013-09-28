@@ -344,7 +344,10 @@ class Function(_GenericDeclaration):
         return self.body is not None
 
     def is_exportable(self):
-        if self.return_type and 'static' in self.return_type.modifiers:
+        if (
+            (self.return_type and 'static' in self.return_type.modifiers) or
+            self.templated_types
+        ):
             return False
         return None not in self.namespace
 
