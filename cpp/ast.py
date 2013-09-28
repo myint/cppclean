@@ -878,13 +878,13 @@ class AstBuilder(object):
             elif name.startswith('if'):
                 count += 1
 
-    def _get_matching_char(self, open_paren, close_paren, GetNextToken=None):
-        if GetNextToken is None:
-            GetNextToken = self._get_next_token
+    def _get_matching_char(self, open_paren, close_paren, get_next_token=None):
+        if get_next_token is None:
+            get_next_token = self._get_next_token
         # Assumes the current token is open_paren and we will consume
         # and return up to the close_paren.
         count = 1
-        token = GetNextToken()
+        token = get_next_token()
         while True:
             if token.token_type == tokenize.SYNTAX:
                 if token.name == open_paren:
@@ -894,7 +894,7 @@ class AstBuilder(object):
                     if count == 0:
                         break
             yield token
-            token = GetNextToken()
+            token = get_next_token()
         yield token
 
     def _get_parameters(self):
@@ -928,11 +928,11 @@ class AstBuilder(object):
 
     def get_name(self, seq=None):
         """Returns ([tokens], next_token_info)."""
-        GetNextToken = self._get_next_token
+        get_next_token = self._get_next_token
         if seq is not None:
             it = iter(seq)
-            GetNextToken = lambda: next(it)
-        next_token = GetNextToken()
+            get_next_token = lambda: next(it)
+        next_token = get_next_token()
         tokens = []
         last_token_was_name = False
         while (next_token.token_type == tokenize.NAME or
@@ -946,9 +946,9 @@ class AstBuilder(object):
             tokens.append(next_token)
             # Handle templated names.
             if next_token.name == '<':
-                tokens.extend(self._get_matching_char('<', '>', GetNextToken))
+                tokens.extend(self._get_matching_char('<', '>', get_next_token))
                 last_token_was_name = True
-            next_token = GetNextToken()
+            next_token = get_next_token()
         return tokens, next_token
 
     def get_method(self, modifiers, templated_types):
