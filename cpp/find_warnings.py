@@ -25,6 +25,7 @@ suppress warnings.
 
 from __future__ import absolute_import
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import os
 import sys
@@ -35,6 +36,13 @@ from . import keywords
 from . import metrics
 from . import symbols
 from . import tokenize
+from . import utils
+
+
+try:
+    basestring
+except NameError:
+    basestring = str
 
 
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
@@ -96,7 +104,7 @@ class WarningHunter(object):
 
     def _add_warning(self, msg, node, filename=None):
         if filename is not None:
-            src_metrics = metrics.Metrics(open(filename).read())
+            src_metrics = metrics.Metrics(utils.read_file(filename))
         else:
             filename = self.filename
             src_metrics = self.metrics
@@ -213,10 +221,11 @@ class WarningHunter(object):
             if decl_uses[cls] == UNUSED:
                 node = forward_declarations[cls]
                 if cls in file_uses:
-                    msg = ('%r forward declared, but needs to be #included' %
-                           cls)
+                    msg = (
+                        "'{}' forward declared, "
+                        'but needs to be #included'.format(cls))
                 else:
-                    msg = '%r not used' % cls
+                    msg = "'{}' not used".format(cls)
                 self._add_warning(msg, node)
 
     def _determine_uses(self, included_files, forward_declarations):
@@ -238,7 +247,7 @@ class WarningHunter(object):
             if isinstance(name, list):
                 # name contains a list of tokens.
                 name = '::'.join([n.name for n in name])
-            elif not isinstance(name, str):
+            elif not isinstance(name, basestring):
                 # Happens when variables are defined with inlined types, e.g.:
                 #   enum {...} variable;
                 return

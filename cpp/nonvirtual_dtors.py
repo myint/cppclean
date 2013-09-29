@@ -15,6 +15,7 @@
 """Print classes which have a virtual method and non-virtual destructor."""
 
 from __future__ import print_function
+from __future__ import unicode_literals
 
 from . import ast
 from . import metrics

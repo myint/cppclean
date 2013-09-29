@@ -15,6 +15,7 @@
 """Print classes, functions and modules which contain static data."""
 
 from __future__ import print_function
+from __future__ import unicode_literals
 
 from . import ast
 from . import metrics

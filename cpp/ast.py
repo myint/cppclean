@@ -17,12 +17,19 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import sys
 
 from . import keywords
 from . import tokenize
 from . import utils
+
+
+try:
+    unicode
+except NameError:
+    unicode = str
 
 
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
@@ -92,7 +99,7 @@ class Node(object):
         return '%s(%d, %d, %s)' % (name, self.start, self.end, suffix)
 
     def __repr__(self):
-        return str(self)
+        return unicode(self)
 
 
 class Define(Node):
@@ -129,7 +136,8 @@ class Goto(Node):
         self.label = label
 
     def __str__(self):
-        return self._string_helper(self.__class__.__name__, str(self.label))
+        return self._string_helper(self.__class__.__name__,
+                                   unicode(self.label))
 
 
 class Expr(Node):
@@ -143,7 +151,7 @@ class Expr(Node):
         return False
 
     def __str__(self):
-        return self._string_helper(self.__class__.__name__, str(self.expr))
+        return self._string_helper(self.__class__.__name__, unicode(self.expr))
 
 
 class Return(Expr):
@@ -168,7 +176,8 @@ class Using(Node):
         self.names = names
 
     def __str__(self):
-        return self._string_helper(self.__class__.__name__, str(self.names))
+        return self._string_helper(self.__class__.__name__,
+                                   unicode(self.names))
 
 
 class Parameter(Node):
@@ -184,7 +193,7 @@ class Parameter(Node):
         return self.type.name == node.name
 
     def __str__(self):
-        name = str(self.type)
+        name = unicode(self.type)
         suffix = '%s %s' % (name, self.name)
         if self.default:
             suffix += ' = ' + ''.join([d.name for d in self.default])
@@ -403,7 +412,7 @@ class Type(_GenericDeclaration):
         prefix = ''
         if self.modifiers:
             prefix = ' '.join(self.modifiers) + ' '
-        name = str(self.name)
+        name = unicode(self.name)
         if self.templated_types:
             name += '<%s>' % self.templated_types
         suffix = prefix + name
@@ -875,13 +884,13 @@ class AstBuilder(object):
             elif name.startswith('if'):
                 count += 1
 
-    def _get_matching_char(self, open_paren, close_paren, GetNextToken=None):
-        if GetNextToken is None:
-            GetNextToken = self._get_next_token
+    def _get_matching_char(self, open_paren, close_paren, get_next_token=None):
+        if get_next_token is None:
+            get_next_token = self._get_next_token
         # Assumes the current token is open_paren and we will consume
         # and return up to the close_paren.
         count = 1
-        token = GetNextToken()
+        token = get_next_token()
         while True:
             if token.token_type == tokenize.SYNTAX:
                 if token.name == open_paren:
@@ -891,7 +900,7 @@ class AstBuilder(object):
                     if count == 0:
                         break
             yield token
-            token = GetNextToken()
+            token = get_next_token()
         yield token
 
     def _get_parameters(self):
@@ -925,11 +934,11 @@ class AstBuilder(object):
 
     def get_name(self, seq=None):
         """Returns ([tokens], next_token_info)."""
-        GetNextToken = self._get_next_token
+        get_next_token = self._get_next_token
         if seq is not None:
             it = iter(seq)
-            GetNextToken = lambda: next(it)
-        next_token = GetNextToken()
+            get_next_token = lambda: next(it)
+        next_token = get_next_token()
         tokens = []
         last_token_was_name = False
         while (next_token.token_type == tokenize.NAME or
@@ -943,9 +952,10 @@ class AstBuilder(object):
             tokens.append(next_token)
             # Handle templated names.
             if next_token.name == '<':
-                tokens.extend(self._get_matching_char('<', '>', GetNextToken))
+                tokens.extend(self._get_matching_char('<', '>',
+                                                      get_next_token))
                 last_token_was_name = True
-            next_token = GetNextToken()
+            next_token = get_next_token()
         return tokens, next_token
 
     def get_method(self, modifiers, templated_types):
@@ -1651,7 +1661,7 @@ class AstBuilder(object):
 
     def handle_goto(self):
         tokens = self._get_tokens_up_to(tokenize.SYNTAX, ';')
-        assert len(tokens) == 1, str(tokens)
+        assert len(tokens) == 1, unicode(tokens)
         return Goto(tokens[0].start, tokens[0].end, tokens[0].name)
 
     def handle_try(self):
