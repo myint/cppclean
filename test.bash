@@ -2,11 +2,11 @@
 
 for test in test_*.py
 do
-    ./"$test"
+    $PYTHON ./"$test"
 done
 
 rm -f '.tmp'
-./cppclean \
+$PYTHON ./cppclean \
     --include-path='test/external' \
     --exclude='ignore.cc' \
     'test' > '.tmp'
