@@ -444,10 +444,10 @@ class WarningHunter(object):
 
         for name, declared_only in declared_only_symbols.items():
             if declared_only:
-                # TODO(nnorwitz): shouldn't warn if function is templatized.
                 node = public_symbols[name]
-                msg = '%s declared but not defined' % name
-                self._add_warning(msg, node, primary_header.filename)
+                if not node.templated_types:
+                    msg = '%s declared but not defined' % name
+                    self._add_warning(msg, node, primary_header.filename)
 
     def _get_primary_header(self, included_files):
         basename = os.path.splitext(self.normalized_filename)[0]
