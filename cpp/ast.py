@@ -980,7 +980,10 @@ class AstBuilder(object):
             assert token.name == '(', token
 
         name = return_type_and_name.pop()
-        if len(return_type_and_name) > 2 and return_type_and_name[-1].name == 'operator':
+        if (
+            len(return_type_and_name) > 2 and
+            return_type_and_name[-1].name == 'operator'
+        ):
             op = return_type_and_name.pop()
             name = tokenize.Token(tokenize.NAME, 'operator' + name.name,
                                   op.start, name.end)
