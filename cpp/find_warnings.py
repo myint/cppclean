@@ -36,6 +36,7 @@ from . import keywords
 from . import metrics
 from . import symbols
 from . import tokenize
+from . import utils
 
 
 try:
@@ -103,7 +104,7 @@ class WarningHunter(object):
 
     def _add_warning(self, msg, node, filename=None):
         if filename is not None:
-            src_metrics = metrics.Metrics(open(filename).read())
+            src_metrics = metrics.Metrics(utils.read_file(filename))
         else:
             filename = self.filename
             src_metrics = self.metrics
