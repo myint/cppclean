@@ -26,6 +26,12 @@ from . import tokenize
 from . import utils
 
 
+try:
+    unicode
+except NameError:
+    unicode = str
+
+
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
@@ -93,7 +99,7 @@ class Node(object):
         return '%s(%d, %d, %s)' % (name, self.start, self.end, suffix)
 
     def __repr__(self):
-        return str(self)
+        return unicode(self)
 
 
 class Define(Node):
@@ -130,7 +136,8 @@ class Goto(Node):
         self.label = label
 
     def __str__(self):
-        return self._string_helper(self.__class__.__name__, str(self.label))
+        return self._string_helper(self.__class__.__name__,
+                                   unicode(self.label))
 
 
 class Expr(Node):
@@ -144,7 +151,7 @@ class Expr(Node):
         return False
 
     def __str__(self):
-        return self._string_helper(self.__class__.__name__, str(self.expr))
+        return self._string_helper(self.__class__.__name__, unicode(self.expr))
 
 
 class Return(Expr):
@@ -169,7 +176,8 @@ class Using(Node):
         self.names = names
 
     def __str__(self):
-        return self._string_helper(self.__class__.__name__, str(self.names))
+        return self._string_helper(self.__class__.__name__,
+                                   unicode(self.names))
 
 
 class Parameter(Node):
@@ -185,7 +193,7 @@ class Parameter(Node):
         return self.type.name == node.name
 
     def __str__(self):
-        name = str(self.type)
+        name = unicode(self.type)
         suffix = '%s %s' % (name, self.name)
         if self.default:
             suffix += ' = ' + ''.join([d.name for d in self.default])
@@ -404,7 +412,7 @@ class Type(_GenericDeclaration):
         prefix = ''
         if self.modifiers:
             prefix = ' '.join(self.modifiers) + ' '
-        name = str(self.name)
+        name = unicode(self.name)
         if self.templated_types:
             name += '<%s>' % self.templated_types
         suffix = prefix + name
@@ -1647,7 +1655,7 @@ class AstBuilder(object):
 
     def handle_goto(self):
         tokens = self._get_tokens_up_to(tokenize.SYNTAX, ';')
-        assert len(tokens) == 1, str(tokens)
+        assert len(tokens) == 1, unicode(tokens)
         return Goto(tokens[0].start, tokens[0].end, tokens[0].name)
 
     def handle_try(self):
