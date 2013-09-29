@@ -18,6 +18,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import io
 import sys
 
 
@@ -31,11 +32,12 @@ DEBUG = True
 def read_file(filename, print_error=True):
     """Returns the contents of a file."""
     try:
-        fp = open(filename)
-        try:
-            return fp.read()
-        finally:
-            fp.close()
+        for encoding in ['utf-8', 'latin1']:
+            try:
+                with io.open(filename, encoding=encoding) as fp:
+                    return fp.read()
+            except UnicodeDecodeError:
+                pass
     except IOError:
         if print_error:
             print('Error reading %s: %s' % (filename, sys.exc_info()[1]))
