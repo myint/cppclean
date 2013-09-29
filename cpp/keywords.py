@@ -21,25 +21,28 @@ from __future__ import unicode_literals
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
-TYPES = set(['bool', 'char', 'int', 'long', 'short', 'double', 'float', 'void',
-             'wchar_t', 'unsigned', 'signed'])
+TYPES = frozenset(['bool', 'char', 'int', 'long', 'short', 'double', 'float',
+                   'void', 'wchar_t', 'unsigned', 'signed'])
 
-TYPE_MODIFIERS = set(['auto', 'register', 'const', 'inline', 'extern',
-                      'static', 'virtual', 'volatile', 'mutable'])
+TYPE_MODIFIERS = frozenset(['auto', 'register', 'const', 'inline', 'extern',
+                            'static', 'virtual', 'volatile', 'mutable'])
 
-ACCESS = set(['public', 'protected', 'private', 'friend'])
+ACCESS = frozenset(['public', 'protected', 'private', 'friend'])
 
-CASTS = set(['static_cast', 'const_cast', 'dynamic_cast', 'reinterpret_cast'])
+CASTS = frozenset(['static_cast', 'const_cast', 'dynamic_cast', 'reinterpret_cast'])
 
-OTHERS = set(['true', 'false', 'asm', 'class', 'namespace', 'using',
-              'explicit', 'this', 'operator', 'sizeof'])
+OTHERS = frozenset(['true', 'false', 'asm', 'class', 'namespace', 'using',
+                    'explicit', 'this', 'operator', 'sizeof'])
 
-OTHER_TYPES = set(['new', 'delete', 'typedef', 'struct', 'union', 'enum',
-                   'typeid', 'typename', 'template'])
+OTHER_TYPES = frozenset(['new', 'delete', 'typedef', 'struct', 'union', 'enum',
+                         'typeid', 'typename', 'template'])
 
-CONTROL = set(['case', 'switch', 'default', 'if', 'else', 'return', 'goto'])
-EXCEPTION = set(['try', 'catch', 'throw'])
-LOOP = set(['while', 'do', 'for', 'break', 'continue'])
+CONTROL = frozenset(['case', 'switch', 'default', 'if', 'else', 'return',
+                     'goto'])
+
+EXCEPTION = frozenset(['try', 'catch', 'throw'])
+
+LOOP = frozenset(['while', 'do', 'for', 'break', 'continue'])
 
 ALL = (TYPES | TYPE_MODIFIERS | ACCESS | CASTS | OTHERS | OTHER_TYPES |
        CONTROL | EXCEPTION | LOOP)
