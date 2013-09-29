@@ -988,6 +988,10 @@ class AstBuilder(object):
                                   name_seq[0].start, name.end)
             # Get the open paren so _get_parameters() below works.
             self._get_next_token()
+        elif len(return_type_and_name) > 2 and return_type_and_name[-1].name == 'operator':
+            op = return_type_and_name.pop()
+            name = tokenize.Token(tokenize.NAME, 'operator' + name.name,
+                                  op.start, name.end)
 
         # TODO(nnorwitz): store template_portion.
         return_type = return_type_and_name

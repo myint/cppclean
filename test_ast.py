@@ -577,18 +577,18 @@ class AstBuilderIntegrationTest(unittest.TestCase):
             nodes[1])
 
     def test_assignment_operator(self):
-        code = 'void Foo::operator=() { }'
+        code = 'void Foo::operator=();'
         nodes = list(MakeBuilder(code).generate())
         self.assertEqual(1, len(nodes))
-        self.assertEqual(Type('Foo::', modifiers=['void', 'operator']),
-                         nodes[0].return_type)
+        self.assertEqual(Method('operator=', list(get_tokens('Foo')),
+                                list(get_tokens('void')), []), nodes[0])
 
     def test_operator_not_equal(self):
-        code = 'void Foo::operator!=() { }'
+        code = 'void Foo::operator!=();'
         nodes = list(MakeBuilder(code).generate())
         self.assertEqual(1, len(nodes))
-        self.assertEqual(Type('Foo::', modifiers=['void', 'operator']),
-                         nodes[0].return_type)
+        self.assertEqual(Method('operator!=', list(get_tokens('Foo')),
+                                list(get_tokens('void')), []), nodes[0])
 
     def test_operator_paren(self):
         code = 'void Foo::operator()();'
