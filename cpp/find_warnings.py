@@ -184,8 +184,8 @@ class WarningHunter(object):
         return included_files, forward_declarations
 
     def _verify_includes(self, included_files):
-        # Read and parse all the #include'd files and warn about really
-        # stupid things that can be determined from the #include'd file name.
+        """Read and parse all the #include'd files and warn about really stupid
+        things that can be determined from the #include'd file name."""
         files_seen = {}
         for filename, (node, module) in included_files.items():
             normalized_filename = module.normalized_filename
@@ -203,7 +203,7 @@ class WarningHunter(object):
                 files_seen[normalized_filename] = node
 
     def _verify_include_files_used(self, file_uses, included_files):
-        # Find all #include files that are unnecessary.
+        """Find all #include files that are unnecessary."""
         for include_file, use in file_uses.items():
             if use != USES_DECLARATION:
                 node, module = included_files[include_file]
@@ -213,10 +213,9 @@ class WarningHunter(object):
                         msg += '. Use references instead'
                     self._add_warning(msg, node)
 
-    def _verify_forward_declarations_used(
-        self, forward_declarations, decl_uses,
-            file_uses):
-        # Find all the forward declarations that are not used.
+    def _verify_forward_declarations_used(self, forward_declarations,
+                                          decl_uses, file_uses):
+        """Find all the forward declarations that are not used."""
         for cls in forward_declarations:
             if decl_uses[cls] == UNUSED:
                 node = forward_declarations[cls]
@@ -229,7 +228,7 @@ class WarningHunter(object):
                 self._add_warning(msg, node)
 
     def _determine_uses(self, included_files, forward_declarations):
-        # Setup the use type of each symbol.
+        """Set up the use type of each symbol."""
         file_uses = dict.fromkeys(included_files, UNUSED)
         decl_uses = dict.fromkeys(forward_declarations, UNUSED)
         symbol_table = self.symbol_table
@@ -403,7 +402,8 @@ class WarningHunter(object):
                 self._add_warning('%s not found %s' % (name, where), node)
 
     def _check_public_functions(self, primary_header, all_headers):
-        # Verify all the public functions are also declared in a header file.
+        """Verify all the public functions are also declared in a header
+        file."""
         public_symbols = ()
         declared_only_symbols = {}
         if primary_header:
