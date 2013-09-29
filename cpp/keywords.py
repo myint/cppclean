@@ -29,7 +29,8 @@ TYPE_MODIFIERS = frozenset(['auto', 'register', 'const', 'inline', 'extern',
 
 ACCESS = frozenset(['public', 'protected', 'private', 'friend'])
 
-CASTS = frozenset(['static_cast', 'const_cast', 'dynamic_cast', 'reinterpret_cast'])
+CASTS = frozenset(['static_cast', 'const_cast', 'dynamic_cast',
+                   'reinterpret_cast'])
 
 OTHERS = frozenset(['true', 'false', 'asm', 'class', 'namespace', 'using',
                     'explicit', 'this', 'operator', 'sizeof'])
