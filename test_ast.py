@@ -170,7 +170,7 @@ class TypeConverterDeclarationToPartsTest(unittest.TestCase):
         self.assertEqual([], templated_types)
         self.assertEqual([], modifiers)
 
-    def test_simpleModifiers(self):
+    def test_simple_modifiers(self):
         tokens = get_tokens('const volatile Fool data')
         name, type_name, templated_types, modifiers, _, __ = \
             self.converter.declaration_to_parts(list(tokens), True)
@@ -179,7 +179,7 @@ class TypeConverterDeclarationToPartsTest(unittest.TestCase):
         self.assertEqual([], templated_types)
         self.assertEqual(['const', 'volatile'], modifiers)
 
-    def test_simpleArray(self):
+    def test_simple_array(self):
         tokens = get_tokens('Fool[] data')
         name, type_name, templated_types, modifiers, _, __ = \
             self.converter.declaration_to_parts(list(tokens), True)
@@ -188,7 +188,7 @@ class TypeConverterDeclarationToPartsTest(unittest.TestCase):
         self.assertEqual([], templated_types)
         self.assertEqual([], modifiers)
 
-    def test_simpleTemplate(self):
+    def test_simple_template(self):
         tokens = get_tokens('Fool<tt> data')
         name, type_name, templated_types, modifiers, _, __ = \
             self.converter.declaration_to_parts(list(tokens), True)
@@ -229,7 +229,7 @@ class TypeConverterToParametersTest(unittest.TestCase):
         self.assertEqual(True, results[0].type.array)
         self.assertEqual('bar', results[0].name)
 
-    def test_arrayPointerReference(self):
+    def test_array_pointer_reference(self):
         params = 'const int[] bar, mutable char* foo, volatile Bar& babar'
         tokens = get_tokens(params)
         results = self.converter.to_parameters(list(tokens))
@@ -259,7 +259,7 @@ class TypeConverterToParametersTest(unittest.TestCase):
         self.assertEqual(False, results[2].type.array)
         self.assertEqual('babar', results[2].name)
 
-    def test_arrayWithClass(self):
+    def test_array_with_class(self):
         tokens = get_tokens('Bar[] bar')
         results = self.converter.to_parameters(list(tokens))
         self.assertEqual(1, len(results))
@@ -272,7 +272,7 @@ class TypeConverterToParametersTest(unittest.TestCase):
         self.assertEqual(True, results[0].type.array)
         self.assertEqual('bar', results[0].name)
 
-    def test_multipleArgs(self):
+    def test_multiple_args(self):
         tokens = get_tokens('const volatile Fool* data, int bar, enum X foo')
         results = self.converter.to_parameters(list(tokens))
         self.assertEqual(3, len(results))
@@ -298,7 +298,7 @@ class TypeConverterToParametersTest(unittest.TestCase):
         self.assertEqual(False, results[2].type.reference)
         self.assertEqual('foo', results[2].name)
 
-    def test_simpleTemplateBegin(self):
+    def test_simple_template_begin(self):
         tokens = get_tokens('pair<int, int> data, int bar')
         results = self.converter.to_parameters(list(tokens))
         self.assertEqual(2, len(results), repr(results))
@@ -318,7 +318,7 @@ class TypeConverterToParametersTest(unittest.TestCase):
         self.assertEqual(False, results[1].type.reference)
         self.assertEqual('bar', results[1].name)
 
-    def test_simpleWithInitializers(self):
+    def test_simple_with_initializers(self):
         tokens = get_tokens('Fool* data = NULL')
         results = self.converter.to_parameters(list(tokens))
         self.assertEqual(1, len(results))
@@ -351,14 +351,14 @@ class TypeConverterToTypeTest(unittest.TestCase):
         self.assertEqual(Type('Bar', templated_types=[Type('Foo')]),
                          result[0])
 
-    def test_templateWithMultipleArgs(self):
+    def test_template_with_multiple_args(self):
         tokens = get_tokens('Bar<Foo, Blah, Bling>')
         result = self.converter.to_type(list(tokens))
         self.assertEqual(1, len(result))
         types = [Type('Foo'), Type('Blah'), Type('Bling')]
         self.assertEqual(Type('Bar', templated_types=types), result[0])
 
-    def test_templateWithMultipleTemplateArgsStart(self):
+    def test_template_with_multiple_template_args_start(self):
         tokens = get_tokens('Bar<Foo<x>, Blah, Bling>')
         result = self.converter.to_type(list(tokens))
         self.assertEqual(1, len(result))
@@ -370,7 +370,7 @@ class TypeConverterToTypeTest(unittest.TestCase):
         self.assertEqual(types[2], result[0].templated_types[2])
         self.assertEqual(Type('Bar', templated_types=types), result[0])
 
-    def test_templateWithMultipleTemplateArgsMid(self):
+    def test_template_with_multiple_template_args_mid(self):
         tokens = get_tokens('Bar<Foo, Blah<x>, Bling>')
         result = self.converter.to_type(list(tokens))
         self.assertEqual(1, len(result))
@@ -379,7 +379,7 @@ class TypeConverterToTypeTest(unittest.TestCase):
                  Type('Bling')]
         self.assertEqual(Type('Bar', templated_types=types), result[0])
 
-    def test_templateWithMultipleTemplateArgsEnd(self):
+    def test_template_with_multiple_template_args_end(self):
         tokens = get_tokens('Bar<Foo, Blah, Bling<x> >')
         result = self.converter.to_type(list(tokens))
         self.assertEqual(1, len(result))
@@ -445,14 +445,14 @@ class AstBuilderGetTemplatedTypesTest(unittest.TestCase):
         self.assertEqual((None, None), result['T'])
         self.assertEqual((None, None), result['U'])
 
-    def test_multipleWithTypename(self):
+    def test_multiple_with_typename(self):
         builder = MakeBuilder('typename T, typename U> class')
         result = builder._get_templated_types()
         self.assertEqual(2, len(result))
         self.assertEqual((None, None), result['T'])
         self.assertEqual((None, None), result['U'])
 
-    def test_multipleWithTypenameAndDefaults(self):
+    def test_multiple_with_typename_and_defaults(self):
         builder = MakeBuilder('typename T=XX, typename U=YY> class')
         result = builder._get_templated_types()
         self.assertEqual(2, len(result))
@@ -463,7 +463,7 @@ class AstBuilderGetTemplatedTypesTest(unittest.TestCase):
         self.assertEqual(1, len(result['U'][1]))
         self.assertEqual('YY', result['U'][1][0].name)
 
-    def test_multipleWithUserDefinedTypeName(self):
+    def test_multiple_with_user_defined_type_name(self):
         builder = MakeBuilder('class C, Type t> class')
         result = builder._get_templated_types()
         self.assertEqual(2, len(result))
@@ -548,7 +548,7 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(1, len(nodes))
         self.assertEqual(Class('Foo', namespace=['A', 'B', 'C']), nodes[0])
 
-    def test_class_in_namespace_multipleWithOneClosed(self):
+    def test_class_in_namespace_multiple_with_one_closed(self):
         code = 'namespace A { namespace B {} namespace C { class Foo; }}'
         nodes = list(MakeBuilder(code).generate())
         self.assertEqual(1, len(nodes))
