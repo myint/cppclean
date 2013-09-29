@@ -123,20 +123,13 @@ def Function(name, return_type, parameters, start=0, end=0,
              modifiers=0, templated_types=None, body=None, namespace=None):
     if namespace is None:
         namespace = []
-    # TODO(nnorwitz): why are body & templated_types different
-    # for Functions and Methods?
+
     return ast.Function(start, end, name, return_type, parameters,
                         modifiers, templated_types, body, namespace)
 
 
 def Method(name, in_class, return_type, parameters, start=0, end=0,
            modifiers=0, templated_types=None, body=None, namespace=None):
-    if templated_types is None:
-        templated_types = []
-
-    if body is None:
-        body = []
-
     if namespace is None:
         namespace = []
 
@@ -583,19 +576,13 @@ class AstBuilderIntegrationTest(unittest.TestCase):
                                templated_types=[Type('Foo', pointer=True)])),
             nodes[1])
 
-    def test_assignment_operator(self):
-        code = 'void Foo::operator=() { }'
-        nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(1, len(nodes))
-        self.assertEqual(Type('Foo::', modifiers=['void', 'operator']),
-                         nodes[0].return_type)
-
-    def test_operator_not_equal(self):
-        code = 'void Foo::operator!=() { }'
-        nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(1, len(nodes))
-        self.assertEqual(Type('Foo::', modifiers=['void', 'operator']),
-                         nodes[0].return_type)
+    def test_operators(self):
+        for operator in ('=', '+=', '-=', '*=', '==', '!=', '()', '[]'):
+            code = 'void Foo::operator%s();' % operator
+            nodes = list(MakeBuilder(code).generate())
+            self.assertEqual(1, len(nodes))
+            self.assertEqual(Method(('operator%s' % operator), list(get_tokens('Foo')),
+                                    list(get_tokens('void')), []), nodes[0])
 
     def test_class_no_anonymous_namespace(self):
         nodes = list(MakeBuilder('class Foo;').generate())
@@ -688,7 +675,8 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(1, len(nodes))
         expected = Method('Write', list(get_tokens('EVM::VH<T>')),
                           list(get_tokens('inline void')), [],
-                          templated_types={'T': (None, None)})
+                          templated_types={'T': (None, None)},
+                          body=[])
         self.assertEqual(expected.return_type, nodes[0].return_type)
         self.assertEqual(expected.in_class, nodes[0].in_class)
         self.assertEqual(expected.templated_types, nodes[0].templated_types)
@@ -705,7 +693,8 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         expected = Method('Write', list(get_tokens('EVM::VH<T, U>')),
                           list(get_tokens('inline void')), [],
                           templated_types={'T': (None, None),
-                                           'U': (None, None)})
+                                           'U': (None, None)},
+                          body=[])
         self.assertEqual(expected.return_type, nodes[0].return_type)
         self.assertEqual(expected.in_class, nodes[0].in_class)
         self.assertEqual(expected.templated_types, nodes[0].templated_types)
@@ -722,7 +711,8 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         tt = (None, None)
         expected = Method('Create', list(get_tokens('Worker<CT, IT, DT>')),
                           list(get_tokens('DT*')), [],
-                          templated_types={'CT': tt, 'IT': tt, 'DT': tt})
+                          templated_types={'CT': tt, 'IT': tt, 'DT': tt},
+                          body=[])
         self.assertEqual(expected.return_type, nodes[0].return_type)
         self.assertEqual(expected.in_class, nodes[0].in_class)
         self.assertEqual(expected.templated_types, nodes[0].templated_types)
