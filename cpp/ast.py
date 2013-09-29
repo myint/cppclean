@@ -944,7 +944,8 @@ class AstBuilder(object):
             tokens.append(next_token)
             # Handle templated names.
             if next_token.name == '<':
-                tokens.extend(self._get_matching_char('<', '>', get_next_token))
+                tokens.extend(self._get_matching_char('<', '>',
+                                                      get_next_token))
                 last_token_was_name = True
             next_token = get_next_token()
         return tokens, next_token

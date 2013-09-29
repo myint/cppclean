@@ -3,6 +3,7 @@ check:
 		--reports=no \
 		--rcfile=/dev/null \
 		--dummy-variables-rgx='^_+$$' \
+		--disable=duplicate-code \
 		--disable=fixme \
 		--disable=missing-docstring \
 		--disable=too-many-arguments \
