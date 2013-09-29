@@ -576,33 +576,13 @@ class AstBuilderIntegrationTest(unittest.TestCase):
                                templated_types=[Type('Foo', pointer=True)])),
             nodes[1])
 
-    def test_assignment_operator(self):
-        code = 'void Foo::operator=();'
-        nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(1, len(nodes))
-        self.assertEqual(Method('operator=', list(get_tokens('Foo')),
-                                list(get_tokens('void')), []), nodes[0])
-
-    def test_operator_not_equal(self):
-        code = 'void Foo::operator!=();'
-        nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(1, len(nodes))
-        self.assertEqual(Method('operator!=', list(get_tokens('Foo')),
-                                list(get_tokens('void')), []), nodes[0])
-
-    def test_operator_paren(self):
-        code = 'void Foo::operator()();'
-        nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(1, len(nodes))
-        self.assertEqual(Method('operator()', list(get_tokens('Foo')),
-                                list(get_tokens('void')), []), nodes[0])
-
-    def test_operator_bracket(self):
-        code = 'void Foo::operator[]();'
-        nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(1, len(nodes))
-        self.assertEqual(Method('operator[]', list(get_tokens('Foo')),
-                                list(get_tokens('void')), []), nodes[0])
+    def test_operators(self):
+        for operator in ('=', '+=', '-=', '*=', '==', '!=', '()', '[]'):
+            code = 'void Foo::operator%s();' % operator
+            nodes = list(MakeBuilder(code).generate())
+            self.assertEqual(1, len(nodes))
+            self.assertEqual(Method(('operator%s' % operator), list(get_tokens('Foo')),
+                                    list(get_tokens('void')), []), nodes[0])
 
     def test_class_no_anonymous_namespace(self):
         nodes = list(MakeBuilder('class Foo;').generate())
