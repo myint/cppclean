@@ -15,6 +15,8 @@
 
 """Calculate metrics for C++ code."""
 
+from __future__ import unicode_literals
+
 from . import keywords
 
 
