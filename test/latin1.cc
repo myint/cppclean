@@ -1,5 +1,5 @@
 // é
-int main()
+int latin1()
 {
 	static int x;
 }
