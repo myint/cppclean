@@ -16,7 +16,7 @@ test/foo.h:268 static data: instance_
 test/foo.h:274 static data: string_list
 test/latin1.cc: Unable to find header file with matching name
 test/latin1.cc:2: latin1 not found in any directly #included header
-test/latin1.cc:4 static data: 	static int x;
+test/latin1.cc:4 static data: static int x;
 test/need-class.h:4: 'Bar' forward declared, but needs to be #included
 test/need-class.h:5: 'Baz' forward declared, but needs to be #included
 test/need-class.h:6: 'Bong' forward declared, but needs to be #included

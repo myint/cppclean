@@ -36,7 +36,7 @@ def _find_warnings(filename, source, ast_list, static_is_optional):
                 # TODO(nnorwitz): should ignore const. Is static const common
                 # here?
                 lines = metrics.Metrics(source)
-                print_warning(node, lines.get_line(node.start))
+                print_warning(node, lines.get_line(node.start).strip())
 
     for node in ast_list:
         if isinstance(node, ast.VariableDeclaration):
