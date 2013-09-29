@@ -999,12 +999,14 @@ class AstBuilder(object):
         if name.name == self.in_class and not modifiers:
             modifiers |= FUNCTION_CTOR
         parameters = list(self._get_parameters())
-        del parameters[-1]              # Remove trailing ')'.
+        last_token = parameters.pop()    # Remove trailing ')'.
 
         # Handling operator() is especially weird.
         if name.name == 'operator' and not parameters:
             token = self._get_next_token()
             assert token.name == '(', token
+            name = tokenize.Token(tokenize.NAME, 'operator()',
+                                  name.start, last_token.end)
             parameters = list(self._get_parameters())
             del parameters[-1]          # Remove trailing ')'.
 
