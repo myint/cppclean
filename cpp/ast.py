@@ -1236,16 +1236,15 @@ class AstBuilder(object):
         assert token.token_type == tokenize.NAME, token
         return self._create_variable(token, token.name, name, [], '')
 
-    def handle_struct(self):
-        # Special case the handling typedef/aliasing of structs here.
-        # It would be a pain to handle in the class code.
+    def _handle_class_and_struct(self, class_type, class_str, visibility):
+        # Special case the handling typedef/aliasing of classes/structs here.
         name_tokens, var_token = self.get_name()
         if name_tokens:
             # Forward declaration.
             if var_token.name == ';':
-                return Struct(name_tokens[0].start, name_tokens[0].end,
-                              name_tokens[0].name, None, None, None,
-                              self.namespace_stack)
+                return class_type(name_tokens[0].start, name_tokens[0].end,
+                                  name_tokens[0].name, None, None, None,
+                                  self.namespace_stack)
 
             next_token = self._get_next_token()
             is_syntax = (var_token.token_type == tokenize.SYNTAX and
@@ -1257,18 +1256,18 @@ class AstBuilder(object):
                 variable = next_token
                 temp = self._get_next_token()
                 if temp.token_type == tokenize.SYNTAX and temp.name == '(':
-                    # Handle methods declared to return a struct.
+                    # Handle methods declared to return a class/struct.
                     t0 = name_tokens[0]
-                    struct = tokenize.Token(tokenize.NAME, 'struct',
-                                            t0.start - 7, t0.start - 2)
-                    type_and_name = [struct]
+                    token = tokenize.Token(tokenize.NAME, class_str,
+                                           t0.start - 7, t0.start - 2)
+                    type_and_name = [token]
                     type_and_name.extend(name_tokens)
                     type_and_name.extend((var_token, next_token))
                     return self._get_method(type_and_name, 0, None, False)
                 if temp.name != ';':
                     raise ParseError((temp, name_tokens, var_token))
             if is_syntax or (is_variable and not self._handling_typedef):
-                modifiers = ['struct']
+                modifiers = [class_str]
                 type_name = ''.join([t.name for t in name_tokens])
                 position = name_tokens[0]
                 return self._create_variable(
@@ -1278,7 +1277,13 @@ class AstBuilder(object):
             self._add_back_tokens(name_tokens)
         else:
             self._add_back_token(var_token)
-        return self._get_class(Struct, VISIBILITY_PUBLIC, None)
+        return self._get_class(class_type, visibility, None)
+
+    def handle_class(self):
+        return self._handle_class_and_struct(Class, 'class', VISIBILITY_PRIVATE)
+
+    def handle_struct(self):
+        return self._handle_class_and_struct(Struct, 'struct', VISIBILITY_PUBLIC)
 
     def handle_union(self):
         return self._get_nested_type(Union)
@@ -1475,9 +1480,6 @@ class AstBuilder(object):
 
     def handle_asm(self):
         pass  # Not needed yet.
-
-    def handle_class(self):
-        return self._get_class(Class, VISIBILITY_PRIVATE, None)
 
     def _get_bases(self):
         # Get base classes.
