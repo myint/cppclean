@@ -1,3 +1,4 @@
+test/baz.h:1: test/bar.h does not need to be #included. Use a forward declaration instead
 test/empty.cc: Unable to find header file with matching name
 test/foo.h:14: 'Unused' not used
 test/foo.h:61: 'ProtoArray' not used
