@@ -592,6 +592,8 @@ class TypeConverter(object):
         default = []
 
         def add_parameter():
+            if not type_modifiers:
+                return
             if default:
                 del default[0]  # Remove flag.
             end = type_modifiers[-1].end

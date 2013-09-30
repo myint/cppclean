@@ -480,6 +480,36 @@ class AstBuilderIntegrationTest(unittest.TestCase):
 
     """
 
+    def test_no_argument(self):
+        nodes = list(MakeBuilder('FOO();').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Function('FOO', [], []), nodes[0])
+
+    def test_one_argument(self):
+        nodes = list(MakeBuilder('FOO(1);').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Function('FOO', [], list(get_tokens('1'))), nodes[0])
+
+    def test_two_arguments(self):
+        nodes = list(MakeBuilder('FOO(1,0);').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Function('FOO', [], list(get_tokens('1,0'))), nodes[0])
+
+    def test_two_arguments_first_empty(self):
+        nodes = list(MakeBuilder('FOO( ,0);').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Function('FOO', [], list(get_tokens('0'))), nodes[0])
+
+    def test_two_arguments_second_empty(self):
+        nodes = list(MakeBuilder('FOO(1, );').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Function('FOO', [], list(get_tokens('1'))), nodes[0])
+
+    def test_two_arguments_both_empty(self):
+        nodes = list(MakeBuilder('FOO( , );').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Function('FOO', [], []), nodes[0])
+
     def test_class_variable_declaration(self):
         nodes = list(MakeBuilder('class Foo foo;').generate())
         self.assertEqual(1, len(nodes))
