@@ -480,7 +480,12 @@ class AstBuilderIntegrationTest(unittest.TestCase):
 
     """
 
-    # TODO(nnorwitz): add lots more tests.
+    def test_class_variable_declaration(self):
+        nodes = list(MakeBuilder('class Foo foo;').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(
+            VariableDeclaration('foo', Type('Foo', modifiers=['class'])),
+            nodes[0])
 
     def test_struct_variable_declaration(self):
         nodes = list(MakeBuilder('struct Foo foo;').generate())
@@ -489,18 +494,34 @@ class AstBuilderIntegrationTest(unittest.TestCase):
             VariableDeclaration('foo', Type('Foo', modifiers=['struct'])),
             nodes[0])
 
-    def test_anon_typedef(self):
-        nodes = list(
-            MakeBuilder('typedef struct { int zz; } AnonStruct;').generate())
+    def test_anon_class_typedef(self):
+        nodes = list(MakeBuilder('typedef class { int zz; } Anon;').generate())
         self.assertEqual(1, len(nodes))
         self.assertEqual(
-            Typedef('AnonStruct',
+            Typedef('Anon',
+                    alias=[Class(None,
+                                 body=[VariableDeclaration('zz',
+                                                           Type('int'))])]),
+            nodes[0])
+
+    def test_anon_struct_typedef(self):
+        nodes = list(MakeBuilder('typedef struct { int zz; } Anon;').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(
+            Typedef('Anon',
                     alias=[Struct(None,
                                   body=[VariableDeclaration('zz',
                                                             Type('int'))])]),
             nodes[0])
 
-    def test_typedef(self):
+    def test_class_typedef(self):
+        nodes = list(
+            MakeBuilder('typedef class _IplImage IplImage;').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Typedef('IplImage', alias=[Class('_IplImage')]),
+                         nodes[0])
+
+    def test_struct_typedef(self):
         nodes = list(
             MakeBuilder('typedef struct _IplImage IplImage;').generate())
         self.assertEqual(1, len(nodes))
