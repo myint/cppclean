@@ -210,7 +210,7 @@ class WarningHunter(object):
                 if module.ast_list is not None:
                     msg = module.filename + ' does not need to be #included'
                     if use == USES_REFERENCE:
-                        msg += '. Use references instead'
+                        msg += '. Use a forward declaration instead'
                     self._add_warning(msg, node)
 
     def _verify_forward_declarations_used(self, forward_declarations,
@@ -234,13 +234,19 @@ class WarningHunter(object):
         symbol_table = self.symbol_table
 
         def _add_reference(name, namespace):
-            if name in decl_uses:
-                decl_uses[name] |= USES_REFERENCE
-            elif not None in namespace:
+            if not name in decl_uses and not None in namespace:
                 # TODO(nnorwitz): make less hacky, do real name lookup.
                 name = '::'.join(namespace) + '::' + name
-                if name in decl_uses:
-                    decl_uses[name] |= USES_REFERENCE
+            if name in decl_uses:
+                decl_uses[name] |= USES_REFERENCE
+            else:
+                try:
+                    file_use_node = symbol_table.lookup_symbol(name, namespace)
+                except symbols.Error:
+                    return
+                name = file_use_node[1].normalized_filename
+                if name in file_uses:
+                    file_uses[name] |= USES_REFERENCE
 
         def _add_use(name, namespace):
             if isinstance(name, list):
@@ -258,6 +264,8 @@ class WarningHunter(object):
                 # exception should not happen...unless the code relies
                 # on another header for proper compilation.
                 # Store the use since we might really need to #include it.
+                if namespace and not None in namespace and not '::' in name:
+                    name = '::'.join(namespace) + '::' + name
                 file_uses[name] = file_uses.get(name, 0) | USES_DECLARATION
                 return
             if not file_use_node:
