@@ -1,6 +1,8 @@
 #include "include.h"
 
-using namespace blah;
+using namespace std;
+
+#define A_DEFINE 1
 
 
 int main()
