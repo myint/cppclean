@@ -5,6 +5,10 @@ cppclean
    :target: https://travis-ci.org/myint/cppclean
    :alt: Build status
 
+.. image:: https://coveralls.io/repos/myint/cppclean/badge.png?branch=master
+   :target: https://coveralls.io/r/myint/cppclean
+   :alt: Test coverage status
+
 
 Goal
 ====
@@ -70,11 +74,3 @@ Non-goals
 - Parsing all valid C++ source
 - Handling invalid C++ source gracefully
 - Compiling to machine code (or anything beyond an AST)
-
-
-Links
-=====
-
-* Coveralls_
-
-.. _`Coveralls`: https://coveralls.io/r/myint/cppclean
