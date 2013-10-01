@@ -52,6 +52,9 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 # file.
 PRIMARY_HEADER_EXTENSION = '.h'
 
+HEADER_EXTENSIONS = frozenset(['.h', '.hpp', '.h++', '.hxx'])
+CPP_EXTENSIONS = frozenset(['.c', '.cc', '.cpp', '.c++', '.cxx'])
+
 # These enumerations are used to determine how an symbol/#include file is used.
 UNUSED = 0
 USES_REFERENCE = 1
@@ -76,12 +79,12 @@ class Module(object):
 
 def _is_header_file(filename):
     _, ext = os.path.splitext(filename)
-    return ext.lower() in ('.h', '.hpp', '.h++', '.hxx')
+    return ext.lower() in HEADER_EXTENSIONS
 
 
 def _is_cpp_file(filename):
     _, ext = os.path.splitext(filename)
-    return ext.lower() in ('.c', '.cc', '.cpp', '.c++', '.cxx')
+    return ext.lower() in CPP_EXTENSIONS
 
 
 class WarningHunter(object):
