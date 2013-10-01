@@ -1282,10 +1282,12 @@ class AstBuilder(object):
         return self._get_class(class_type, visibility, None)
 
     def handle_class(self):
-        return self._handle_class_and_struct(Class, 'class', VISIBILITY_PRIVATE)
+        return self._handle_class_and_struct(Class, 'class',
+                                             VISIBILITY_PRIVATE)
 
     def handle_struct(self):
-        return self._handle_class_and_struct(Struct, 'struct', VISIBILITY_PUBLIC)
+        return self._handle_class_and_struct(Struct, 'struct',
+                                             VISIBILITY_PUBLIC)
 
     def handle_union(self):
         return self._get_nested_type(Union)
@@ -1294,8 +1296,6 @@ class AstBuilder(object):
         return self._get_nested_type(Enum)
 
     def handle_auto(self):
-        # TODO(nnorwitz): warn about using auto?  Probably not since it
-        # will be reclaimed and useful for C++0x.
         pass
 
     def handle_register(self):
