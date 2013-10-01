@@ -53,7 +53,7 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 PRIMARY_HEADER_EXTENSION = '.h'
 
 HEADER_EXTENSIONS = frozenset(['.h', '.hpp', '.h++', '.hxx'])
-CPP_EXTENSIONS = frozenset(['.c', '.cc', '.cpp', '.c++', '.cxx'])
+CPP_EXTENSIONS = frozenset(['.cc', '.cpp', '.c++', '.cxx'])
 
 # These enumerations are used to determine how an symbol/#include file is used.
 UNUSED = 0

@@ -35,10 +35,6 @@ from cpp import tokenize
 from cpp import utils
 
 
-RELEVANT_EXTENSIONS = (find_warnings.HEADER_EXTENSIONS |
-                       find_warnings.CPP_EXTENSIONS)
-
-
 def match_file(filename, exclude_patterns):
     """Return True if file is a C++ file."""
     if os.path.basename(filename).startswith('.'):
