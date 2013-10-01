@@ -70,3 +70,11 @@ Non-goals
 - Parsing all valid C++ source
 - Handling invalid C++ source gracefully
 - Compiling to machine code (or anything beyond an AST)
+
+
+Links
+=====
+
+* Coveralls_
+
+.. _`Coveralls`: https://coveralls.io/r/myint/cppclean
