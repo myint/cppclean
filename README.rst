@@ -65,8 +65,7 @@ Current status
 The parser works pretty well for header files, parsing about 99% of Google's
 header files. Anything which inspects structure of C++ source files should
 work reasonably well. Function bodies are not transformed to an AST,
-but left as tokens. Such work is still needed on finding unused header files
-and storing an AST in a database.
+but left as tokens.
 
 
 Non-goals
