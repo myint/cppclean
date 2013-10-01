@@ -24,8 +24,9 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
 # A set of every keyword that increases the cyclomatic complexity.
-_COMPLEXITY_KEYWORDS = \
-    frozenset(keywords.CONTROL | keywords.LOOP | keywords.EXCEPTION)
+_COMPLEXITY_KEYWORDS = frozenset(keywords.CONTROL |
+                                 keywords.LOOP |
+                                 keywords.EXCEPTION)
 
 
 class Metrics(object):

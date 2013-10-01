@@ -373,8 +373,8 @@ class WarningHunter(object):
 
     def _find_unused_warnings(self):
         included_files, forward_declarations = self._read_and_parse_includes()
-        file_uses, decl_uses = \
-            self._determine_uses(included_files, forward_declarations)
+        file_uses, decl_uses = self._determine_uses(included_files,
+                                                    forward_declarations)
         self._verify_includes(included_files)
         self._verify_include_files_used(file_uses, included_files)
         self._verify_forward_declarations_used(forward_declarations, decl_uses,
