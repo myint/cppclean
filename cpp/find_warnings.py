@@ -77,12 +77,12 @@ class Module(object):
         return dict([(n.name, n) for n in self.ast_list if n.is_exportable()])
 
 
-def _is_header_file(filename):
+def is_header_file(filename):
     _, ext = os.path.splitext(filename)
     return ext.lower() in HEADER_EXTENSIONS
 
 
-def _is_cpp_file(filename):
+def is_cpp_file(filename):
     _, ext = os.path.splitext(filename)
     return ext.lower() in CPP_EXTENSIONS
 
@@ -123,9 +123,9 @@ class WarningHunter(object):
                 print('%s:%d: %s' % (filename, line_num, msg))
 
     def find_warnings(self):
-        if _is_header_file(self.filename):
+        if is_header_file(self.filename):
             self._find_header_warnings()
-        elif _is_cpp_file(self.filename):
+        elif is_cpp_file(self.filename):
             self._find_source_warnings()
         else:
             print('Unknown filetype for: %s' % self.filename)
@@ -192,7 +192,7 @@ class WarningHunter(object):
         files_seen = {}
         for filename, (node, module) in included_files.items():
             normalized_filename = module.normalized_filename
-            if _is_cpp_file(filename):
+            if is_cpp_file(filename):
                 msg = 'should not #include C++ source file: %s' % filename
                 self._add_warning(msg, node)
             if normalized_filename == self.normalized_filename:

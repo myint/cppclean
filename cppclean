@@ -48,9 +48,11 @@ def match_file(filename, exclude_patterns):
         if fnmatch.fnmatch(filename, pattern):
             return False
 
-    for extension in RELEVANT_EXTENSIONS:
-        if fnmatch.fnmatch(filename, '*' + extension):
-            return True
+    if find_warnings.is_header_file(filename):
+        return True
+
+    if find_warnings.is_cpp_file(filename):
+        return True
 
     return False
 
