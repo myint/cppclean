@@ -493,7 +493,8 @@ class AstBuilderIntegrationTest(unittest.TestCase):
     def test_two_arguments(self):
         nodes = list(MakeBuilder('FOO(1,0);').generate())
         self.assertEqual(1, len(nodes))
-        self.assertEqual(Function('FOO', [], list(get_tokens('1,0'))), nodes[0])
+        self.assertEqual(
+            Function('FOO', [], list(get_tokens('1,0'))), nodes[0])
 
     def test_two_arguments_first_empty(self):
         nodes = list(MakeBuilder('FOO( ,0);').generate())
@@ -535,7 +536,8 @@ class AstBuilderIntegrationTest(unittest.TestCase):
             nodes[0])
 
     def test_anon_struct_typedef(self):
-        nodes = list(MakeBuilder('typedef struct { int zz; } Anon;').generate())
+        nodes = list(
+            MakeBuilder('typedef struct { int zz; } Anon;').generate())
         self.assertEqual(1, len(nodes))
         self.assertEqual(
             Typedef('Anon',
