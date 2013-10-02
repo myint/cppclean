@@ -767,14 +767,13 @@ class AstBuilder(object):
             if last_token.name == '(':
                 # If there is an assignment before the paren,
                 # this is an expression, not a method.
-                if (
-                    temp_tokens[-1].name == '=' and
-                    temp_tokens[-2].name != 'operator'
-                ):
-                    new_temp = self._get_tokens_up_to(tokenize.SYNTAX, ';')
-                    temp_tokens.append(last_token)
-                    temp_tokens.extend(new_temp)
-                    last_token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
+                for i, elt in reversed(list(enumerate(temp_tokens))):
+                    if elt.name == '=' and temp_tokens[i - 1].name != 'operator':
+                        new_temp = self._get_tokens_up_to(tokenize.SYNTAX, ';')
+                        temp_tokens.append(last_token)
+                        temp_tokens.extend(new_temp)
+                        last_token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
+                        break
 
             if last_token.name == '[':
                 # Handle array, this isn't a method, unless it's an operator.
