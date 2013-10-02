@@ -208,11 +208,11 @@ class WarningHunter(object):
     def _verify_include_files_used(self, file_uses, included_files):
         """Find all #include files that are unnecessary."""
         for include_file, use in file_uses.items():
-            if use != USES_DECLARATION:
+            if not use & USES_DECLARATION:
                 node, module = included_files[include_file]
                 if module.ast_list is not None:
                     msg = module.filename + ' does not need to be #included'
-                    if use == USES_REFERENCE:
+                    if use & USES_REFERENCE:
                         msg += '. Use a forward declaration instead'
                     self._add_warning(msg, node)
 
@@ -237,7 +237,7 @@ class WarningHunter(object):
         symbol_table = self.symbol_table
 
         def _add_reference(name, namespace):
-            if not name in decl_uses and not None in namespace:
+            if not name in decl_uses and namespace and not None in namespace:
                 # TODO(nnorwitz): make less hacky, do real name lookup.
                 name = '::'.join(namespace) + '::' + name
             if name in decl_uses:
