@@ -1032,31 +1032,37 @@ class AstBuilder(object):
             parameters = list(self._get_parameters())
             del parameters[-1]          # Remove trailing ')'.
 
-        token = self._get_next_token()
-        while token.token_type == tokenize.NAME:
-            modifier_token = token
+        try:
             token = self._get_next_token()
-            if modifier_token.name == 'const':
+        except:
+            token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
+        while token.token_type == tokenize.NAME:
+            if token.name == 'const':
                 modifiers |= FUNCTION_CONST
-            elif modifier_token.name == '__attribute__':
+                token = self._get_next_token()
+            elif token.name == '__attribute__':
                 # TODO(nnorwitz): handle more __attribute__ details.
                 modifiers |= FUNCTION_ATTRIBUTE
+                token = self._get_next_token()
                 assert token.name == '(', token
                 # Consume everything between the (parens).
                 list(self._get_matching_char('(', ')'))
                 token = self._get_next_token()
-            elif modifier_token.name == 'throw':
+            elif token.name == 'throw':
                 modifiers |= FUNCTION_THROW
+                token = self._get_next_token()
                 assert token.name == '(', token
                 # Consume everything between the (parens).
                 list(self._get_matching_char('(', ')'))
                 token = self._get_next_token()
-            elif modifier_token.name == modifier_token.name.upper():
+            elif token.name == token.name.upper():
                 # HACK(nnorwitz):  assume that all upper-case names
                 # are some macro we aren't expanding.
                 modifiers |= FUNCTION_UNKNOWN_ANNOTATION
+                token = self._get_next_token()
             else:
-                self.handle_error('unexpected token', modifier_token)
+                self._add_back_token(token)
+                token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
 
         if token.token_type != tokenize.SYNTAX:
             raise ParseError(token)
