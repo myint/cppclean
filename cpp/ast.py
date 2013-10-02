@@ -597,8 +597,11 @@ class TypeConverter(object):
             if default:
                 del default[0]  # Remove flag.
             end = type_modifiers[-1].end
+            needs_name_removed = \
+                not (len(type_modifiers) == 1 or (len(type_modifiers) == 2 and
+                                                  type_modifiers[0].name == 'const'))
             name, type_name, templated_types, modifiers, _, __ = \
-                self.declaration_to_parts(type_modifiers, True)
+                self.declaration_to_parts(type_modifiers, needs_name_removed)
             parameter_type = Type(first_token.start, first_token.end,
                                   type_name, templated_types, modifiers,
                                   reference, pointer, array)

@@ -480,6 +480,22 @@ class AstBuilderIntegrationTest(unittest.TestCase):
 
     """
 
+    def test_function_one_argument_with_name(self):
+        for argument in ('Foo f', 'const Foo f', 'Foo& f', 'const Foo& f'):
+            code = 'void fct(%s);' % argument
+            nodes = list(MakeBuilder(code).generate())
+            self.assertEqual(1, len(nodes))
+            self.assertEqual(1, len(nodes[0].parameters))
+            self.assertEqual('f', nodes[0].parameters[0].name)
+
+    def test_function_one_argument_with_no_name(self):
+        for argument in ('Foo', 'const Foo', 'Foo&', 'const Foo&'):
+            code = 'void fct(%s);' % argument
+            nodes = list(MakeBuilder(code).generate())
+            self.assertEqual(1, len(nodes))
+            self.assertEqual(1, len(nodes[0].parameters))
+            self.assertEqual(None, nodes[0].parameters[0].name)
+
     def test_no_argument(self):
         nodes = list(MakeBuilder('FOO();').generate())
         self.assertEqual(1, len(nodes))
