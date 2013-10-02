@@ -370,8 +370,6 @@ class WarningHunter(object):
                     if node.body:
                         ast_seq.append(node.body)
                     _add_template_use('', node.bases, node.namespace)
-                elif isinstance(node, ast.Struct) and node.body is not None:
-                    pass  # TODO(nnorwitz): impl
                 elif isinstance(node, ast.Union) and node.fields:
                     pass  # TODO(nnorwitz): impl
 
