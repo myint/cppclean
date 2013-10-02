@@ -249,7 +249,10 @@ class WarningHunter(object):
                     return
                 name = file_use_node[1].normalized_filename
                 if name in file_uses:
-                    file_uses[name] |= USES_REFERENCE
+                    if isinstance(file_use_node[0], ast.Typedef):
+                        file_uses[name] |= USES_DECLARATION
+                    else:
+                        file_uses[name] |= USES_REFERENCE
 
         def _add_use(name, namespace):
             if isinstance(name, list):
