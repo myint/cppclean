@@ -682,6 +682,18 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(1, len(nodes))
         self.assertEqual(Class('Foo', bases=[Type('Bar')], body=[]), nodes[0])
 
+    def test_constructor(self):
+        code = 'Foo::Foo() {}'
+        nodes = list(MakeBuilder(code).generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Method('Foo', list(get_tokens('Foo')), [], [], body=[]), nodes[0])
+
+    def test_destructor(self):
+        code = 'Foo::~Foo() {}'
+        nodes = list(MakeBuilder(code).generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Method('~Foo', list(get_tokens('Foo')), [], [], body=[]), nodes[0])
+
     def test_class_virtual_inline_destructor(self):
         code = 'class Foo { virtual inline ~Foo(); };'
         nodes = list(MakeBuilder(code).generate())
