@@ -23,11 +23,6 @@ from . import keywords
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
-# A set of every keyword that increases the cyclomatic complexity.
-_COMPLEXITY_KEYWORDS = frozenset(keywords.CONTROL |
-                                 keywords.LOOP |
-                                 keywords.EXCEPTION)
-
 
 class Metrics(object):
 
@@ -43,16 +38,3 @@ class Metrics(object):
     def get_line_number(self, index):
         """Return the line number in the source based on the index."""
         return 1 + self.source.count('\n', 0, index)
-
-    def get_line_count(self, token_stream):
-        """Return the number of lines for the method in the token_stream."""
-        first_line = self.get_line_number(token_stream[0].start)
-        last_line = self.get_line_number(token_stream[-1].end)
-        return last_line - first_line
-
-    def get_complexity(self, token_stream):
-        """Return cyclomatic complexity for the method in the token_stream."""
-        complexity = 1
-        for token in token_stream:
-            complexity += token.name in _COMPLEXITY_KEYWORDS
-        return complexity
