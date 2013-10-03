@@ -127,8 +127,6 @@ class WarningHunter(object):
             self._find_header_warnings()
         elif is_cpp_file(self.filename):
             self._find_source_warnings()
-        else:
-            print('Unknown filetype for: %s' % self.filename)
 
     def _update_symbol_table(self, module):
         for name, node in module.public_symbols.items():
