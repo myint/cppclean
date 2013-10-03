@@ -984,12 +984,11 @@ class AstBuilder(object):
             assert token.name == '(', token
 
         name = return_type_and_name.pop()
-        if (
-            len(return_type_and_name) > 2 and
-            return_type_and_name[-1].name == 'operator'
-        ):
+        if (len(return_type_and_name) > 2 and
+            (return_type_and_name[-1].name == 'operator' or
+             return_type_and_name[-1].name == '~')):
             op = return_type_and_name.pop()
-            name = tokenize.Token(tokenize.NAME, 'operator' + name.name,
+            name = tokenize.Token(tokenize.NAME, op.name + name.name,
                                   op.start, name.end)
         # Handle templatized ctors.
         elif name.name == '>':
@@ -1125,7 +1124,7 @@ class AstBuilder(object):
                 raise ParseError((token, return_type_and_name, parameters))
 
         # Looks like we got a method, not a function.
-        if len(return_type) > 2 and return_type[-1].name == '::':
+        if len(return_type) > 1 and return_type[-1].name == '::':
             return_type, in_class = \
                 self._get_return_type_and_class_name(return_type)
             return Method(indices.start, indices.end, name.name, in_class,
