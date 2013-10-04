@@ -1040,7 +1040,7 @@ class AstBuilder(object):
 
         try:
             token = self._get_next_token()
-        except Exception:  # pylint: disable=broad-except
+        except StopIteration:
             token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
 
         while token.token_type == tokenize.NAME:
