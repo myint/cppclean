@@ -104,6 +104,7 @@ def main():
                 UnicodeDecodeError) as exception:
             print('{}: parsing error {}'.format(filename, exception),
                   file=sys.stderr)
+            continue
 
         for module in [find_warnings,
                        nonvirtual_dtors,
