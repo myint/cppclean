@@ -445,7 +445,10 @@ class TypeConverter(object):
         count = 1
         end = start
         while True:
-            token = tokens[end]
+            try:
+                token = tokens[end]
+            except IndexError:
+                raise ParseError(tokens)
             end += 1
             if token.name == '<':
                 count += 1
