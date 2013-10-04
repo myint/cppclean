@@ -1040,8 +1040,9 @@ class AstBuilder(object):
 
         try:
             token = self._get_next_token()
-        except:
+        except Exception:  # pylint: disable=broad-except
             token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
+
         while token.token_type == tokenize.NAME:
             if token.name == 'const':
                 modifiers |= FUNCTION_CONST
