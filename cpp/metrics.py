@@ -17,8 +17,6 @@
 
 from __future__ import unicode_literals
 
-from . import keywords
-
 
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
