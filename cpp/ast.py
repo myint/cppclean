@@ -992,7 +992,7 @@ class AstBuilder(object):
             assert token.name == '(', token
 
         name = return_type_and_name.pop()
-        if (len(return_type_and_name) > 2 and
+        if (len(return_type_and_name) > 1 and
             (return_type_and_name[-1].name == 'operator' or
              return_type_and_name[-1].name == '~')):
             op = return_type_and_name.pop()
