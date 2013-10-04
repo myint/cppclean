@@ -483,12 +483,16 @@ class AstBuilderIntegrationTest(unittest.TestCase):
     def test_variable_initialization_with_function(self):
         nodes = list(MakeBuilder('int value = fct();').generate())
         self.assertEqual(1, len(nodes))
-        self.assertEqual(VariableDeclaration('value', Type('int'), initial_value='fct()'), nodes[0])
+        self.assertEqual(VariableDeclaration('value', Type('int'),
+                                             initial_value='fct()'),
+                         nodes[0])
 
     def test_variable_initialization_with_complex_expression(self):
         nodes = list(MakeBuilder('int value = fct() + 42;').generate())
         self.assertEqual(1, len(nodes))
-        self.assertEqual(VariableDeclaration('value', Type('int'), initial_value='fct()+42'), nodes[0])
+        self.assertEqual(VariableDeclaration('value', Type('int'),
+                                             initial_value='fct()+42'),
+                         nodes[0])
 
     def test_function_one_argument_with_name(self):
         for argument in ('Foo f', 'const Foo f', 'Foo& f', 'const Foo& f'):
@@ -686,13 +690,17 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         code = 'Foo::Foo() {}'
         nodes = list(MakeBuilder(code).generate())
         self.assertEqual(1, len(nodes))
-        self.assertEqual(Method('Foo', list(get_tokens('Foo')), [], [], body=[]), nodes[0])
+        self.assertEqual(Method('Foo', list(get_tokens('Foo')), [], [],
+                                body=[]),
+                         nodes[0])
 
     def test_destructor(self):
         code = 'Foo::~Foo() {}'
         nodes = list(MakeBuilder(code).generate())
         self.assertEqual(1, len(nodes))
-        self.assertEqual(Method('~Foo', list(get_tokens('Foo')), [], [], body=[]), nodes[0])
+        self.assertEqual(Method('~Foo', list(get_tokens('Foo')), [], [],
+                                body=[]),
+                         nodes[0])
 
     def test_class_virtual_inline_destructor(self):
         code = 'class Foo { virtual inline ~Foo(); };'
