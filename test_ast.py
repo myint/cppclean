@@ -702,6 +702,19 @@ class AstBuilderIntegrationTest(unittest.TestCase):
                                 body=[]),
                          nodes[0])
 
+    def test_class_operators(self):
+        for operator in ('=', '+=', '-=', '*=', '==', '!=', '()', '[]', '<',
+                         '>'):
+            code = 'class Foo { void operator%s(); };' % operator
+            nodes = list(MakeBuilder(code).generate())
+            self.assertEqual(1, len(nodes))
+            function = nodes[0].body[0]
+            expected = Function(('operator%s' % operator),
+                                list(get_tokens('void')), [])
+            self.assertEqual(expected.return_type, function.return_type)
+            self.assertEqual(expected, function)
+            self.assertEqual(Class('Foo', body=[expected]), nodes[0])
+
     def test_class_virtual_inline_destructor(self):
         code = 'class Foo { virtual inline ~Foo(); };'
         nodes = list(MakeBuilder(code).generate())
