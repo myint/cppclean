@@ -23,7 +23,6 @@ from . import keywords
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
-
 class Metrics(object):
 
     """Calculate various metrics on C++ source code."""

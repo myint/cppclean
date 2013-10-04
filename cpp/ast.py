@@ -597,11 +597,16 @@ class TypeConverter(object):
             if default:
                 del default[0]  # Remove flag.
             end = type_modifiers[-1].end
-            needs_name_removed = \
-                not (len(type_modifiers) == 1 or (len(type_modifiers) == 2 and
-                                                  type_modifiers[0].name == 'const'))
-            name, type_name, templated_types, modifiers, _, __ = \
-                self.declaration_to_parts(type_modifiers, needs_name_removed)
+
+            needs_name_removed = not (
+                len(type_modifiers) == 1 or
+                (len(type_modifiers) == 2 and
+                 type_modifiers[0].name == 'const'))
+
+            (name, type_name, templated_types, modifiers,
+             _, __) = self.declaration_to_parts(type_modifiers,
+                                                needs_name_removed)
+
             parameter_type = Type(first_token.start, first_token.end,
                                   type_name, templated_types, modifiers,
                                   reference, pointer, array)
@@ -768,7 +773,10 @@ class AstBuilder(object):
                 # If there is an assignment before the paren,
                 # this is an expression, not a method.
                 for i, elt in reversed(list(enumerate(temp_tokens))):
-                    if elt.name == '=' and temp_tokens[i - 1].name != 'operator':
+                    if (
+                        elt.name == '=' and
+                        temp_tokens[i - 1].name != 'operator'
+                    ):
                         new_temp = self._get_tokens_up_to(tokenize.SYNTAX, ';')
                         temp_tokens.append(last_token)
                         temp_tokens.extend(new_temp)
