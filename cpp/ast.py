@@ -1095,8 +1095,7 @@ class AstBuilder(object):
                 del function_parameters[-1]  # Remove trailing ')'.
                 # TODO(nnorwitz): store the function_parameters.
                 token = self._get_next_token()
-                assert token.token_type == tokenize.SYNTAX, token
-                if token.name != ';':
+                if token.token_type != tokenize.SYNTAX or token.name != ';':
                     raise ParseError(token)
                 return self._create_variable(indices, name.name, indices.name,
                                              modifiers, '')
