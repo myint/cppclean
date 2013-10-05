@@ -87,7 +87,7 @@ class TokenizeTest(unittest.TestCase):
             self.assertEqual(Constant('3', 4, 5), tokens[2])
 
     def testget_tokens_multi_char_binary_operators(self):
-        for operator in ('<<', '>>', '**'):
+        for operator in ('<<', '>>'):
             #                        0123456
             tokens = self.get_tokens('5 %s 3' % operator)
             self.assertEqual(3, len(tokens), tokens)
@@ -119,7 +119,8 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Name('not', 1, 4), tokens[1])
 
     def testget_tokens_operators(self):
-        for operator in ('+=', '-=', '*=', '==', '!='):
+        for operator in ('+=', '-=', '*=', '==', '!=', '/=', '%=', '^=', '|=',
+                         '<<', '>>', '<=', '>='):
             #                        0123456
             tokens = self.get_tokens('a %s b' % operator)
             self.assertEqual(3, len(tokens), tokens)
