@@ -73,7 +73,7 @@ def _find_unused_static_warnings(filename, lines, ast_list):
                 if child.name in static_declarations:
                     static_use_counts[child.name] += 1
 
-    for name in static_declarations:
+    for name in sorted(static_declarations):
         if not static_use_counts[name]:
             print("{}:{}: Unused variable '{}'".format(
                 filename,
