@@ -30,8 +30,10 @@ def _find_warnings(filename, source, ast_list, static_is_optional):
     lines = metrics.Metrics(source)
 
     def print_warning(node, name):
-        print('%s:%d' % (filename, lines.get_line_number(node.start)), end=' ')
-        print("static data: '{}'".format(name))
+        print("{}:{}: Static data '{}'".format(
+            filename,
+            lines.get_line_number(node.start),
+            name))
 
     def find_static(function_node):
         for node in function_node.body:
