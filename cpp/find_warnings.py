@@ -159,7 +159,8 @@ class WarningHunter(object):
             except KeyboardInterrupt:
                 sys.exit(1)
             except:
-                print('Exception while processing %s' % filename)
+                print("Exception while processing '{}'".format(filename),
+                      file=sys.stderr)
                 module = Module(filename, None)
             else:
                 self._update_symbol_table(module)
@@ -274,8 +275,10 @@ class WarningHunter(object):
                 file_uses[name] = file_uses.get(name, 0) | USES_DECLARATION
                 return
             if not file_use_node:
-                print(('Could not find #include file for %s in %s' %
-                      (name, namespace)))
+                print(
+                    "Could not find #include file for '{}' in '{}'".format(
+                        name, namespace),
+                    file=sys.stderr)
                 return
             # TODO(nnorwitz): do proper check for ref/pointer/symbol.
             name = file_use_node[1].normalized_filename
