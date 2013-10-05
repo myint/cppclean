@@ -401,8 +401,7 @@ class WarningHunter(object):
                 # If the primary.filename == header.filename, it probably
                 # indicates an error elsewhere. It sucks to mask it,
                 # but false positives are worse.
-                if (primary_header and
-                        primary_header.filename != header.filename):
+                if primary_header:
                     msg = ("expected to find '{}' in '{}', "
                            "but found in '{}'".format(name,
                                                       primary_header.filename,

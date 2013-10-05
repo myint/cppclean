@@ -718,9 +718,11 @@ class AstBuilder(object):
             self.current_token = token
 
             # Dispatch on the next token type.
-            if token.token_type == _INTERNAL_TOKEN:
-                if token.name == _NAMESPACE_POP:
-                    self.namespace_stack.pop()
+            if (
+                token.token_type == _INTERNAL_TOKEN and
+                token.name == _NAMESPACE_POP
+            ):
+                self.namespace_stack.pop()
                 continue
 
             try:
@@ -767,7 +769,10 @@ class AstBuilder(object):
             # Handle data or function declaration/definition.
             syntax = tokenize.SYNTAX
             temp_tokens, last_token = \
-                self._get_var_tokens_up_to(syntax, '(', ';', '{', '[')
+                self._get_var_tokens_up_to(syntax, '(', ';', '{', '[', '}')
+            if last_token.name == '}':
+                return None
+
             temp_tokens.insert(0, token)
             if last_token.name == '(':
                 # If there is an assignment before the paren,
@@ -1071,6 +1076,10 @@ class AstBuilder(object):
                 self._add_back_token(token)
                 token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
 
+        if token.name == '}':
+            self._add_back_token(token)
+            token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
+
         if token.token_type != tokenize.SYNTAX:
             raise ParseError(token)
         # Handle ctor initializers.
@@ -1270,8 +1279,10 @@ class AstBuilder(object):
                            next_token.name == ';')
             variable = var_token
             if is_syntax and not is_variable:
-                variable = next_token
-                temp = self._get_next_token()
+                temp = next_token
+                while variable.token_type != tokenize.NAME:
+                    variable = temp
+                    temp = self._get_next_token()
                 if temp.token_type == tokenize.SYNTAX and temp.name == '(':
                     # Handle methods declared to return a class/struct.
                     t0 = name_tokens[0]
@@ -1625,8 +1636,7 @@ class AstBuilder(object):
         else:
             assert token.name == '{', token
             tokens = list(self.get_scope())
-            # Replace the trailing } with the internal namespace pop token.
-            tokens[-1] = internal_token
+            tokens.append(internal_token)
             # Handle namespace with nothing in it.
             self._add_back_tokens(tokens)
         return None

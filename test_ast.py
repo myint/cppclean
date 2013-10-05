@@ -661,7 +661,7 @@ class AstBuilderIntegrationTest(unittest.TestCase):
 
     def test_operators(self):
         for operator in ('=', '+=', '-=', '*=', '==', '!=', '()', '[]', '<',
-                         '>'):
+                         '>', '^=', '<<=', '>>='):
             code = 'void Foo::operator%s();' % operator
             nodes = list(MakeBuilder(code).generate())
             self.assertEqual(1, len(nodes))
