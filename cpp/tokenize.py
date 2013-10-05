@@ -21,8 +21,6 @@ from __future__ import unicode_literals
 
 import sys
 
-from . import utils
-
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
@@ -76,8 +74,6 @@ class Token(object):
         self.whence = WHENCE_STREAM
 
     def __str__(self):
-        if not utils.DEBUG:
-            return 'Token(%r)' % self.name
         return 'Token(%r, %s, %s)' % (self.name, self.start, self.end)
 
     __repr__ = __str__
