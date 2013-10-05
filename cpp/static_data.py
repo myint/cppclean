@@ -28,7 +28,7 @@ def _find_warnings(filename, source, ast_list, static_is_optional):
     def print_warning(node, name):
         lines = metrics.Metrics(source)
         print('%s:%d' % (filename, lines.get_line_number(node.start)), end=' ')
-        print('static data:', name)
+        print("static data: '{}'".format(name))
 
     def find_static(function_node):
         for node in function_node.body:
@@ -36,9 +36,7 @@ def _find_warnings(filename, source, ast_list, static_is_optional):
                 # TODO(nnorwitz): should ignore const. Is static const common
                 # here?
                 lines = metrics.Metrics(source)
-                print_warning(
-                    node,
-                    "'{}'".format(lines.get_line(node.start).strip()))
+                print_warning(node, lines.get_line(node.start).strip())
 
     for node in ast_list:
         if isinstance(node, ast.VariableDeclaration):
