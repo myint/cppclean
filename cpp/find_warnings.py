@@ -191,7 +191,7 @@ class WarningHunter(object):
         for filename, (node, module) in included_files.items():
             normalized_filename = module.normalized_filename
             if is_cpp_file(filename):
-                msg = 'should not #include C++ source file: %s' % filename
+                msg = 'Should not #include C++ source file: %s' % filename
                 self._add_warning(msg, node)
             if normalized_filename == self.normalized_filename:
                 self._add_warning('%s #includes itself' % filename, node)
@@ -209,7 +209,7 @@ class WarningHunter(object):
             if not use & USES_DECLARATION:
                 node, module = included_files[include_file]
                 if module.ast_list is not None:
-                    msg = module.filename + ' does not need to be #included'
+                    msg = node.filename + ' does not need to be #included'
                     if use & USES_REFERENCE:
                         msg += '. Use a forward declaration instead'
                     self._add_warning(msg, node)
@@ -478,7 +478,7 @@ class WarningHunter(object):
             # be something to warn against. I expect this will either
             # be configurable or removed in the future. But it's easy
             # to check for now.
-            msg = 'forward declarations not expected in source file'
+            msg = 'Forward declarations not expected in source file'
             self._add_warning(msg, list(forward_declarations.values())[0])
 
         # A primary header is optional. However, when looking up
