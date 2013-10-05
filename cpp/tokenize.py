@@ -158,15 +158,22 @@ def get_tokens(source):
             elif source[i] == "'" and source[start:i] in _STR_PREFIXES:
                 token_type = CONSTANT
                 i = _get_string(source, i)
-        elif c == '/' and source[i + 1] == '/':    # Find // comments.
+        elif c == '/' and source[i + 1] == '/':  # Find // comments.
             i = source.find('\n', i)
-            if i == -1:  # Handle EOF.
-                i = end
             continue
-        elif c == '/' and source[i + 1] == '*':    # Find /* comments. */
+        elif c == '/' and source[i + 1] == '*':  # Find /* comments. */
             i = source.find('*/', i) + 2
             continue
-        elif c in ':+-<>&!|*=':                   # : or :: (plus other chars).
+        elif c in '<>':                          # Handle '<' and '>' tokens.
+            token_type = SYNTAX
+            i += 1
+            new_ch = source[i]
+            if new_ch == c:
+                i += 1
+                new_ch = source[i]
+            if new_ch == '=':
+                i += 1
+        elif c in ':+-&|=':                      # Handle 'XX' and 'X=' tokens.
             token_type = SYNTAX
             i += 1
             new_ch = source[i]
@@ -176,7 +183,13 @@ def get_tokens(source):
                 i += 1
             elif new_ch == '=':
                 i += 1
-        elif c in '()[]{}~?^%;/.,':             # Handle single char tokens.
+        elif c in '!*^%/':                       # Handle 'X=' tokens.
+            token_type = SYNTAX
+            i += 1
+            new_ch = source[i]
+            if new_ch == '=':
+                i += 1
+        elif c in '()[]{}~?;.,':                 # Handle single char tokens.
             token_type = SYNTAX
             i += 1
             if c == '.' and source[i].isdigit():
