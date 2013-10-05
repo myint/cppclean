@@ -41,7 +41,7 @@ def _find_warnings(filename, source, ast_list, static_is_optional):
                 lines = metrics.Metrics(source)
                 print_warning(node, lines.get_line(node.start).strip())
 
-    static_declarations = []
+    static_declarations = {}
     for node in ast_list:
         if isinstance(node, ast.VariableDeclaration):
             # Ignore 'static' at module scope so we can find globals too.
@@ -49,7 +49,7 @@ def _find_warnings(filename, source, ast_list, static_is_optional):
             is_not_const = 'const' not in node.type.modifiers
             if is_not_const and (static_is_optional or is_static):
                 print_warning(node, node.name)
-                static_declarations.append(node.name)
+                static_declarations[node.name] = node
         elif isinstance(node, ast.Function):
             if node.body:
                 find_static(node)
@@ -75,9 +75,8 @@ def _find_unused_static_warnings(ast_list, static_declarations,
         if count == 1:
             print("{}:{}: Unused variable '{}'".format(
                 filename,
-                lines.get_line_number(node.start),
+                lines.get_line_number(static_declarations[name].start),
                 name))
-
 
 
 def run(filename, source, entire_ast, include_paths):
