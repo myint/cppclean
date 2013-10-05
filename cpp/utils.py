@@ -35,7 +35,7 @@ def read_file(filename, print_error=True):
                     return fp.read()
             except UnicodeDecodeError:
                 pass
-    except IOError:
+    except IOError as exception:
         if print_error:
-            print('Error reading %s: %s' % (filename, sys.exc_info()[1]))
+            print(exception, file=sys.stderr)
         return None

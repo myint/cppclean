@@ -18,8 +18,6 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import sys
-
 
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
@@ -83,8 +81,7 @@ class SymbolTable(object):
         try:
             # Try to do a normal, global namespace lookup.
             return self._lookup_namespace(symbol, namespace, 'global ')
-        except Error:
-            orig_exc = sys.exc_info()[1]
+        except Error as orig_exc:
             try:
                 # The normal lookup can fail if all of the parts aren't
                 # namespaces. This happens with OuterClass::Inner.
