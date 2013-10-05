@@ -23,7 +23,6 @@ import sys
 
 from . import keywords
 from . import tokenize
-from . import utils
 
 
 try:
@@ -94,8 +93,6 @@ class Node(object):
         return False
 
     def _string_helper(self, name, suffix):
-        if not utils.DEBUG:
-            return '%s(%s)' % (name, suffix)
         return '%s(%d, %d, %s)' % (name, self.start, self.end, suffix)
 
     def __repr__(self):
@@ -1579,9 +1576,6 @@ class AstBuilder(object):
 
         body = None
         if token.token_type == tokenize.SYNTAX and token.name == '{':
-            assert token.token_type == tokenize.SYNTAX, token
-            assert token.name == '{', token
-
             ast = AstBuilder(self.get_scope(), self.filename, class_name,
                              visibility, self.namespace_stack)
             body = list(ast.generate())

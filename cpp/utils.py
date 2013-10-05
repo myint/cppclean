@@ -26,10 +26,6 @@ import sys
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
-# Set to True to see the start/end token indices.
-DEBUG = True
-
-
 def read_file(filename, print_error=True):
     """Returns the contents of a file."""
     try:

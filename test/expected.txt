@@ -1,22 +1,22 @@
-test/baz.h:1: test/bar.h does not need to be #included. Use a forward declaration instead
+test/baz.h:1: bar.h does not need to be #included. Use a forward declaration instead
 test/cxx.cxx: Unable to find header file with matching name
 test/cxx.cxx:1: cxx not found in any directly #included header
 test/empty.cc: Unable to find header file with matching name
 test/foo.h:14: 'Unused' not used
 test/foo.h:61: 'ProtoArray' not used
-test/foo.h:113: test/not-used.h does not need to be #included
+test/foo.h:113: not-used.h does not need to be #included
 test/foo.h:150: 'AR' not used
 test/foo.h:221: Unable to find dir//bar.h
 test/foo.h:234 Colon has virtual methods without a virtual dtor
-test/foo.h:20 static data: d
-test/foo.h:101 static data: ptof
-test/foo.h:106 static data: data
-test/foo.h:208 static data: garbage_state
-test/foo.h:225 static data: flags_
-test/foo.h:239 static data: foo
-test/foo.h:241 static data: GlobalKey
-test/foo.h:268 static data: instance_
-test/foo.h:274 static data: string_list
+test/foo.h:20 static data: 'd'
+test/foo.h:101 static data: 'ptof'
+test/foo.h:106 static data: 'data'
+test/foo.h:208 static data: 'garbage_state'
+test/foo.h:225 static data: 'flags_'
+test/foo.h:239 static data: 'foo'
+test/foo.h:241 static data: 'GlobalKey'
+test/foo.h:268 static data: 'instance_'
+test/foo.h:274 static data: 'string_list'
 test/latin1.cc: Unable to find header file with matching name
 test/latin1.cc:2: latin1 not found in any directly #included header
 test/latin1.cc:4 static data: 'static int x;'
