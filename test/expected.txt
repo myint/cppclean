@@ -1,12 +1,12 @@
-test/baz.h:1: bar.h does not need to be #included. Use a forward declaration instead
+test/baz.h:1: 'bar.h' does not need to be #included; use a forward declaration instead
 test/cxx.cxx: unable to find header file with matching name
 test/cxx.cxx:1: 'cxx' not found in any directly #included header
 test/empty.cc: unable to find header file with matching name
 test/foo.h:14: 'Unused' not used
 test/foo.h:61: 'ProtoArray' not used
-test/foo.h:113: not-used.h does not need to be #included
+test/foo.h:113: 'not-used.h' does not need to be #included
 test/foo.h:150: 'AR' not used
-test/foo.h:221: unable to find dir//bar.h
+test/foo.h:221: unable to find 'dir//bar.h'
 test/foo.h:234 'Colon' has virtual methods without a virtual dtor
 test/foo.h:20: static data 'd'
 test/foo.h:101: static data 'ptof'
@@ -29,8 +29,8 @@ test/unused_static.cc:1: static data 'x'
 test/unused_static.cc:2: static data 'y'
 test/unused_static.cc:1: unused variable 'x'
 test/unused_static.cc:3: unused variable 'z'
-test/define/d1.cc:11: 'SomeFunction1' not found in expected header test/define/d1.h or any other directly #included header
-test/define/d1.cc:15: expected to find SomeOtherFunction1 in test/define/d1.h, but found in test/define/other_defined1.h
+test/define/d1.cc:11: 'SomeFunction1' not found in expected header 'test/define/d1.h' or any other directly #included header
+test/define/d1.cc:15: expected to find 'SomeOtherFunction1' in 'test/define/d1.h', but found in 'test/define/other_defined1.h'
 test/define/d1.h:4: 'OnlyDeclared' declared but not defined
 test/define/d2.cc: unable to find header file with matching name
 test/define/d2.cc:2: 'SomeFunction' not found in any directly #included header

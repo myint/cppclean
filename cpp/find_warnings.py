@@ -149,7 +149,7 @@ class WarningHunter(object):
 
         if source is None:
             module = Module(filename, None)
-            msg = 'unable to find %s' % filename
+            msg = "unable to find '{}'".format(filename)
             self._add_warning(msg, node)
         else:
             builder = ast.builder_from_source(source, filename)
@@ -209,9 +209,10 @@ class WarningHunter(object):
             if not use & USES_DECLARATION:
                 node, module = included_files[include_file]
                 if module.ast_list is not None:
-                    msg = node.filename + ' does not need to be #included'
+                    msg = "'{}' does not need to be #included".format(
+                        node.filename)
                     if use & USES_REFERENCE:
-                        msg += '. Use a forward declaration instead'
+                        msg += '; use a forward declaration instead'
                     self._add_warning(msg, node)
 
     def _verify_forward_declarations_used(self, forward_declarations,
@@ -399,15 +400,20 @@ class WarningHunter(object):
                 # but false positives are worse.
                 if (primary_header and
                         primary_header.filename != header.filename):
-                    msg = ('expected to find %s in %s, but found in %s' %
-                           (name, primary_header.filename, header.filename))
+                    msg = ("expected to find '{}' in '{}', "
+                           "but found in '{}'".format(name,
+                                                      primary_header.filename,
+                                                      header.filename))
                     self._add_warning(msg, node)
                 break
         else:
             where = 'in any directly #included header'
             if primary_header:
-                where = ('in expected header ' + primary_header.filename +
-                         ' or any other directly #included header')
+                where = (
+                    "in expected header '{}'"
+                    ' or any other directly #included header'.format(
+                        primary_header.filename))
+
             if name != 'main':
                 self._add_warning("'{}' not found {}".format(name, where),
                                   node)
