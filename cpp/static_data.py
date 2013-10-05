@@ -28,7 +28,7 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 def _find_warnings(filename, lines, ast_list, static_is_optional):
     def print_warning(node, name):
-        print("{}:{}: Static data '{}'".format(
+        print("{}:{}: static data '{}'".format(
             filename,
             lines.get_line_number(node.start),
             name))
@@ -73,7 +73,7 @@ def _find_unused_static_warnings(filename, lines, ast_list):
 
     for name in sorted(static_declarations):
         if not static_use_counts[name]:
-            print("{}:{}: Unused variable '{}'".format(
+            print("{}:{}: unused variable '{}'".format(
                 filename,
                 lines.get_line_number(static_declarations[name].start),
                 name))

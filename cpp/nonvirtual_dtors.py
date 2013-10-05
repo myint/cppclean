@@ -46,9 +46,8 @@ def _find_warnings(filename, source, ast_list):
                             lines.get_line_number(
                                 class_node.start)),
                         end=' ')
-                    print(
-                        class_node.name,
-                        'has virtual methods without a virtual dtor')
+                    print("'{}' has virtual methods without a virtual "
+                          'dtor'.format(class_node.name))
 
 
 def run(filename, source, entire_ast, include_paths):

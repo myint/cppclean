@@ -149,7 +149,7 @@ class WarningHunter(object):
 
         if source is None:
             module = Module(filename, None)
-            msg = 'Unable to find %s' % filename
+            msg = 'unable to find %s' % filename
             self._add_warning(msg, node)
         else:
             builder = ast.builder_from_source(source, filename)
@@ -409,7 +409,8 @@ class WarningHunter(object):
                 where = ('in expected header ' + primary_header.filename +
                          ' or any other directly #included header')
             if name != 'main':
-                self._add_warning('%s not found %s' % (name, where), node)
+                self._add_warning("'{}' not found {}".format(name, where),
+                                  node)
 
     def _check_public_functions(self, primary_header, all_headers):
         """Verify all the public functions are also declared in a header
@@ -456,7 +457,7 @@ class WarningHunter(object):
             if declared_only:
                 node = public_symbols[name]
                 if not node.templated_types:
-                    msg = '%s declared but not defined' % name
+                    msg = "'%s' declared but not defined" % name
                     self._add_warning(msg, node, primary_header.filename)
 
     def _get_primary_header(self, included_files):
@@ -489,7 +490,7 @@ class WarningHunter(object):
         if not primary_header and not any(node for node in self.ast_list
                                           if isinstance(node, ast.Function) and
                                           node.name == 'main'):
-            msg = 'Unable to find header file with matching name'
+            msg = 'unable to find header file with matching name'
             self.warnings.append((self.filename, 0, msg))
 
         self._check_public_functions(primary_header, included_files)
