@@ -57,14 +57,12 @@ def _find_warnings(filename, lines, ast_list, static_is_optional):
 
 def _find_unused_static_warnings(filename, lines, ast_list):
     """Warn about unused static variables."""
-    static_declarations = {}
-
-    for node in ast_list:
-        if (
-            isinstance(node, ast.VariableDeclaration) and
-            'static' in node.type.modifiers
-        ):
-            static_declarations[node.name] = node
+    static_declarations = {
+        node.name: node
+        for node in ast_list
+        if (isinstance(node, ast.VariableDeclaration) and
+            'static' in node.type.modifiers)
+    }
 
     static_use_counts = collections.Counter()
     for node in ast_list:
