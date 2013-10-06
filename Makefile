@@ -28,6 +28,8 @@ coverage:
 	@PYTHON='coverage run --parallel-mode' ./test.bash
 	@coverage combine
 	@coverage report
+
+open_coverage: coverage
 	@coverage html
 	@python -m webbrowser -n "file://${PWD}/htmlcov/index.html"
 
