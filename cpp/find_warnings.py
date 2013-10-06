@@ -178,17 +178,25 @@ class WarningHunter(object):
         for filename, (node, module) in included_files.items():
             normalized_filename = module.normalized_filename
             if is_cpp_file(filename):
-                msg = 'Should not #include C++ source file: %s' % filename
-                self._add_warning(msg, node)
+                self._add_warning(
+                    "should not #include C++ source file '{}'".format(
+                        node.filename),
+                    node)
+
             if normalized_filename == self.normalized_filename:
-                self._add_warning('%s #includes itself' % filename, node)
+                self._add_warning(
+                    "'{}' #includes itself".format(node.filename),
+                    node)
+
             if normalized_filename in files_seen:
                 include_node = files_seen[normalized_filename]
                 line_num = get_line_number(self.metrics, include_node)
-                msg = '%s already #included on line %d' % (filename, line_num)
-                self._add_warning(msg, node)
-            else:
-                files_seen[normalized_filename] = node
+                self._add_warning(
+                    "'{}' already #included on line {}".format(node.filename,
+                                                               line_num),
+                    node)
+
+            files_seen[normalized_filename] = node
 
     def _verify_include_files_used(self, file_uses, included_files):
         """Find all #include files that are unnecessary."""
