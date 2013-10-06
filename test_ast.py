@@ -345,6 +345,7 @@ class TypeConverterToParametersTest(unittest.TestCase):
         self.assertEqual(False, results[0].type.array)
         self.assertEqual('i', results[0].name)
 
+
 class TypeConverterToTypeTest(unittest.TestCase):
 
     def setUp(self):
