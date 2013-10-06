@@ -623,7 +623,10 @@ class TypeConverter(object):
             elif s.name == '>':
                 template_count -= 1
             if template_count > 0:
-                type_modifiers.append(s)
+                if default:
+                    default.append(s)
+                else:
+                    type_modifiers.append(s)
                 continue
 
             if s.name == ',':
