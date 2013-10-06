@@ -60,6 +60,8 @@ UNUSED = 0
 USES_REFERENCE = 1
 USES_DECLARATION = 2
 
+DECLARATION_TYPES = (ast.Class, ast.Struct, ast.Enum, ast.Union)
+
 
 class Module(object):
 
@@ -154,8 +156,6 @@ class WarningHunter(object):
         return module
 
     def _read_and_parse_includes(self):
-        DECLARATION_TYPES = (ast.Class, ast.Struct, ast.Enum, ast.Union)
-
         # Map header-filename: (#include AST node, module).
         included_files = {}
         # Map declaration-name: AST node.
@@ -171,32 +171,38 @@ class WarningHunter(object):
 
         return included_files, forward_declarations
 
-    def _verify_includes(self, included_files):
+    def _verify_includes(self, ast_list):
         """Read and parse all the #include'd files and warn about really stupid
         things that can be determined from the #include'd file name."""
         files_seen = {}
-        for filename, (node, module) in included_files.items():
-            normalized_filename = module.normalized_filename
-            if is_cpp_file(filename):
-                self._add_warning(
-                    "should not #include C++ source file '{}'".format(
-                        node.filename),
-                    node)
+        for node in self.ast_list:
+            # Ignore #include <> files. Only handle #include "".
+            # Assume that <> are used for only basic C/C++ headers.
+            if isinstance(node, ast.Include) and not node.system:
+                module = self._get_module(node)
+                filename = module.normalized_filename
 
-            if normalized_filename == self.normalized_filename:
-                self._add_warning(
-                    "'{}' #includes itself".format(node.filename),
-                    node)
+                normalized_filename = module.normalized_filename
 
-            if normalized_filename in files_seen:
-                include_node = files_seen[normalized_filename]
-                line_num = get_line_number(self.metrics, include_node)
-                self._add_warning(
-                    "'{}' already #included on line {}".format(node.filename,
-                                                               line_num),
-                    node)
+                if is_cpp_file(filename):
+                    self._add_warning(
+                        "should not #include C++ source file '{}'".format(
+                            node.filename),
+                        node)
+                elif normalized_filename == self.normalized_filename:
+                    self._add_warning(
+                        "'{}' #includes itself".format(node.filename),
+                        node)
+                elif normalized_filename in files_seen:
+                    include_node = files_seen[normalized_filename]
+                    line_num = get_line_number(self.metrics, include_node)
+                    self._add_warning(
+                        "'{}' already #included on line {}".format(
+                            node.filename,
+                            line_num),
+                        node)
 
-            files_seen[normalized_filename] = node
+                files_seen[normalized_filename] = node
 
     def _verify_include_files_used(self, file_uses, included_files):
         """Find all #include files that are unnecessary."""
@@ -375,7 +381,7 @@ class WarningHunter(object):
         included_files, forward_declarations = self._read_and_parse_includes()
         file_uses, decl_uses = self._determine_uses(included_files,
                                                     forward_declarations)
-        self._verify_includes(included_files)
+        self._verify_includes(self.ast_list)
         self._verify_include_files_used(file_uses, included_files)
         self._verify_forward_declarations_used(forward_declarations, decl_uses,
                                                file_uses)
