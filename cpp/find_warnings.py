@@ -134,7 +134,7 @@ class WarningHunter(object):
 
         (source, filename) = headers.read_source(
             filename,
-            include_paths=self.include_paths + [os.path.dirname(self.filename)]
+            include_paths=[os.path.dirname(self.filename)] + self.include_paths
         )
 
         if source is None:

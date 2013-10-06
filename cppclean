@@ -76,7 +76,7 @@ def main():
                              'specify this multiple times for multiple '
                              'patterns')
     parser.add_argument('--include-path', '-i', '-I', action='append',
-                        dest='include_paths', default=['.'],
+                        dest='include_paths', default=[],
                         metavar='path',
                         help='add a header include path; '
                              'specify this multiple times for multiple '
