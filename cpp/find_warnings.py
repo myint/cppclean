@@ -188,11 +188,13 @@ class WarningHunter(object):
                         "should not #include C++ source file '{}'".format(
                             node.filename),
                         node)
-                elif normalized_filename == self.normalized_filename:
+
+                if normalized_filename == self.normalized_filename:
                     self._add_warning(
                         "'{}' #includes itself".format(node.filename),
                         node)
-                elif normalized_filename in files_seen:
+
+                if normalized_filename in files_seen:
                     include_node = files_seen[normalized_filename]
                     line_num = get_line_number(self.metrics, include_node)
                     self._add_warning(
