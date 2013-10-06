@@ -1479,8 +1479,13 @@ class AstBuilder(object):
 
     def handle_template(self):
         token = self._get_next_token()
-        assert token.token_type == tokenize.SYNTAX, token
-        assert token.name == '<', token
+
+        if token.token_type != tokenize.SYNTAX:
+            raise ParseError(token)
+
+        if token.name != '<':
+            raise ParseError(token)
+
         templated_types = self._get_templated_types()
         # TODO(nnorwitz): for now, just ignore the template params.
         token = self._get_next_token()
