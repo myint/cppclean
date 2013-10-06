@@ -6,6 +6,7 @@ using namespace std;
 
 #define A_DEFINE 1
 
+class Foo;
 
 int main()
 {

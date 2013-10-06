@@ -37,6 +37,7 @@ test/unused_static.cc:1: static data 'x'
 test/unused_static.cc:2: static data 'y'
 test/unused_static.cc:1: unused variable 'x'
 test/unused_static.cc:3: unused variable 'z'
+test/with_main.cc:9: forward declarations not expected in source file
 test/define/d1.cc:11: 'SomeFunction1' not found in expected header 'test/define/d1.h' or any other directly #included header
 test/define/d1.cc:15: expected to find 'SomeOtherFunction1' in 'test/define/d1.h', but found in 'test/define/other_defined1.h'
 test/define/d1.h:4: 'OnlyDeclared' declared but not defined
