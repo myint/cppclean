@@ -89,9 +89,6 @@ def is_cpp_file(filename):
 
 class WarningHunter(object):
 
-    # Cache filename: ast_list
-    _module_cache = {}
-
     def __init__(self, filename, source, ast_list, include_paths):
         self.filename = filename
         self.normalized_filename = os.path.abspath(filename)
@@ -102,8 +99,6 @@ class WarningHunter(object):
 
         self.metrics = metrics.Metrics(source)
         self.warnings = []
-        if filename not in self._module_cache:
-            self._module_cache[filename] = Module(filename, ast_list)
 
     def _add_warning(self, msg, node, filename=None):
         if filename is not None:
@@ -134,13 +129,6 @@ class WarningHunter(object):
 
     def _get_module(self, node):
         filename = node.filename
-        if filename in self._module_cache:
-            # The cache survives across all instances, but the symbol table
-            # is per instance, so we need to make sure the symbol table
-            # is updated even if the module was in the cache.
-            module = self._module_cache[filename]
-            self._update_symbol_table(module)
-            return module
 
         (source, filename) = headers.read_source(
             filename,
@@ -164,7 +152,6 @@ class WarningHunter(object):
                 module = Module(filename, None)
             else:
                 self._update_symbol_table(module)
-        self._module_cache[filename] = module
         return module
 
     def _read_and_parse_includes(self):
