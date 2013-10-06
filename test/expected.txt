@@ -8,7 +8,6 @@ test/foo.h:86: 'bar.h' already #included on line 5
 test/foo.h:113: 'not-used.h' does not need to be #included
 test/foo.h:150: 'AR' not used
 test/foo.h:221: unable to find 'dir//bar.h'
-test/foo.h:221: unable to find 'dir//bar.h'
 test/foo.h:234 'Colon' has virtual methods without a virtual dtor
 test/foo.h:20: static data 'd'
 test/foo.h:101: static data 'ptof'

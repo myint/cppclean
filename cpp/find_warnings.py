@@ -100,7 +100,7 @@ class WarningHunter(object):
         self.symbol_table = symbols.SymbolTable()
 
         self.metrics = metrics.Metrics(source)
-        self.warnings = []
+        self.warnings = set()
 
     def _add_warning(self, msg, node, filename=None):
         if filename is not None:
@@ -109,11 +109,10 @@ class WarningHunter(object):
             filename = self.filename
             src_metrics = self.metrics
         line_number = get_line_number(src_metrics, node)
-        self.warnings.append((filename, line_number, msg))
+        self.warnings.add((filename, line_number, msg))
 
     def show_warnings(self):
-        self.warnings.sort()
-        for filename, line_num, msg in self.warnings:
+        for filename, line_num, msg in sorted(self.warnings):
             if line_num == 0:
                 print('%s: %s' % (filename, msg))
             else:
@@ -499,7 +498,7 @@ class WarningHunter(object):
                                           if isinstance(node, ast.Function) and
                                           node.name == 'main'):
             msg = 'unable to find header file with matching name'
-            self.warnings.append((self.filename, 0, msg))
+            self.warnings.add((self.filename, 0, msg))
 
         self._check_public_functions(primary_header, included_files)
 
