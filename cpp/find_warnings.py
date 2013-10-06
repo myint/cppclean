@@ -170,7 +170,7 @@ class WarningHunter(object):
 
         return included_files, forward_declarations
 
-    def _verify_includes(self, ast_list):
+    def _verify_includes(self):
         """Read and parse all the #include'd files and warn about really stupid
         things that can be determined from the #include'd file name."""
         files_seen = {}
@@ -380,7 +380,7 @@ class WarningHunter(object):
         included_files, forward_declarations = self._read_and_parse_includes()
         file_uses, decl_uses = self._determine_uses(included_files,
                                                     forward_declarations)
-        self._verify_includes(self.ast_list)
+        self._verify_includes()
         self._verify_include_files_used(file_uses, included_files)
         self._verify_forward_declarations_used(forward_declarations, decl_uses,
                                                file_uses)
