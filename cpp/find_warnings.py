@@ -145,7 +145,7 @@ class WarningHunter(object):
                 module = Module(filename,
                                 [_f for _f in builder.generate() if _f])
             except KeyboardInterrupt:
-                sys.exit(1)
+                raise
             except:
                 print("Exception while processing '{}'".format(filename),
                       file=sys.stderr)

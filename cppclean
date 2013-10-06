@@ -117,4 +117,7 @@ def main():
                       file=sys.stderr)
 
 
-sys.exit(main())
+try:
+    sys.exit(main())
+except KeyboardInterrupt:
+    sys.exit(1)
