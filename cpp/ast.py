@@ -807,8 +807,7 @@ class AstBuilder(object):
                 name, type_name, templated_types, modifiers, default, _ = \
                     self.converter.declaration_to_parts(temp_tokens, True)
 
-                if not temp_tokens:
-                    raise ParseError('not enough tokens')
+                assert_parse(temp_tokens, 'not enough tokens')
 
                 t0 = temp_tokens[0]
                 names = [t.name for t in temp_tokens]
@@ -850,8 +849,10 @@ class AstBuilder(object):
                 # Handle #include \<newline> "header-on-second-line.h".
                 if name.startswith('\\'):
                     name = name[1:].strip()
-                if name[0] not in '<"' or name[-1] not in '>"':
-                    raise ParseError(token)
+
+                assert_parse(name[0] in '<"', token)
+                assert_parse(name[-1] in '>"', token)
+
                 system = name[0] == '<'
                 filename = name[1:-1]
                 return Include(token.start, token.end, filename, system)
@@ -1087,8 +1088,8 @@ class AstBuilder(object):
             self._add_back_token(token)
             token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
 
-        if token.token_type != tokenize.SYNTAX:
-            raise ParseError(token)
+        assert_parse(token.token_type == tokenize.SYNTAX, token)
+
         # Handle ctor initializers.
         if token.name == ':':
             # TODO(nnorwitz): anything else to handle for initializer list?
@@ -1108,8 +1109,10 @@ class AstBuilder(object):
                 del function_parameters[-1]  # Remove trailing ')'.
                 # TODO(nnorwitz): store the function_parameters.
                 token = self._get_next_token()
-                if token.token_type != tokenize.SYNTAX or token.name != ';':
-                    raise ParseError(token)
+
+                assert_parse(token.token_type == tokenize.SYNTAX, token)
+                assert_parse(token.name == ';', token)
+
                 return self._create_variable(indices, name.name, indices.name,
                                              modifiers, '')
             # At this point, we got something like:
@@ -1144,8 +1147,8 @@ class AstBuilder(object):
                 list(self._get_matching_char('[', ']'))
                 token = self._get_next_token()
 
-            if token.name != ';':
-                raise ParseError((token, return_type_and_name, parameters))
+            assert_parse(token.name == ';',
+                         (token, return_type_and_name, parameters))
 
         # Looks like we got a method, not a function.
         if len(return_type) > 1 and return_type[-1].name == '::':
@@ -1299,8 +1302,9 @@ class AstBuilder(object):
                     type_and_name.extend(name_tokens)
                     type_and_name.extend((var_token, next_token))
                     return self._get_method(type_and_name, 0, None, False)
-                if temp.name != ';':
-                    raise ParseError((temp, name_tokens, var_token))
+
+                assert_parse(temp.name == ';', (temp, name_tokens, var_token))
+
             if is_syntax or (is_variable and not self._handling_typedef):
                 modifiers = [class_str]
                 type_name = ''.join([t.name for t in name_tokens])
@@ -1369,8 +1373,7 @@ class AstBuilder(object):
         pass
 
     def handle_public(self):
-        if not self.in_class:
-            raise ParseError('expected to be in a class')
+        assert_parse(self.in_class, 'expected to be in a class')
         self.visibility = VISIBILITY_PUBLIC
 
     def handle_protected(self):
@@ -1483,11 +1486,8 @@ class AstBuilder(object):
     def handle_template(self):
         token = self._get_next_token()
 
-        if token.token_type != tokenize.SYNTAX:
-            raise ParseError(token)
-
-        if token.name != '<':
-            raise ParseError(token)
+        assert_parse(token.token_type == tokenize.SYNTAX, token)
+        assert_parse(token.name == '<', token)
 
         templated_types = self._get_templated_types()
         # TODO(nnorwitz): for now, just ignore the template params.
@@ -1606,9 +1606,8 @@ class AstBuilder(object):
             if not self._handling_typedef:
                 token = self._get_next_token()
                 if token.token_type != tokenize.NAME:
-                    assert token.token_type == tokenize.SYNTAX, token
-                    if token.name != ';':
-                        raise ParseError(token)
+                    assert_parse(token.token_type == tokenize.SYNTAX, token)
+                    assert_parse(token.name == ';', token)
                 else:
                     new_class = class_type(class_token.start, class_token.end,
                                            class_name, bases, None,
@@ -1642,8 +1641,7 @@ class AstBuilder(object):
         if token.name == '=':
             # TODO(nnorwitz): handle aliasing namespaces.
             name, next_token = self.get_name()
-            if next_token.name != ';':
-                raise ParseError(next_token)
+            assert_parse(next_token.name == ';', next_token)
             self._add_back_token(internal_token)
         else:
             assert token.name == '{', token
@@ -1742,3 +1740,9 @@ def builder_from_source(source, filename):
 
     """
     return AstBuilder(tokenize.get_tokens(source), filename)
+
+
+def assert_parse(value, message):
+    """Raise ParseError on token if value is False."""
+    if not value:
+        raise ParseError(message)
