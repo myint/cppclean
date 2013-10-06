@@ -144,10 +144,9 @@ class WarningHunter(object):
             try:
                 module = Module(filename,
                                 [_f for _f in builder.generate() if _f])
-            except KeyboardInterrupt:
-                raise
-            except:
-                print("Exception while processing '{}'".format(filename),
+            except ast.ParseError as error:
+                print("Exception while processing '{}': {}".format(filename,
+                                                                   error),
                       file=sys.stderr)
                 module = Module(filename, None)
             else:
