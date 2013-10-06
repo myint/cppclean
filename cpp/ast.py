@@ -1076,6 +1076,10 @@ class AstBuilder(object):
                 self._add_back_token(token)
                 token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
 
+        # Handle ref-qualifiers.
+        if token.name == '&' or token.name == '&&':
+            token = self._get_next_token()
+
         if token.name == '}':
             self._add_back_token(token)
             token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
