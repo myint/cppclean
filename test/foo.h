@@ -274,3 +274,8 @@ map<string, const Flag*> ReturnFlags();
 vector<string*> string_list;
 
 class Foo::Bar { Bar() { XXX(1) << "should work"; } };
+
+class Optional {
+  void getValue() & { }
+  void getValue() && { }
+};
