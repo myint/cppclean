@@ -279,3 +279,7 @@ class Optional {
   void getValue() & { }
   void getValue() && { }
 };
+
+int* Foo::Get(){}
+int** Foo::Get(){}
+int*** Foo::Get(){}
