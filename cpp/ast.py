@@ -940,7 +940,7 @@ class AstBuilder(object):
             token.whence = tokenize.WHENCE_QUEUE
             self.token_queue.insert(0, token)
         else:
-            assert token.whence == tokenize.WHENCE_QUEUE, token
+            assert_parse(token.whence == tokenize.WHENCE_QUEUE, token)
             self.token_queue.append(token)
 
     def _add_back_tokens(self, tokens):
@@ -950,7 +950,8 @@ class AstBuilder(object):
                     token.whence = tokenize.WHENCE_QUEUE
                 self.token_queue[:0] = reversed(tokens)
             else:
-                assert tokens[-1].whence == tokenize.WHENCE_QUEUE, tokens
+                assert_parse(tokens[-1].whence == tokenize.WHENCE_QUEUE,
+                             tokens)
                 self.token_queue.extend(reversed(tokens))
 
     def get_name(self, seq=None):
@@ -991,14 +992,14 @@ class AstBuilder(object):
         template_portion = None
         if get_paren:
             token = self._get_next_token()
-            assert token.token_type == tokenize.SYNTAX, token
+            assert_parse(token.token_type == tokenize.SYNTAX, token)
             if token.name == '<':
                 # Handle templatized dtors.
                 template_portion = [token]
                 template_portion.extend(self._get_matching_char('<', '>'))
                 token = self._get_next_token()
-            assert token.token_type == tokenize.SYNTAX, token
-            assert token.name == '(', token
+            assert_parse(token.token_type == tokenize.SYNTAX, token)
+            assert_parse(token.name == '(', token)
 
         name = return_type_and_name.pop()
         if (len(return_type_and_name) > 1 and
@@ -1017,8 +1018,8 @@ class AstBuilder(object):
             name = return_type_and_name.pop()
         elif name.name == ']':
             rt = return_type_and_name
-            assert rt[-1].name == '[', return_type_and_name
-            assert rt[-2].name == 'operator', return_type_and_name
+            assert_parse(rt[-1].name == '[', return_type_and_name)
+            assert_parse(rt[-2].name == 'operator', return_type_and_name)
             name_seq = return_type_and_name[-2:]
             del return_type_and_name[-2:]
             name = tokenize.Token(tokenize.NAME, 'operator[]',
@@ -1041,7 +1042,7 @@ class AstBuilder(object):
         # Handling operator() is especially weird.
         if name.name == 'operator' and not parameters:
             token = self._get_next_token()
-            assert token.name == '(', token
+            assert_parse(token.name == '(', token)
             name = tokenize.Token(tokenize.NAME, 'operator()',
                                   name.start, last_token.end)
             parameters = list(self._get_parameters())
@@ -1060,14 +1061,14 @@ class AstBuilder(object):
                 # TODO(nnorwitz): handle more __attribute__ details.
                 modifiers |= FUNCTION_ATTRIBUTE
                 token = self._get_next_token()
-                assert token.name == '(', token
+                assert_parse(token.name == '(', token)
                 # Consume everything between the (parens).
                 list(self._get_matching_char('(', ')'))
                 token = self._get_next_token()
             elif token.name == 'throw':
                 modifiers |= FUNCTION_THROW
                 token = self._get_next_token()
-                assert token.name == '(', token
+                assert_parse(token.name == '(', token)
                 # Consume everything between the (parens).
                 list(self._get_matching_char('(', ')'))
                 token = self._get_next_token()
@@ -1136,8 +1137,8 @@ class AstBuilder(object):
             body = None
             if token.name == '=':
                 token = self._get_next_token()
-                assert token.token_type == tokenize.CONSTANT, token
-                assert token.name == '0', token
+                assert_parse(token.token_type == tokenize.CONSTANT, token)
+                assert_parse(token.name == '0', token)
                 modifiers |= FUNCTION_PURE_VIRTUAL
                 token = self._get_next_token()
 
@@ -1188,7 +1189,7 @@ class AstBuilder(object):
         while i < end:
             # Iterate through the sequence parsing out each name.
             new_name, next_item = self.get_name(seq_copy[i:])
-            assert new_name, 'Got empty new_name, next=%s' % next_item
+            assert_parse(new_name, 'Got empty new_name, next=%s' % next_item)
             # We got a pointer or ref. Add it to the name.
             if next_item and next_item.token_type == tokenize.SYNTAX:
                 new_name.append(next_item)
@@ -1269,7 +1270,7 @@ class AstBuilder(object):
             token = next_item
 
         # Must be variable declaration using the type prefixed with keyword.
-        assert token.token_type == tokenize.NAME, token
+        assert_parse(token.token_type == tokenize.NAME, token)
         return self._create_variable(token, token.name, name, [], '')
 
     def _handle_class_and_struct(self, class_type, class_str, visibility):
@@ -1358,7 +1359,8 @@ class AstBuilder(object):
             token2 = self._get_next_token()
         if token2.token_type == tokenize.SYNTAX and token2.name == '~':
             return self.get_method(FUNCTION_VIRTUAL + FUNCTION_DTOR, None)
-        assert token.token_type == tokenize.NAME or token.name == '::', token
+        assert_parse(token.token_type == tokenize.NAME or token.name == '::',
+                     token)
         return_type_and_name = self._get_tokens_up_to(tokenize.SYNTAX, '(')
         return_type_and_name.insert(0, token)
         if token2 is not token:
@@ -1470,7 +1472,7 @@ class AstBuilder(object):
             if i < len_tokens:
                 i += 1
                 if tokens[i - 1].name == '=':
-                    assert i < len_tokens, '%s %s' % (i, tokens)
+                    assert_parse(i < len_tokens, '%s %s' % (i, tokens))
                     default, _ = self.get_name(tokens[i:])
                     i += len(default)
                 else:
@@ -1526,7 +1528,7 @@ class AstBuilder(object):
         bases = []
         while True:
             token = self._get_next_token()
-            assert token.token_type == tokenize.NAME, token
+            assert_parse(token.token_type == tokenize.NAME, token)
             if token.name == 'virtual':
                 token = self._get_next_token()
             # TODO(nnorwitz): store kind of inheritance...maybe.
@@ -1545,21 +1547,22 @@ class AstBuilder(object):
                     pass
             base, next_token = self.get_name()
             bases_ast = self.converter.to_type(base)
-            assert len(bases_ast) == 1, bases_ast
+            assert_parse(len(bases_ast) == 1, bases_ast)
             bases.append(bases_ast[0])
-            assert next_token.token_type == tokenize.SYNTAX, next_token
+            assert_parse(next_token.token_type == tokenize.SYNTAX, next_token)
             if next_token.name == '{':
                 token = next_token
                 break
             # Support multiple inheritance.
-            assert next_token.name == ',', next_token
+            assert_parse(next_token.name == ',', next_token)
         return bases, token
 
     def _get_class(self, class_type, visibility, templated_types):
         class_name = None
         class_token = self._get_next_token()
         if class_token.token_type != tokenize.NAME:
-            assert class_token.token_type == tokenize.SYNTAX, class_token
+            assert_parse(class_token.token_type == tokenize.SYNTAX,
+                         class_token)
             token = class_token
         else:
             self._add_back_token(class_token)
@@ -1633,7 +1636,7 @@ class AstBuilder(object):
             name = token.name
             token = self._get_next_token()
         self.namespace_stack.append(name)
-        assert token.token_type == tokenize.SYNTAX, token
+        assert_parse(token.token_type == tokenize.SYNTAX, token)
         # Create an internal token that denotes when the namespace is complete.
         internal_token = tokenize.Token(_INTERNAL_TOKEN, _NAMESPACE_POP,
                                         None, None)
@@ -1644,7 +1647,7 @@ class AstBuilder(object):
             assert_parse(next_token.name == ';', next_token)
             self._add_back_token(internal_token)
         else:
-            assert token.name == '{', token
+            assert_parse(token.name == '{', token)
             tokens = list(self.get_scope())
             tokens.append(internal_token)
             # Handle namespace with nothing in it.
@@ -1700,7 +1703,7 @@ class AstBuilder(object):
 
     def handle_goto(self):
         tokens = self._get_tokens_up_to(tokenize.SYNTAX, ';')
-        assert len(tokens) == 1, unicode(tokens)
+        assert_parse(len(tokens) == 1, tokens)
         return Goto(tokens[0].start, tokens[0].end, tokens[0].name)
 
     def handle_try(self):
