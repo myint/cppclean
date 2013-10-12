@@ -20,7 +20,7 @@ check:
 		--disable=too-few-public-methods \
 		cpp cppclean setup.py
 	pep8 cpp $(wildcard *.py)
-	check-manifest --ignore='.travis.yml,Makefile,test*'
+	check-manifest
 	python setup.py --long-description | rst2html.py --strict > /dev/null
 
 coverage:

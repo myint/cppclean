@@ -1,3 +1,7 @@
 include COPYING
 include MANIFEST.in
 include README.rst
+
+exclude .travis.yml
+exclude Makefile
+exclude test*
