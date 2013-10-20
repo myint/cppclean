@@ -51,8 +51,7 @@ def __eq__(self, other):
     return (self.token_type == other.token_type and
             self.name == other.name and
             self.start == other.start and
-            self.end == other.end and
-            self.whence == other.whence)
+            self.end == other.end)
 
 tokenize.Token.__eq__ = __eq__
 

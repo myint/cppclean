@@ -943,23 +943,11 @@ class AstBuilder(object):
         return next(self.tokens)
 
     def _add_back_token(self, token):
-        if token.whence == tokenize.WHENCE_STREAM:
-            token.whence = tokenize.WHENCE_QUEUE
-            self.token_queue.insert(0, token)
-        else:
-            assert_parse(token.whence == tokenize.WHENCE_QUEUE, token)
-            self.token_queue.append(token)
+        self.token_queue.append(token)
 
     def _add_back_tokens(self, tokens):
         if tokens:
-            if tokens[-1].whence == tokenize.WHENCE_STREAM:
-                for token in tokens:
-                    token.whence = tokenize.WHENCE_QUEUE
-                self.token_queue[:0] = reversed(tokens)
-            else:
-                assert_parse(tokens[-1].whence == tokenize.WHENCE_QUEUE,
-                             tokens)
-                self.token_queue.extend(reversed(tokens))
+            self.token_queue.extend(reversed(tokens))
 
     def get_name(self, seq=None):
         """Returns ([tokens], next_token_info)."""
@@ -1666,7 +1654,6 @@ class AstBuilder(object):
         # Create an internal token that denotes when the namespace is complete.
         internal_token = tokenize.Token(_INTERNAL_TOKEN, _NAMESPACE_POP,
                                         None, None)
-        internal_token.whence = token.whence
         if token.name == '=':
             # TODO(nnorwitz): handle aliasing namespaces.
             name, next_token = self.get_name()

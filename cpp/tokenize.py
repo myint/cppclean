@@ -44,10 +44,6 @@ CONSTANT = 'CONSTANT'
 NAME = 'NAME'
 PREPROCESSOR = 'PREPROCESSOR'
 
-# Where the token originated from. This can be used for backtracking.
-# It is always set to WHENCE_STREAM in this code.
-WHENCE_STREAM, WHENCE_QUEUE = list(range(2))
-
 
 class TokenError(Exception):
 
@@ -71,7 +67,6 @@ class Token(object):
         self.name = name
         self.start = start
         self.end = end
-        self.whence = WHENCE_STREAM
 
     def __str__(self):
         return 'Token(%r, %s, %s)' % (self.name, self.start, self.end)
