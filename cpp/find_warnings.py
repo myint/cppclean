@@ -483,13 +483,13 @@ class WarningHunter(object):
 
     def _find_source_warnings(self):
         included_files, forward_declarations = self._read_and_parse_includes()
-        if forward_declarations:
+        for node in forward_declarations.values():
             # TODO(nnorwitz): This really isn't a problem, but might
             # be something to warn against. I expect this will either
             # be configurable or removed in the future. But it's easy
             # to check for now.
-            msg = 'forward declarations not expected in source file'
-            self._add_warning(msg, list(forward_declarations.values())[0])
+            msg = "'%s' forward declaration not expected in source file" % node.name
+            self._add_warning(msg, node)
 
         # A primary header is optional. However, when looking up
         # defined methods in the source, always look in the
