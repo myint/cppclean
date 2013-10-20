@@ -1092,7 +1092,7 @@ class AstBuilder(object):
         if token.name == '&' or token.name == '&&':
             token = self._get_next_token()
 
-        if token.name == '}':
+        if token.name == '}' or token.name == '#endif':
             self._add_back_token(token)
             token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
 
