@@ -364,6 +364,14 @@ class TypeConverterToTypeTest(unittest.TestCase):
         self.assertEqual(Type('Bar', templated_types=[Type('Foo')]),
                          result[0])
 
+    def test_templated_type(self):
+        tokens = get_tokens('Registry<T>::listener')
+        result = self.converter.to_type(list(tokens))
+        self.assertEqual(1, len(result))
+        types = [Type('T')]
+        self.assertEqual(Type('Registry::listener', templated_types=types),
+                         result[0])
+
     def test_template_with_multiple_args(self):
         tokens = get_tokens('Bar<Foo, Blah, Bling>')
         result = self.converter.to_type(list(tokens))
