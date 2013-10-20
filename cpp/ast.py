@@ -894,7 +894,6 @@ class AstBuilder(object):
             last_token = self._get_next_token()
         return tokens, last_token
 
-    # TODO(nnorwitz): remove _ignore_up_to() it shouldn't be necessary.
     def _ignore_up_to(self, token_type, token):
         self._get_tokens_up_to(token_type, token)
 
@@ -1247,25 +1246,45 @@ class AstBuilder(object):
         pass
 
     def _get_nested_type(self, ctor):
+        # Handle strongly typed enumerations.
+        token = self._get_next_token()
+        if token.name != 'class':
+            self._add_back_token(token)
+
         name = None
         name_tokens, token = self.get_name()
         if name_tokens:
             name = ''.join([t.name for t in name_tokens])
+
+        if token.token_type == tokenize.NAME:
+            if self._handling_typedef:
+                self._add_back_token(token)
+                return ctor(token.start, token.end, name, None,
+                            self.namespace_stack)
+
+            next_token = self._get_next_token()
+            if next_token.name != '(':
+                self._add_back_token(next_token)
+            else:
+                token = next_token
+
+        if token.token_type == tokenize.SYNTAX and token.name == '(':
+            self._ignore_up_to(tokenize.SYNTAX, ')')
+            token = self._get_next_token()
+
+        # Handle underlying type.
+        if token.token_type == tokenize.SYNTAX and token.name == ':':
+            _, token = self._get_var_tokens_up_to(tokenize.SYNTAX, '{', ';')
 
         # Handle forward declarations.
         if token.token_type == tokenize.SYNTAX and token.name == ';':
             return ctor(token.start, token.end, name, None,
                         self.namespace_stack)
 
-        if token.token_type == tokenize.NAME and self._handling_typedef:
-            self._add_back_token(token)
-            return ctor(token.start, token.end, name, None,
-                        self.namespace_stack)
-
         # Must be the type declaration.
-        fields = list(self._get_matching_char('{', '}'))
-        del fields[-1]                  # Remove trailing '}'.
         if token.token_type == tokenize.SYNTAX and token.name == '{':
+            fields = list(self._get_matching_char('{', '}'))
+            del fields[-1]                  # Remove trailing '}'.
             next_item = self._get_next_token()
             new_type = ctor(token.start, token.end, name, fields,
                             self.namespace_stack)
