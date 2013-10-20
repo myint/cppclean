@@ -280,6 +280,8 @@ class Optional {
   void getValue() && { }
 };
 
+class TypeBuilder : public Base<i<8>*, false> {};
+
 int* Foo::Get(){}
 int** Foo::Get(){}
 int*** Foo::Get(){}

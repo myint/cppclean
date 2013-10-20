@@ -490,6 +490,14 @@ class TypeConverter(object):
             token = tokens[i]
             if token.name == '<':
                 new_tokens, new_end = self._get_template_end(tokens, i + 1)
+                if new_end < end:
+                    if tokens[new_end].name == '::':
+                        name_tokens.append(tokens[new_end])
+                        name_tokens.append(tokens[new_end + 1])
+                        new_end += 2
+                    elif tokens[new_end].name == '*':
+                        pointer = True
+                        new_end += 1
                 add_type(self.to_type(new_tokens))
                 # If there is a comma after the template, we need to consume
                 # that here otherwise it becomes part of the name.
