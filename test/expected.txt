@@ -2,6 +2,7 @@ test/baz.h:1: 'bar.h' does not need to be #included; use a forward declaration i
 test/cxx.cxx: unable to find header file with matching name
 test/cxx.cxx:1: 'cxx' not found in any directly #included header
 test/empty.cc: unable to find header file with matching name
+test/enum.h:18: static data 'color'
 test/foo.h:14: 'Unused' not used
 test/foo.h:61: 'ProtoArray' not used
 test/foo.h:86: 'bar.h' already #included on line 5
