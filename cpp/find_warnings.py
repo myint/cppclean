@@ -275,34 +275,25 @@ class WarningHunter(object):
                     name = '::'.join(namespace) + '::' + name
                 file_uses[name] = file_uses.get(name, 0) | USES_DECLARATION
                 return
-            if not file_use_node:
-                print(
-                    "Could not find #include file for '{}' in '{}'".format(
-                        name, namespace),
-                    file=sys.stderr)
-                return
+
             # TODO(nnorwitz): do proper check for ref/pointer/symbol.
             name = file_use_node[1].normalized_filename
             if name in file_uses:
                 file_uses[name] |= USES_DECLARATION
 
-        def _add_variable(node, name, namespace):
-            if not name:
-                # Assume that all the types without names are builtin.
-                return
+        def _add_variable(node, namespace):
             if node.reference or node.pointer:
-                _add_reference(name, namespace)
+                _add_reference(node.name, namespace)
             else:
-                _add_use(name, namespace)
+                _add_use(node.name, namespace)
             # This needs to recurse when the node is a templated type.
             for n in node.templated_types or ():
-                _add_variable(n, n.name, namespace)
+                _add_variable(n, namespace)
 
         def _process_function(function):
             if function.return_type:
                 return_type = function.return_type
                 _add_variable(return_type,
-                              return_type.name,
                               function.namespace)
 
             templated_types = function.templated_types or ()
@@ -317,7 +308,7 @@ class WarningHunter(object):
                         # used.
                         _add_use(p.type.name, function.namespace)
                     else:
-                        _add_variable(p.type, p.type.name, function.namespace)
+                        _add_variable(p.type, function.namespace)
 
         def _process_function_body(function, namespace):
             iterator = iter(function.body)
@@ -351,7 +342,7 @@ class WarningHunter(object):
         while ast_seq:
             for node in ast_seq.pop():
                 if isinstance(node, ast.VariableDeclaration):
-                    _add_variable(node.type, node.type.name, node.namespace)
+                    _add_variable(node.type, node.namespace)
                     _add_template_use(node.type.name,
                                       node.type.templated_types,
                                       node.namespace)

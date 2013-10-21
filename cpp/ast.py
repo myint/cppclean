@@ -793,10 +793,10 @@ class AstBuilder(object):
                         elt.name == '=' and
                         temp_tokens[i - 1].name != 'operator'
                     ):
-                        new_temp = self._get_tokens_up_to(tokenize.SYNTAX, ';')
                         temp_tokens.append(last_token)
+                        new_temp, last_token = \
+                            self._get_var_tokens_up_to(tokenize.SYNTAX, ';')
                         temp_tokens.extend(new_temp)
-                        last_token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
                         break
 
             if last_token.name == '[':
