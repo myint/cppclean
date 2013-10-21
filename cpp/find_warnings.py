@@ -221,15 +221,17 @@ class WarningHunter(object):
                                           decl_uses, file_uses):
         """Find all the forward declarations that are not used."""
         for cls in forward_declarations:
-            if decl_uses[cls] == UNUSED:
-                node = forward_declarations[cls]
-                if cls in file_uses:
-                    msg = (
-                        "'{}' forward declared, "
-                        'but needs to be #included'.format(cls))
-                else:
+            if cls in file_uses:
+                if not decl_uses[cls] & USES_DECLARATION:
+                    node = forward_declarations[cls]
+                    msg = ("'{}' forward declared, "
+                           'but needs to be #included'.format(cls))
+                    self._add_warning(msg, node)
+            else:
+                if decl_uses[cls] == UNUSED:
+                    node = forward_declarations[cls]
                     msg = "'{}' not used".format(cls)
-                self._add_warning(msg, node)
+                    self._add_warning(msg, node)
 
     def _determine_uses(self, included_files, forward_declarations):
         """Set up the use type of each symbol."""
@@ -287,8 +289,9 @@ class WarningHunter(object):
             else:
                 _add_use(node.name, namespace)
             # This needs to recurse when the node is a templated type.
-            for n in node.templated_types or ():
-                _add_variable(n, namespace)
+            _add_template_use(node.name,
+                              node.templated_types,
+                              namespace)
 
         def _process_function(function):
             if function.return_type:
@@ -343,9 +346,6 @@ class WarningHunter(object):
             for node in ast_seq.pop():
                 if isinstance(node, ast.VariableDeclaration):
                     _add_variable(node.type, node.namespace)
-                    _add_template_use(node.type.name,
-                                      node.type.templated_types,
-                                      node.namespace)
                 elif isinstance(node, ast.Function):
                     _process_function(node)
                     if node.body:
@@ -353,7 +353,10 @@ class WarningHunter(object):
                 elif isinstance(node, ast.Typedef):
                     alias = node.alias
                     if isinstance(alias, ast.Type):
-                        _add_use(alias.name, node.namespace)
+                        if alias.reference or alias.pointer:
+                            _add_reference(alias.name, node.namespace)
+                        else:
+                            _add_use(alias.name, node.namespace)
                         _add_template_use('<typedef>', alias.templated_types,
                                           node.namespace)
                 elif isinstance(node, ast.Friend):
