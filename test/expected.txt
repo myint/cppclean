@@ -36,7 +36,6 @@ test/need-class.h:7: 'Bling' forward declared, but needs to be #included
 test/typedef.h:1: 'Foo' forward declared, but needs to be #included
 test/unused_static.cc:1: static data 'x'
 test/unused_static.cc:2: static data 'y'
-test/unused_static.cc:1: unused variable 'x'
 test/unused_static.cc:3: unused variable 'z'
 test/with_main.cc:9: 'Foo' forward declaration not expected in source file
 test/with_main.cc:10: 'Bar' forward declaration not expected in source file
