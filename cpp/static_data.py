@@ -64,12 +64,19 @@ def _find_unused_static_warnings(filename, lines, ast_list):
             'static' in node.type.modifiers)
     }
 
+    def find_variables_use(body):
+        for child in body:
+            if child.name in static_declarations:
+                static_use_counts[child.name] += 1
+
     static_use_counts = collections.Counter()
     for node in ast_list:
         if isinstance(node, ast.Function) and node.body:
+            find_variables_use(node.body)
+        elif isinstance(node, ast.Class) and node.body:
             for child in node.body:
-                if child.name in static_declarations:
-                    static_use_counts[child.name] += 1
+                if isinstance(child, ast.Function) and child.body:
+                    find_variables_use(child.body)
 
     for name in sorted(static_declarations):
         if not static_use_counts[name]:
