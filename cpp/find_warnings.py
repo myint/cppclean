@@ -497,6 +497,16 @@ class WarningHunter(object):
             self.warnings.add((self.filename, 0, msg))
 
         self._check_public_functions(primary_header, included_files)
+        if primary_header:
+            includes = [
+                node.filename
+                for node in primary_header.ast_list
+                if (isinstance(node, ast.Include))
+            ]
+            for (node, _) in included_files.values():
+                if node.filename in includes:
+                    msg = "'%s' already #included in '%s'" % (node.filename, primary_header.filename)
+                    self._add_warning(msg, node)
 
         # TODO(nnorwitz): other warnings to add:
         #   * unused forward decls for variables (globals)/classes
