@@ -479,6 +479,9 @@ class TypeConverter(object):
                 else:
                     names.append(t.name)
             name = ''.join(names)
+
+            assert_parse(name_tokens, 'not enough tokens')
+
             result.append(Type(name_tokens[0].start, name_tokens[-1].end,
                                name, templated_types, modifiers,
                                reference, pointer, array))
