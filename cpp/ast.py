@@ -43,7 +43,7 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 #
 # TODO much, much later:
 # * Handle #define
-#  * exceptions
+# * exceptions
 
 
 VISIBILITY_PUBLIC, VISIBILITY_PROTECTED, VISIBILITY_PRIVATE = list(range(3))
@@ -829,6 +829,8 @@ class AstBuilder(object):
                 return self._create_variable(t0, name, type_name, modifiers,
                                              names, templated_types, default)
             if last_token.name == '{':
+                assert_parse(temp_tokens, 'not enough tokens')
+
                 self._add_back_tokens(temp_tokens[1:])
                 self._add_back_token(last_token)
                 method_name = temp_tokens[0].name
