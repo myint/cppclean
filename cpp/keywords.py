@@ -58,3 +58,10 @@ def is_builtin_type(token):
         # These only apply to methods, they can't be types by themselves.
         return False
     return token in TYPES or token in TYPE_MODIFIERS
+
+
+def is_builtin_type_modifiers(token):
+    if token in ('virtual', 'inline'):
+        # These only apply to methods, they can't be types by themselves.
+        return False
+    return token in TYPE_MODIFIERS
