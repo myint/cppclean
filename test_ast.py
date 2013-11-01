@@ -516,7 +516,8 @@ class AstBuilderIntegrationTest(unittest.TestCase):
                          nodes[0])
 
     def test_function_one_argument_with_name(self):
-        for argument in ('Foo f', 'const Foo f', 'Foo& f', 'const Foo& f'):
+        for argument in ('Foo f', 'const Foo f', 'Foo& f', 'const Foo& f',
+                         'unsigned int f', 'ns::foo f', 'std::vector<int> f'):
             code = 'void fct(%s);' % argument
             nodes = list(MakeBuilder(code).generate())
             self.assertEqual(1, len(nodes))
@@ -524,7 +525,8 @@ class AstBuilderIntegrationTest(unittest.TestCase):
             self.assertEqual('f', nodes[0].parameters[0].name)
 
     def test_function_one_argument_with_no_name(self):
-        for argument in ('Foo', 'const Foo', 'Foo&', 'const Foo&'):
+        for argument in ('Foo', 'const Foo', 'Foo&', 'const Foo&',
+                         'unsigned int', 'ns::foo', 'std::vector<int>'):
             code = 'void fct(%s);' % argument
             nodes = list(MakeBuilder(code).generate())
             self.assertEqual(1, len(nodes))

@@ -609,10 +609,19 @@ class TypeConverter(object):
                 del default[0]  # Remove flag.
             end = type_modifiers[-1].end
 
-            needs_name_removed = not (
-                len(type_modifiers) == 1 or
-                (len(type_modifiers) == 2 and
-                 type_modifiers[0].name == 'const'))
+            needs_name_removed = True
+            if len(type_modifiers) == 1:
+                needs_name_removed = False
+            else:
+                last = type_modifiers[-1].name
+                second_to_last = type_modifiers[-2].name
+                if (
+                    last == '>' or
+                    keywords.is_builtin_type(last) or
+                    second_to_last == '::' or
+                    keywords.is_builtin_type_modifiers(second_to_last)
+                ):
+                    needs_name_removed = False
 
             (name, type_name, templated_types, modifiers,
              _, __) = self.declaration_to_parts(type_modifiers,
