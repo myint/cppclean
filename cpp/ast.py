@@ -88,10 +88,6 @@ class Node(object):
         """Returns bool if this node exportable from a header file."""
         return False
 
-    def requires(self, node):
-        """Does this AST node require the definition of the node passed in?"""
-        return False
-
     def _string_helper(self, name, suffix):
         return '%s(%d, %d, %s)' % (name, self.start, self.end, suffix)
 
@@ -143,10 +139,6 @@ class Expr(Node):
         Node.__init__(self, start, end)
         self.expr = expr
 
-    def requires(self, node):
-        # TODO(nnorwitz): impl.
-        return False
-
     def __str__(self):
         return self._string_helper(self.__class__.__name__, unicode(self.expr))
 
@@ -185,10 +177,6 @@ class Parameter(Node):
         self.type = parameter_type
         self.default = default
 
-    def requires(self, node):
-        # TODO(nnorwitz): handle namespaces, etc.
-        return self.type.name == node.name
-
     def __str__(self):
         name = unicode(self.type)
         suffix = '%s %s' % (name, self.name)
@@ -225,10 +213,6 @@ class VariableDeclaration(_GenericDeclaration):
         self.type = var_type
         self.initial_value = initial_value
 
-    def requires(self, node):
-        # TODO(nnorwitz): handle namespaces, etc.
-        return self.type.name == node.name
-
     def to_string(self):
         """Return a string that tries to reconstitute the variable decl."""
         suffix = '%s %s' % (self.type, self.name)
@@ -251,14 +235,6 @@ class Typedef(_GenericDeclaration):
 
     def is_exportable(self):
         return True
-
-    def requires(self, node):
-        # TODO(nnorwitz): handle namespaces, etc.
-        name = node.name
-        for token in self.alias:
-            if token is not None and name == token.name:
-                return True
-        return False
 
     def __str__(self):
         suffix = '%s, %s' % (self.name, self.alias)
@@ -308,17 +284,6 @@ class Class(_GenericDeclaration):
     def is_exportable(self):
         return not self.is_declaration()
 
-    def requires(self, node):
-        # TODO(nnorwitz): handle namespaces, etc.
-        if self.bases:
-            for token_list in self.bases:
-                # TODO(nnorwitz): bases are tokens, do name comparison.
-                for token in token_list:
-                    if token.name == node.name:
-                        return True
-        # TODO(nnorwitz): search in body too.
-        return False
-
     def __str__(self):
         name = self.name
         if self.templated_types:
@@ -353,15 +318,6 @@ class Function(_GenericDeclaration):
         if self.return_type and 'static' in self.return_type.modifiers:
             return False
         return None not in self.namespace
-
-    def requires(self, node):
-        if self.parameters:
-            # TODO(nnorwitz): parameters are tokens, do name comparison.
-            for p in self.parameters:
-                if p.name == node.name:
-                    return True
-        # TODO(nnorwitz): search in body too.
-        return False
 
     def __str__(self):
         # TODO(nnorwitz): add templated_types.
