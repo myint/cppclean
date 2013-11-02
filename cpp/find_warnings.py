@@ -114,9 +114,9 @@ class WarningHunter(object):
     def show_warnings(self):
         for filename, line_num, msg in sorted(self.warnings):
             if line_num == 0:
-                print('%s: %s' % (filename, msg))
+                print('{}: {}'.format(filename, msg))
             else:
-                print('%s:%d: %s' % (filename, line_num, msg))
+                print('{}:{}: {}'.format(filename, line_num, msg))
 
     def find_warnings(self):
         if is_header_file(self.filename):
@@ -460,7 +460,7 @@ class WarningHunter(object):
             if declared_only:
                 node = public_symbols[name]
                 if not node.templated_types:
-                    msg = "'%s' declared but not defined" % name
+                    msg = "'{}' declared but not defined".format(name)
                     self._add_warning(msg, node, primary_header.filename)
 
     def _get_primary_header(self, included_files):
@@ -482,7 +482,9 @@ class WarningHunter(object):
             # be something to warn against. I expect this will either
             # be configurable or removed in the future. But it's easy
             # to check for now.
-            msg = "'%s' forward declaration not expected in source file" % node.name
+            msg = (
+                "'{}' forward declaration not expected in source file".format(
+                    node.name))
             self._add_warning(msg, node)
 
         # A primary header is optional. However, when looking up
@@ -505,7 +507,8 @@ class WarningHunter(object):
             ]
             for (node, _) in included_files.values():
                 if node.filename in includes:
-                    msg = "'%s' already #included in '%s'" % (node.filename, primary_header.filename)
+                    msg = "'{}' already #included in '{}'".format(
+                        node.filename, primary_header.filename)
                     self._add_warning(msg, node)
 
         # TODO(nnorwitz): other warnings to add:
