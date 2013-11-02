@@ -483,30 +483,33 @@ class TypeConverter(object):
         return result
 
     def declaration_to_parts(self, parts, needs_name_removed):
-        name = None
+        arrayBegin = 0
+        arrayEnd = 0
         default = []
+        other_tokens = []
+
+        # Handle default (initial) values properly.
+        for i, t in enumerate(parts):
+            if t.name == '[':
+                arrayBegin = i
+                other_tokens.append(t)
+            elif t.name == ']':
+                arrayEnd = i
+                other_tokens.append(t)
+            elif t.name == '=':
+                default = parts[i + 1:]
+                parts = parts[:i]
+                break
+
+        if arrayBegin < arrayEnd:
+            parts = parts[:arrayBegin] + parts[arrayEnd + 1:]
+
+        name = None
         if needs_name_removed:
-            # Handle default (initial) values properly.
-            for i, t in enumerate(parts):
-                if t.name == '=':
-                    default = parts[i + 1:]
-                    name = parts[i - 1].name
-                    if name == ']' and parts[i - 2].name == '[':
-                        name = parts[i - 3].name
-                        i -= 1
-                    parts = parts[:i - 1]
-                    break
-            else:
-                if parts[-1].token_type == tokenize.NAME:
-                    name = parts.pop().name
-                else:
-                    # TODO(nnorwitz): this is a hack that happens for code like
-                    # Register(Foo<T>); where it thinks this is a function call
-                    # but it's actually a declaration.
-                    name = '???'
+            name = parts.pop().name
+
         modifiers = []
         type_name = []
-        other_tokens = []
         templated_types = []
         i = 0
         end = len(parts)
@@ -523,9 +526,6 @@ class TypeConverter(object):
                 next_index = i + 1
                 if next_index < end and parts[next_index].name == '::':
                     i += 1
-            elif p.name in ('[', ']', '='):
-                # These are handled elsewhere.
-                other_tokens.append(p)
             elif p.name not in ('*', '&', '>'):
                 # Ensure that names have a space between them.
                 if (type_name and type_name[-1].token_type == tokenize.NAME and
