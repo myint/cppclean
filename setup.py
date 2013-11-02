@@ -18,12 +18,22 @@ def version(filename):
 
 
 with open('README.rst') as readme:
-    core.setup(name='cppclean',
-               version=version(os.path.join('cpp', '__init__.py')),
-               description='Find problems in C++ source that slow development '
-                           'of large code bases.',
-               long_description=readme.read(),
-               license='Apache license',
-               url='https://github.com/myint/cppclean',
-               packages=['cpp'],
-               scripts=['cppclean'])
+    core.setup(
+        name='cppclean',
+        version=version(os.path.join('cpp', '__init__.py')),
+        description='Find problems in C++ source that slow development '
+                    'of large code bases.',
+        long_description=readme.read(),
+        license='Apache license',
+        url='https://github.com/myint/cppclean',
+        classifiers=[
+            'Environment :: Console',
+            'Intended Audience :: Developers',
+            'Operating System :: OS Independent',
+            'Programming Language :: Python',
+            'Programming Language :: Python :: 2.7',
+            'Programming Language :: Python :: 3',
+            'Topic :: Software Development :: Quality Assurance',
+        ],
+        packages=['cpp'],
+        scripts=['cppclean'])
