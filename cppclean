@@ -36,18 +36,23 @@ from cpp import utils
 
 
 def match_file(filename, exclude_patterns):
-    """Return True if file is a C++ file."""
-    if os.path.basename(filename).startswith('.'):
+    """Return True if file is a C++ file or a directory."""
+    base_name = os.path.basename(filename)
+
+    if base_name.startswith('.'):
         return False
 
     for pattern in exclude_patterns:
-        if fnmatch.fnmatch(filename, pattern):
+        if fnmatch.fnmatch(base_name, pattern):
             return False
 
     if find_warnings.is_header_file(filename):
         return True
 
     if find_warnings.is_cpp_file(filename):
+        return True
+
+    if os.path.isdir(filename):
         return True
 
     return False
@@ -60,9 +65,11 @@ def find_files(filenames, exclude_patterns):
         if os.path.isdir(name):
             for root, directories, children in os.walk(name):
                 filenames += [os.path.join(root, f) for f in sorted(children)
-                              if match_file(f, exclude_patterns)]
+                              if match_file(os.path.join(root, f),
+                                            exclude_patterns)]
                 directories[:] = [d for d in directories
-                                  if not d.startswith('.')]
+                                  if match_file(os.path.join(root, d),
+                                                exclude_patterns)]
         else:
             yield name
 
