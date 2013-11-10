@@ -457,12 +457,15 @@ class TypeConverter(object):
                     elif tokens[new_end].name == '*':
                         pointer = True
                         new_end += 1
+                    elif tokens[new_end].name == '&':
+                        reference = True
+                        new_end += 1
                 add_type(self.to_type(new_tokens))
                 # If there is a comma after the template, we need to consume
                 # that here otherwise it becomes part of the name.
                 i = new_end
                 reference = pointer = array = False
-            elif token.name == ',':
+            elif token.name == ',' or token.name == '(':
                 add_type([])
                 reference = pointer = array = False
             elif token.name == '*':
@@ -471,7 +474,7 @@ class TypeConverter(object):
                 reference = True
             elif token.name == '[':
                 pointer = True
-            elif token.name == ']':
+            elif token.name == ']' or token.name == ')':
                 pass
             else:
                 name_tokens.append(token)
