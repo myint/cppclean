@@ -287,4 +287,4 @@ int** Foo::Get(){}
 int*** Foo::Get(){}
 
 typedef boost::function<void(const boost::shared_array<uint8_t>&, uint32_t, bool)> ReadFinishedFunc;
-
+struct is_hashable_data : integral_constant<((42))> {};

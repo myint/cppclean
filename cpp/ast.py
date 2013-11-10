@@ -426,6 +426,9 @@ class TypeConverter(object):
         reference = pointer = array = False
 
         def add_type(templated_types):
+            if not name_tokens:
+                return
+
             # Partition tokens into name and modifier tokens.
             names = []
             modifiers = []
@@ -435,8 +438,6 @@ class TypeConverter(object):
                 else:
                     names.append(t.name)
             name = ''.join(names)
-
-            assert_parse(name_tokens, 'not enough tokens')
 
             result.append(Type(name_tokens[0].start, name_tokens[-1].end,
                                name, templated_types, modifiers,
