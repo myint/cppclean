@@ -240,12 +240,18 @@ class WarningHunter(object):
         symbol_table = self.symbol_table
 
         def _add_reference(name, namespace):
-            if not name in decl_uses and namespace and not None in namespace:
-                # TODO(nnorwitz): make less hacky, do real name lookup.
-                name = '::'.join(namespace) + '::' + name
             if name in decl_uses:
                 decl_uses[name] |= USES_REFERENCE
             else:
+                nss = ''
+                for ns in namespace:
+                    if ns is None:
+                        continue
+                    nss += ns + '::'
+                    if nss + name in decl_uses:
+                        decl_uses[nss + name] |= USES_REFERENCE
+                        return
+
                 try:
                     file_use_node = symbol_table.lookup_symbol(name, namespace)
                 except symbols.Error:
