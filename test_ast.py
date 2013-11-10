@@ -409,6 +409,55 @@ class TypeConverterToTypeTest(unittest.TestCase):
                  Type('Bling', templated_types=[Type('x')])]
         self.assertEqual(Type('Bar', templated_types=types), result[0])
 
+    def test_template_with_multiple_template_args_reference(self):
+        tokens = get_tokens('Foo<Bar<int>&, int>')
+        result = self.converter.to_type(list(tokens))
+        self.assertEqual(1, len(result))
+        types = [Type('Bar', reference=True, templated_types=[Type('int')]),
+                 Type('int')]
+        self.assertEqual(Type('Foo', templated_types=types), result[0])
+
+    def test_template_with_multiple_template_args_pointer(self):
+        tokens = get_tokens('Foo<Bar<int>*, int>')
+        result = self.converter.to_type(list(tokens))
+        self.assertEqual(1, len(result))
+        types = [Type('Bar', pointer=True, templated_types=[Type('int')]),
+                 Type('int')]
+        self.assertEqual(Type('Foo', templated_types=types), result[0])
+
+    def test_template_with_function_arg_zero_arg(self):
+        tokens = get_tokens('function<void ()>')
+        result = self.converter.to_type(list(tokens))
+        self.assertEqual(1, len(result))
+        types = [Type('void')]
+        self.assertEqual(Type('function', templated_types=types), result[0])
+
+    def test_template_with_function_arg_one_arg(self):
+        tokens = get_tokens('function<void (int)>')
+        result = self.converter.to_type(list(tokens))
+        self.assertEqual(1, len(result))
+        types = [Type('void'),
+                 Type('int')]
+        self.assertEqual(Type('function', templated_types=types), result[0])
+
+    def test_template_with_function_arg_two_args(self):
+        tokens = get_tokens('function<void (int, int)>')
+        result = self.converter.to_type(list(tokens))
+        self.assertEqual(1, len(result))
+        types = [Type('void'),
+                 Type('int'),
+                 Type('int')]
+        self.assertEqual(Type('function', templated_types=types), result[0])
+
+    def test_template_with_function_arg_and_nested_template(self):
+        tokens = get_tokens('function<void(vector<int>&, int)>')
+        result = self.converter.to_type(list(tokens))
+        self.assertEqual(1, len(result))
+        types = [Type('void'),
+                 Type('vector', reference=True, templated_types=[Type('int')]),
+                 Type('int')]
+        self.assertEqual(Type('function', templated_types=types), result[0])
+
 
 class TypeConverterCreateReturnTypeTest(unittest.TestCase):
 

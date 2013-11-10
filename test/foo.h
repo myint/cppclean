@@ -285,3 +285,6 @@ class TypeBuilder : public Base<i<8>*, false> {};
 int* Foo::Get(){}
 int** Foo::Get(){}
 int*** Foo::Get(){}
+
+typedef boost::function<void(const boost::shared_array<uint8_t>&, uint32_t, bool)> ReadFinishedFunc;
+
