@@ -424,20 +424,15 @@ class WarningHunter(object):
     def _check_public_functions(self, primary_header, all_headers):
         """Verify all the public functions are also declared in a header
         file."""
-        public_symbols = ()
+        public_symbols = {}
         declared_only_symbols = {}
         if primary_header:
-            public_symbols = {}
             for name, symbol in primary_header.public_symbols.items():
                 if isinstance(symbol, ast.Function):
                     public_symbols[name] = symbol
             declared_only_symbols = dict.fromkeys(public_symbols, True)
 
-        using_values = []
         for node in self.ast_list:
-            if isinstance(node, ast.Using):
-                using_values.append(node)
-
             # Make sure we have a function that should be exported.
             if not isinstance(node, ast.Function):
                 continue
@@ -449,8 +444,6 @@ class WarningHunter(object):
                     continue
             if not (node.is_definition() and node.is_exportable()):
                 continue
-
-            # TODO(nnorwitz): need to handle using statements.
 
             # This function should be declared in a header file.
             name = node.name
@@ -505,11 +498,11 @@ class WarningHunter(object):
             self.warnings.add((self.filename, 0, msg))
 
         self._check_public_functions(primary_header, included_files)
-        if primary_header:
+        if primary_header and primary_header.ast_list is not None:
             includes = [
                 node.filename
                 for node in primary_header.ast_list
-                if (isinstance(node, ast.Include))
+                if isinstance(node, ast.Include)
             ]
             for (node, _) in included_files.values():
                 if node.filename in includes:
