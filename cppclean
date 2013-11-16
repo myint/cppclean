@@ -79,7 +79,7 @@ def main():
     parser.add_argument('files', nargs='+')
     parser.add_argument('--exclude', action='append',
                         dest='exclude_patterns', default=[], metavar='pattern',
-                        help='exclude files this pattern; '
+                        help='exclude files matching this pattern; '
                              'specify this multiple times for multiple '
                              'patterns')
     parser.add_argument('--include-path', '-i', '-I', action='append',
