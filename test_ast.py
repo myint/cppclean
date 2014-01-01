@@ -550,6 +550,20 @@ class AstBuilderIntegrationTest(unittest.TestCase):
 
     """
 
+    def test_variable_initialization_with_initializer_list(self):
+        nodes = list(MakeBuilder('int value = {42};').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(VariableDeclaration('value', Type('int'),
+                                             initial_value='{42}'),
+                         nodes[0])
+
+    def test_variable_initialization_with_initializer_list2(self):
+        nodes = list(MakeBuilder('auto il = {10,20,30};').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(VariableDeclaration('il', Type('auto'),
+                                             initial_value='{10,20,30}'),
+                         nodes[0])
+
     def test_variable_initialization_with_function(self):
         nodes = list(MakeBuilder('int value = fct();').generate())
         self.assertEqual(1, len(nodes))
