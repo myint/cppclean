@@ -832,11 +832,13 @@ class AstBuilder(object):
                 if name.startswith('\\'):
                     name = name[1:].strip()
 
-                assert_parse(name[0] in '<"', token)
-                assert_parse(name[-1] in '>"', token)
+                system = True
+                filename = name
+                if name[0] in '<"':
+                    assert_parse(name[-1] in '>"', token)
 
-                system = name[0] == '<'
-                filename = name[1:-1]
+                    system = name[0] == '<'
+                    filename = name[1:-1]
                 return Include(token.start, token.end, filename, system)
             if name.startswith('define'):
                 # Remove "define".
