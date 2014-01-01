@@ -58,23 +58,32 @@ tokenize.Token.__eq__ = __eq__
 
 class TokenizeTest(unittest.TestCase):
 
-    def get_tokens(self, string, append_newline=True):
-        if append_newline:
-            string += '\n'
+    def get_tokens(self, string):
         return list(tokenize.get_tokens(string))
 
     def testget_tokens_empty_string(self):
-        self.assertEqual([], self.get_tokens('', False))
+        self.assertEqual([], self.get_tokens(''))
 
     def testget_tokens_whitespace(self):
-        self.assertEqual([], self.get_tokens('   ', False))
-        self.assertEqual([], self.get_tokens('   \n\n\n', True))
+        self.assertEqual([], self.get_tokens('   '))
+        self.assertEqual([], self.get_tokens('   \n\n\n'))
 
     def testget_tokens_cpp_comment(self):
         self.assertEqual([], self.get_tokens('// comment'))
 
     def testget_tokens_multiline_comment(self):
-        self.assertEqual([], self.get_tokens('/* comment\n\n\nfoo */', False))
+        self.assertEqual([], self.get_tokens('/* comment\n\n\nfoo */'))
+
+    def testget_tokens_if0(self):
+        tokens = self.get_tokens('#if 0\n@\n#endif')
+        self.assertEqual(2, len(tokens), tokens)
+        self.assertEqual(Preprocessor('#if 0', 0, 5), tokens[0])
+        self.assertEqual(Preprocessor('#endif', 8, 14), tokens[1])
+
+    def testget_tokens_define(self):
+        tokens = self.get_tokens('#define PI 3.14')
+        self.assertEqual(1, len(tokens), tokens)
+        self.assertEqual(Preprocessor('#define PI 3.14', 0, 15), tokens[0])
 
     def testget_tokens_binary_operators(self):
         for operator in '+-*/%&|^<>':
@@ -412,8 +421,6 @@ class TokenizeTest(unittest.TestCase):
 
     # TODO(nnorwitz): test all the following
     # Strings
-    # Preprocessor: #define
-    # Preprocessor: #if 0
     # Assignment
     # Augmented assignments (lots)
     # []

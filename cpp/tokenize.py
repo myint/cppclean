@@ -221,15 +221,13 @@ def get_tokens(source):
             i = _get_char(source, start, i)
         elif c == '#':                           # Find pre-processor command.
             token_type = PREPROCESSOR
-            got_if = source[i:i + 3] == '#if' and source[i + 3:i + 4].isspace()
-            if got_if:
-                count_ifs += 1
-            elif source[i:i + 6] == '#endif':
+            got_if = source[i:i + 3] == '#if'
+            if ignore_errors and source[i:i + 6] == '#endif':
                 count_ifs -= 1
                 if count_ifs == 0:
                     ignore_errors = False
 
-            # TODO(nnorwitz): handle preprocessor statements (\ continuations).
+            # Handle preprocessor statements (\ continuations).
             while True:
                 i1 = source.find('\n', i)
                 i2 = source.find('//', i)
@@ -244,26 +242,30 @@ def get_tokens(source):
                     i = source.find('"', i + 1) + 1
                     assert i > 0
                     continue
+
                 # Keep going if end of the line and the line ends with \.
-                if not (i == i1 and source[i - 1] == '\\'):
-                    if got_if:
-                        condition = source[start + 4:i].lstrip()
-                        if (condition.startswith('0') or
-                                condition.startswith('(0)')):
-                            ignore_errors = True
-                    break
-                i += 1
+                if i == i1 and source[i - 1] == '\\':
+                    i += 1
+                    continue
+
+                if got_if:
+                    condition = source[start + 4:i].lstrip()
+                    if (
+                        ignore_errors or
+                        condition.startswith('0') or
+                        condition.startswith('(0)')
+                    ):
+                        count_ifs += 1
+                        ignore_errors = True
+                break
         elif c == '\\':                          # Handle \ in code.
             # This is different from the pre-processor \ handling.
             i += 1
             continue
         elif ignore_errors:
-            # The tokenizer seems to be in pretty good shape. This
-            # raise is conditionally disabled so that bogus code
-            # in an #if 0 block can be handled. Since we will ignore
-            # it anyways, this is probably fine. So disable the
-            # exception and  return the bogus char.
+            # Ignore bogus code when we are inside an #if block.
             i += 1
+            continue
         else:
             sys.stderr.write('Got invalid token in %s @ %d token:%s: %r\n' %
                              ('?', i, c, source[i - 10:i + 10]))
