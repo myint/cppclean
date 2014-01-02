@@ -508,6 +508,14 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Name('bar', 13, 16), tokens[4])
         self.assertEqual(Syntax(';', 16, 17), tokens[5])
 
+    def testget_tokens_identifier(self):
+        #                        0123456
+        tokens = self.get_tokens('U elt;')
+        self.assertEqual(3, len(tokens), tokens)
+        self.assertEqual(Name('U', 0, 1), tokens[0])
+        self.assertEqual(Name('elt', 2, 5), tokens[1])
+        self.assertEqual(Syntax(';', 5, 6), tokens[2])
+
     # TODO(nnorwitz): test all the following
     # Augmented assignments (lots)
     # []
