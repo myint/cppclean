@@ -220,6 +220,34 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Constant('1', 15, 16), tokens[3])
         self.assertEqual(Syntax(';', 16, 17), tokens[4])
 
+    def testget_tokens_assignment(self):
+        #                        012345678901234567
+        tokens = self.get_tokens('unsigned foo = 1;')
+        self.assertEqual(5, len(tokens), tokens)
+        self.assertEqual(Name('unsigned', 0, 8), tokens[0])
+        self.assertEqual(Name('foo', 9, 12), tokens[1])
+        self.assertEqual(Syntax('=', 13, 14), tokens[2])
+        self.assertEqual(Constant('1', 15, 16), tokens[3])
+        self.assertEqual(Syntax(';', 16, 17), tokens[4])
+
+        #                        012345678901234 5678
+        tokens = self.get_tokens('unsigned foo =\n 1;')
+        self.assertEqual(5, len(tokens), tokens)
+        self.assertEqual(Name('unsigned', 0, 8), tokens[0])
+        self.assertEqual(Name('foo', 9, 12), tokens[1])
+        self.assertEqual(Syntax('=', 13, 14), tokens[2])
+        self.assertEqual(Constant('1', 16, 17), tokens[3])
+        self.assertEqual(Syntax(';', 17, 18), tokens[4])
+
+        #                        012345678901234 5 6789
+        tokens = self.get_tokens('unsigned foo =\\\n 1;')
+        self.assertEqual(5, len(tokens), tokens)
+        self.assertEqual(Name('unsigned', 0, 8), tokens[0])
+        self.assertEqual(Name('foo', 9, 12), tokens[1])
+        self.assertEqual(Syntax('=', 13, 14), tokens[2])
+        self.assertEqual(Constant('1', 17, 18), tokens[3])
+        self.assertEqual(Syntax(';', 18, 19), tokens[4])
+
     def testget_tokens_int_constants(self):
         #                        01234
         tokens = self.get_tokens('123;')
@@ -359,6 +387,30 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Constant('3.14L', 0, 5), tokens[0])
         self.assertEqual(Syntax(';', 5, 6), tokens[1])
 
+        #                        012345678901
+        tokens = self.get_tokens('.14f;')
+        self.assertEqual(2, len(tokens), tokens)
+        self.assertEqual(Constant('.14f', 0, 4), tokens[0])
+        self.assertEqual(Syntax(';', 4, 5), tokens[1])
+
+        #                        012345678901
+        tokens = self.get_tokens('.14l;')
+        self.assertEqual(2, len(tokens), tokens)
+        self.assertEqual(Constant('.14l', 0, 4), tokens[0])
+        self.assertEqual(Syntax(';', 4, 5), tokens[1])
+
+        #                        012345678901
+        tokens = self.get_tokens('.14F;')
+        self.assertEqual(2, len(tokens), tokens)
+        self.assertEqual(Constant('.14F', 0, 4), tokens[0])
+        self.assertEqual(Syntax(';', 4, 5), tokens[1])
+
+        #                        012345678901
+        tokens = self.get_tokens('.14L;')
+        self.assertEqual(2, len(tokens), tokens)
+        self.assertEqual(Constant('.14L', 0, 4), tokens[0])
+        self.assertEqual(Syntax(';', 4, 5), tokens[1])
+
     def testget_tokens_char_constants(self):
         #                        012345678901
         tokens = self.get_tokens("'5';")
@@ -408,6 +460,43 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Constant(r"U'\''", 0, 5), tokens[0])
         self.assertEqual(Syntax(';', 5, 6), tokens[1])
 
+    def testget_tokens_string_constants(self):
+        #                        0123456
+        tokens = self.get_tokens('"str";')
+        self.assertEqual(2, len(tokens), tokens)
+        self.assertEqual(Constant('"str"', 0, 5), tokens[0])
+        self.assertEqual(Syntax(';', 5, 6), tokens[1])
+
+        #                        01234567
+        tokens = self.get_tokens('u"str";')
+        self.assertEqual(2, len(tokens), tokens)
+        self.assertEqual(Constant('u"str"', 0, 6), tokens[0])
+        self.assertEqual(Syntax(';', 6, 7), tokens[1])
+
+        #                        01234567
+        tokens = self.get_tokens('U"str";')
+        self.assertEqual(2, len(tokens), tokens)
+        self.assertEqual(Constant('U"str"', 0, 6), tokens[0])
+        self.assertEqual(Syntax(';', 6, 7), tokens[1])
+
+        #                        012345678
+        tokens = self.get_tokens('u8"str";')
+        self.assertEqual(2, len(tokens), tokens)
+        self.assertEqual(Constant('u8"str"', 0, 7), tokens[0])
+        self.assertEqual(Syntax(';', 7, 8), tokens[1])
+
+        #                         01234567890
+        tokens = self.get_tokens(r'"s\"t\"r";')
+        self.assertEqual(2, len(tokens), tokens)
+        self.assertEqual(Constant(r'"s\"t\"r"', 0, 9), tokens[0])
+        self.assertEqual(Syntax(';', 9, 10), tokens[1])
+
+        #                         012345678
+        tokens = self.get_tokens(r'"str\\";')
+        self.assertEqual(2, len(tokens), tokens)
+        self.assertEqual(Constant(r'"str\\"', 0, 7), tokens[0])
+        self.assertEqual(Syntax(';', 7, 8), tokens[1])
+
     def testget_tokens_ternary_operator(self):
         #                        012345678901234567
         tokens = self.get_tokens('cond ? foo : bar;')
@@ -420,8 +509,6 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Syntax(';', 16, 17), tokens[5])
 
     # TODO(nnorwitz): test all the following
-    # Strings
-    # Assignment
     # Augmented assignments (lots)
     # []
     # () and function calls
