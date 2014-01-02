@@ -143,12 +143,12 @@ def get_tokens(source):
                 i += 1
             # String and character constants can look like a name if
             # they are something like L"".
-            if source[start:i] in _STR_PREFIXES:
+            if source[i] == "'" and source[start:i] in _STR_PREFIXES:
                 token_type = CONSTANT
-                if source[i] == "'":
-                    i = _get_char(source, start, i)
-                elif source[i] == '"':
-                    i = _get_string(source, i)
+                i = _get_char(source, start, i)
+            elif source[i] == '"' and source[start:i] in _STR_PREFIXES:
+                token_type = CONSTANT
+                i = _get_string(source, i)
         elif c == '/' and source[i + 1] == '/':  # Find // comments.
             i = source.find('\n', i)
             continue
