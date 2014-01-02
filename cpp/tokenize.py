@@ -93,15 +93,13 @@ def _get_string(source, i):
 def _get_char(source, start, i):
     # NOTE(nnorwitz): may not be quite correct, should be good enough.
     i = source.find("'", i + 1)
-    while source[i - 1] == '\\':
+    while i != -1 and source[i - 1] == '\\':
         # Need to special case '\\'.
-        if (i - 2) > start and source[i - 2] == '\\':
+        if source[i - 2] == '\\':
             break
         i = source.find("'", i + 1)
-    # Try to handle unterminated single quotes (in a #if 0 block).
-    if i < 0:
-        i = start
-    return i + 1
+    # Try to handle unterminated single quotes.
+    return i + 1 if i != -1 else start + 1
 
 
 def get_tokens(source):
@@ -145,14 +143,12 @@ def get_tokens(source):
                 i += 1
             # String and character constants can look like a name if
             # they are something like L"".
-            if (source[i] == "'" and (i - start) == 1 and
-                    source[start:i] in 'uUL'):
-                # u, U, and L are valid C++0x character preffixes.
+            if source[start:i] in _STR_PREFIXES:
                 token_type = CONSTANT
-                i = _get_char(source, start, i)
-            elif source[i] == "'" and source[start:i] in _STR_PREFIXES:
-                token_type = CONSTANT
-                i = _get_string(source, i)
+                if source[i] == "'":
+                    i = _get_char(source, start, i)
+                elif source[i] == '"':
+                    i = _get_string(source, i)
         elif c == '/' and source[i + 1] == '/':  # Find // comments.
             i = source.find('\n', i)
             continue
@@ -233,9 +229,14 @@ def get_tokens(source):
                 i2 = source.find('//', i)
                 i3 = source.find('/*', i)
                 i4 = source.find('"', i)
-                # NOTE(nnorwitz): doesn't handle comments in #define macros.
                 # Get the first important symbol (newline, comment, EOF/end).
                 i = min([x for x in (i1, i2, i3, i4, end) if x != -1])
+
+                # Handle comments in #define macros.
+                if i == i3:
+                    i = source.find('*/', i) + 2
+                    source = source[:i3].ljust(i) + source[i:]
+                    continue
 
                 # Handle #include "dir//foo.h" properly.
                 if source[i] == '"':
