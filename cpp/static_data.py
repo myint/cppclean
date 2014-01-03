@@ -48,9 +48,8 @@ def _find_warnings(filename, lines, ast_list, static_is_optional):
 
             if is_not_const and (static_is_optional or is_static):
                 print_warning(node, node.name)
-        elif isinstance(node, ast.Function):
-            if node.body:
-                find_static(node)
+        elif isinstance(node, ast.Function) and node.body:
+            find_static(node)
         elif isinstance(node, ast.Class) and node.body:
             _find_warnings(filename, lines, node.body, False)
 

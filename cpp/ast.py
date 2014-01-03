@@ -509,7 +509,7 @@ class TypeConverter(object):
             parts = parts[:arrayBegin] + parts[arrayEnd + 1:]
 
         name = None
-        if needs_name_removed:
+        if needs_name_removed and len(parts) > 1:
             name = parts.pop().name
 
         modifiers = []
@@ -1266,7 +1266,7 @@ class AstBuilder(object):
     def _handle_class_and_struct(self, class_type, class_str, visibility):
         # Special case the handling typedef/aliasing of classes/structs here.
         name_tokens, var_token = self.get_name()
-        if name_tokens:
+        if name_tokens and not self._handling_typedef:
             # Forward declaration.
             if var_token.name == ';':
                 return class_type(name_tokens[0].start, name_tokens[0].end,
@@ -1296,7 +1296,7 @@ class AstBuilder(object):
 
                 assert_parse(temp.name == ';', (temp, name_tokens, var_token))
 
-            if is_syntax or (is_variable and not self._handling_typedef):
+            if is_syntax or is_variable:
                 modifiers = [class_str]
                 type_name = ''.join([t.name for t in name_tokens])
                 position = name_tokens[0]
@@ -1304,9 +1304,9 @@ class AstBuilder(object):
                     position, variable.name, type_name,
                     modifiers, var_token.name)
             name_tokens.extend((var_token, next_token))
-            self._add_back_tokens(name_tokens)
         else:
             self._add_back_token(var_token)
+        self._add_back_tokens(name_tokens)
         return self._get_class(class_type, visibility, None)
 
     def handle_class(self):
@@ -1557,11 +1557,14 @@ class AstBuilder(object):
         else:
             self._add_back_token(class_token)
             name_tokens, token = self.get_name()
+
+            if self._handling_typedef:
+                # Handle typedef to pointer.
+                if token.name in '*&':
+                    name_tokens.append(token)
+                    token = self._get_next_token()
             # Handle attribute.
-            if (
-                not self._handling_typedef and
-                token.token_type == tokenize.NAME
-            ):
+            elif token.token_type == tokenize.NAME:
                 self._add_back_token(token)
                 name_tokens, token = self.get_name()
             class_name = ''.join([t.name for t in name_tokens])

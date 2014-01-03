@@ -676,6 +676,20 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(Typedef('IplImage', alias=[Struct('_IplImage')]),
                          nodes[0])
 
+    def test_class_pointer_typedef(self):
+        nodes = list(
+            MakeBuilder('typedef class _IplImage *IplImage;').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Typedef('IplImage', alias=[Class('_IplImage*')]),
+                         nodes[0])
+
+    def test_struct_pointer_typedef(self):
+        nodes = list(
+            MakeBuilder('typedef struct _IplImage *IplImage;').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Typedef('IplImage', alias=[Struct('_IplImage*')]),
+                         nodes[0])
+
     def test_class_forward_declaration(self):
         nodes = list(MakeBuilder('class Foo;').generate())
         self.assertEqual(1, len(nodes))
