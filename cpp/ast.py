@@ -509,7 +509,7 @@ class TypeConverter(object):
             parts = parts[:arrayBegin] + parts[arrayEnd + 1:]
 
         name = None
-        if needs_name_removed:
+        if needs_name_removed and len(parts) > 1:
             name = parts.pop().name
 
         modifiers = []
