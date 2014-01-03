@@ -204,11 +204,12 @@ def get_tokens(source):
                 while source[i] in int_or_float_digits2:
                     i += 1
             # Handle integer (and float) suffixes.
-            for suffix in ('ull', 'll', 'ul', 'l', 'f', 'u'):
-                size = len(suffix)
-                if suffix == source[i:i + size].lower():
-                    i += size
-                    break
+            if source[i].isalpha():
+                for suffix in ('ull', 'll', 'ul', 'l', 'f', 'u'):
+                    size = len(suffix)
+                    if suffix == source[i:i + size].lower():
+                        i += size
+                        break
         elif c == '"':                           # Find string.
             token_type = CONSTANT
             i = _get_string(source, i)
