@@ -752,7 +752,7 @@ class AstBuilder(object):
             # Handle data or function declaration/definition.
             syntax = tokenize.SYNTAX
             temp_tokens, last_token = \
-                self._get_var_tokens_up_to(syntax, '(', ';', '{', '[', '}')
+                self._get_var_tokens_up_to(syntax, '(', ';', '{', '}')
             if last_token.name == '}':
                 return None
 
@@ -770,17 +770,6 @@ class AstBuilder(object):
                             self._get_var_tokens_up_to(tokenize.SYNTAX, ';')
                         temp_tokens.extend(new_temp)
                         break
-
-            if last_token.name == '[':
-                # Handle array, this isn't a method, unless it's an operator.
-                # TODO(nnorwitz): keep the size somewhere.
-                temp_tokens.append(last_token)
-                if temp_tokens[-2].name == 'operator':
-                    temp_tokens.append(self._get_next_token())
-                else:
-                    temp_tokens2, last_token = \
-                        self._get_var_tokens_up_to(tokenize.SYNTAX, ';')
-                    temp_tokens.extend(temp_tokens2)
 
             if last_token.name == ';':
                 # Handle data, this isn't a method.
@@ -864,8 +853,14 @@ class AstBuilder(object):
     def _get_var_tokens_up_to(self, expected_token_type, *expected_tokens):
         last_token = self._get_next_token()
         tokens = []
-        while (last_token.token_type != expected_token_type or
+        count = 0
+        while (count != 0 or
+               last_token.token_type != expected_token_type or
                last_token.name not in expected_tokens):
+            if last_token.name == '[':
+                count += 1
+            elif last_token.name == ']':
+                count -= 1
             tokens.append(last_token)
             last_token = self._get_next_token()
         return tokens, last_token
@@ -988,15 +983,10 @@ class AstBuilder(object):
             del return_type_and_name[index:]
             name = return_type_and_name.pop()
         elif name.name == ']':
-            rt = return_type_and_name
-            assert_parse(rt[-1].name == '[', return_type_and_name)
-            assert_parse(rt[-2].name == 'operator', return_type_and_name)
-            name_seq = return_type_and_name[-2:]
+            name_seq = return_type_and_name[-2]
             del return_type_and_name[-2:]
-            name = tokenize.Token(tokenize.NAME, 'operator[]',
-                                  name_seq[0].start, name.end)
-            # Get the open paren so _get_parameters() below works.
-            self._get_next_token()
+            name = tokenize.Token(tokenize.NAME, name_seq.name + '[]',
+                                  name_seq.start, name.end)
 
         # TODO(nnorwitz): store template_portion.
         return_type = return_type_and_name
