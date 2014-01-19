@@ -938,14 +938,16 @@ class AstBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(Include('test.h'), nodes[0])
 
     def test_operator_new_bracket(self):
-        nodes = list(MakeBuilder('void* operator new[](std::size_t size);').generate())
+        nodes = list(
+            MakeBuilder('void* operator new[](std::size_t size);').generate())
         self.assertEqual(1, len(nodes))
         expected = Function('new[]', list(get_tokens('void* operator')),
                             list(get_tokens('std::size_t size')))
         self.assertEqual(expected, nodes[0])
 
     def test_operator_delete_bracket(self):
-        nodes = list(MakeBuilder('void operator delete[](void* ptr);').generate())
+        nodes = list(
+            MakeBuilder('void operator delete[](void* ptr);').generate())
         self.assertEqual(1, len(nodes))
         expected = Function('delete[]', list(get_tokens('void operator')),
                             list(get_tokens('void* ptr')))

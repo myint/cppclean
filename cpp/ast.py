@@ -663,7 +663,7 @@ class TypeConverter(object):
 class AstBuilder(object):
 
     def __init__(self, token_stream, filename, in_class='', visibility=None,
-                 namespace_stack=None):
+                 namespace_stack=None, quiet=False):
         if namespace_stack is None:
             namespace_stack = []
 
@@ -674,6 +674,7 @@ class AstBuilder(object):
         # Using a deque should be even better since we access from both sides.
         self.token_queue = []
         self.namespace_stack = namespace_stack[:]
+        self.quiet = quiet
         self.in_class = in_class
         if in_class is None:
             self.in_class_name_only = None
@@ -687,9 +688,10 @@ class AstBuilder(object):
         self.converter = TypeConverter(self.namespace_stack)
 
     def handle_error(self, msg, token):
-        printable_queue = list(reversed(self.token_queue[-20:]))
-        sys.stderr.write('Got %s in %s @ %s %s\n' %
-                         (msg, self.filename, token, printable_queue))
+        if not self.quiet:
+            printable_queue = list(reversed(self.token_queue[-20:]))
+            sys.stderr.write('Got %s in %s @ %s %s\n' %
+                             (msg, self.filename, token, printable_queue))
 
     def generate(self):
         while True:
@@ -1586,7 +1588,8 @@ class AstBuilder(object):
         body = None
         if token.token_type == tokenize.SYNTAX and token.name == '{':
             ast = AstBuilder(self.get_scope(), self.filename, class_name,
-                             visibility, self.namespace_stack)
+                             visibility, self.namespace_stack,
+                             quiet=self.quiet)
             body = list(ast.generate())
 
             if not self._handling_typedef:
@@ -1713,7 +1716,7 @@ class AstBuilder(object):
         self._ignore_up_to(tokenize.SYNTAX, ';')
 
 
-def builder_from_source(source, filename):
+def builder_from_source(source, filename, quiet=False):
     """Utility method that returns an AstBuilder from source code.
 
     Args:
@@ -1724,7 +1727,9 @@ def builder_from_source(source, filename):
       AstBuilder
 
     """
-    return AstBuilder(tokenize.get_tokens(source), filename)
+    return AstBuilder(tokenize.get_tokens(source, quiet=quiet),
+                      filename,
+                      quiet=quiet)
 
 
 def assert_parse(value, message):

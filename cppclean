@@ -92,6 +92,8 @@ def main():
                         help='print verbose messages')
     parser.add_argument('--version', action='version',
                         version='%(prog)s ' + __version__)
+    parser.add_argument('--quiet', '-q', action='store_true',
+                        help='ignore parse errors')
     args = parser.parse_args()
 
     for filename in find_files(args.files,
@@ -104,13 +106,16 @@ def main():
             if source is None:
                 continue
 
-            builder = ast.builder_from_source(source, filename)
+            builder = ast.builder_from_source(source,
+                                              filename,
+                                              quiet=args.quiet)
             entire_ast = list([_f for _f in builder.generate() if _f])
         except (ast.ParseError,
                 tokenize.TokenError,
                 UnicodeDecodeError) as exception:
-            print('{}: parsing error {}'.format(filename, exception),
-                  file=sys.stderr)
+            if not args.quiet:
+                print('{}: parsing error {}'.format(filename, exception),
+                      file=sys.stderr)
             continue
 
         for module in [find_warnings,
@@ -120,8 +125,9 @@ def main():
                 module.run(filename, source, entire_ast,
                            include_paths=args.include_paths)
             except UnicodeDecodeError as exception:
-                print('{}: {}'.format(filename, exception),
-                      file=sys.stderr)
+                if not args.quiet:
+                    print('{}: {}'.format(filename, exception),
+                          file=sys.stderr)
 
 
 try:
