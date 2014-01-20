@@ -123,7 +123,8 @@ def main():
                        static_data]:
             try:
                 module.run(filename, source, entire_ast,
-                           include_paths=args.include_paths)
+                           include_paths=args.include_paths,
+                           quiet=args.quiet)
             except UnicodeDecodeError as exception:
                 if not args.quiet:
                     print('{}: {}'.format(filename, exception),

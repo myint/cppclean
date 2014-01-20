@@ -91,12 +91,13 @@ def is_cpp_file(filename):
 
 class WarningHunter(object):
 
-    def __init__(self, filename, source, ast_list, include_paths):
+    def __init__(self, filename, source, ast_list, include_paths, quiet=False):
         self.filename = filename
         self.normalized_filename = os.path.abspath(filename)
         self.source = source
         self.ast_list = ast_list
         self.include_paths = include_paths[:]
+        self.quiet = quiet
         self.symbol_table = symbols.SymbolTable()
 
         self.metrics = metrics.Metrics(source)
@@ -141,7 +142,8 @@ class WarningHunter(object):
             msg = "unable to find '{}'".format(filename)
             self._add_warning(msg, node)
         else:
-            builder = ast.builder_from_source(source, filename)
+            builder = ast.builder_from_source(source, filename,
+                                              quiet=self.quiet)
             try:
                 module = Module(filename,
                                 [_f for _f in builder.generate() if _f])
@@ -521,8 +523,9 @@ def get_line_number(metrics_instance, node):
     return metrics_instance.get_line_number(node.start)
 
 
-def run(filename, source, entire_ast, include_paths):
+def run(filename, source, entire_ast, include_paths, quiet):
     hunter = WarningHunter(filename, source, entire_ast,
-                           include_paths=include_paths)
+                           include_paths=include_paths,
+                           quiet=quiet)
     hunter.find_warnings()
     hunter.show_warnings()

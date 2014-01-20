@@ -50,5 +50,5 @@ def _find_warnings(filename, source, ast_list):
                           'dtor'.format(class_node.name))
 
 
-def run(filename, source, entire_ast, include_paths):
+def run(filename, source, entire_ast, include_paths, quiet):
     _find_warnings(filename, source, entire_ast)
