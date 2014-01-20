@@ -148,9 +148,12 @@ class WarningHunter(object):
                 module = Module(filename,
                                 [_f for _f in builder.generate() if _f])
             except ast.ParseError as error:
-                print("Exception while processing '{}': {}".format(filename,
-                                                                   error),
-                      file=sys.stderr)
+                if not self.quiet:
+                    print(
+                        "Exception while processing '{}': {}".format(
+                            filename,
+                            error),
+                        file=sys.stderr)
                 module = Module(filename, None)
             else:
                 self._update_symbol_table(module)
