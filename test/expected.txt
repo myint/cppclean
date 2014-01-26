@@ -26,6 +26,8 @@ test/include.h:3: 'include.h' #includes itself
 test/include.h:3: 'include.h' does not need to be #included
 test/include.h:4: 'foo.h' already #included on line 2
 test/include.h:4: 'foo.h' does not need to be #included
+test/itself.h:1: 'itself.h' #includes itself
+test/itself.h:1: 'itself.h' does not need to be #included
 test/latin1.cc: unable to find header file with matching name
 test/latin1.cc:2: 'latin1' not found in any directly #included header
 test/latin1.cc:4: static data 'static int x;'
