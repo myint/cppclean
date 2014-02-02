@@ -78,8 +78,8 @@ def get_tokens(code_string):
 
 
 def MakeBuilder(code_string):
-    """Convenience function to make an AstBuilder from a code snippet.."""
-    return ast.AstBuilder(get_tokens(code_string), '<test>')
+    """Convenience function to make an ASTBuilder from a code snippet.."""
+    return ast.ASTBuilder(get_tokens(code_string), '<test>')
 
 
 def Token(name, start=0, end=0, token_type=tokenize.NAME):
@@ -500,7 +500,7 @@ class TypeConverterCreateReturnTypeTest(unittest.TestCase):
                          result)
 
 
-class AstBuilderGetTemplatedTypesTest(unittest.TestCase):
+class ASTBuilderGetTemplatedTypesTest(unittest.TestCase):
 
     def test_simple(self):
         builder = MakeBuilder('T> class')
@@ -541,7 +541,7 @@ class AstBuilderGetTemplatedTypesTest(unittest.TestCase):
         self.assertEqual('Type', result['t'][0].name)
 
 
-class AstBuilderIntegrationTest(unittest.TestCase):
+class ASTBuilderIntegrationTest(unittest.TestCase):
 
     """Unlike the other test cases in this file, this test case is meant to be
     an integration test.

@@ -105,7 +105,10 @@ class WarningHunter(object):
 
     def _add_warning(self, msg, node, filename=None):
         if filename is not None:
-            src_metrics = metrics.Metrics(utils.read_file(filename))
+            contents = utils.read_file(filename)
+            if contents is None:
+                return
+            src_metrics = metrics.Metrics(contents)
         else:
             filename = self.filename
             src_metrics = self.metrics

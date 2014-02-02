@@ -660,7 +660,7 @@ class TypeConverter(object):
         return start, end + 1
 
 
-class AstBuilder(object):
+class ASTBuilder(object):
 
     def __init__(self, token_stream, filename, in_class='', visibility=None,
                  namespace_stack=None, quiet=False):
@@ -1587,7 +1587,7 @@ class AstBuilder(object):
 
         body = None
         if token.token_type == tokenize.SYNTAX and token.name == '{':
-            ast = AstBuilder(self.get_scope(), self.filename, class_name,
+            ast = ASTBuilder(self.get_scope(), self.filename, class_name,
                              visibility, self.namespace_stack,
                              quiet=self.quiet)
             body = list(ast.generate())
@@ -1717,17 +1717,17 @@ class AstBuilder(object):
 
 
 def builder_from_source(source, filename, quiet=False):
-    """Utility method that returns an AstBuilder from source code.
+    """Utility method that returns an ASTBuilder from source code.
 
     Args:
       source: 'C++ source code'
       filename: 'file1'
 
     Returns:
-      AstBuilder
+      ASTBuilder
 
     """
-    return AstBuilder(tokenize.get_tokens(source, quiet=quiet),
+    return ASTBuilder(tokenize.get_tokens(source, quiet=quiet),
                       filename,
                       quiet=quiet)
 
