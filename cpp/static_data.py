@@ -34,11 +34,20 @@ def _find_warnings(filename, lines, ast_list, static_is_optional):
             name))
 
     def find_static(function_node):
+        tokens = []
+        static_found = False
         for node in function_node.body:
             if node.name == 'static':
-                # TODO(nnorwitz): should ignore const. Is static const common
-                # here?
-                print_warning(node, lines.get_line(node.start).strip())
+                static_found = True
+
+            if static_found:
+                tokens.append(node)
+                if node.name == ';':
+                    body = list(
+                        ast.ASTBuilder(iter(tokens), filename).generate())
+                    _find_warnings(filename, lines, body, False)
+                    tokens = []
+                    static_found = False
 
     for node in ast_list:
         if isinstance(node, ast.VariableDeclaration):
