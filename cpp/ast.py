@@ -662,7 +662,7 @@ class TypeConverter(object):
 
 class ASTBuilder(object):
 
-    def __init__(self, token_stream, filename, in_class='', visibility=None,
+    def __init__(self, token_stream, filename, in_class=None, visibility=None,
                  namespace_stack=None, quiet=False):
         if namespace_stack is None:
             namespace_stack = []
@@ -676,10 +676,9 @@ class ASTBuilder(object):
         self.namespace_stack = namespace_stack[:]
         self.quiet = quiet
         self.in_class = in_class
-        if in_class is None:
-            self.in_class_name_only = None
-        else:
-            self.in_class_name_only = in_class.split('::')[-1]
+        self.in_class_name_only = None
+        if in_class is not None:
+             self.in_class_name_only = in_class.split('::')[-1].split('<')[0]
         self.visibility = visibility
         self.current_token = None
         # Keep the state whether we are currently handling a typedef or not.
