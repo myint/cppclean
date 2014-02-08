@@ -678,7 +678,7 @@ class ASTBuilder(object):
         self.in_class = in_class
         self.in_class_name_only = None
         if in_class is not None:
-             self.in_class_name_only = in_class.split('::')[-1].split('<')[0]
+            self.in_class_name_only = in_class.split('::')[-1].split('<')[0]
         self.visibility = visibility
         self.current_token = None
         # Keep the state whether we are currently handling a typedef or not.
