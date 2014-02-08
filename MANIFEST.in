@@ -5,3 +5,4 @@ include README.rst
 exclude .travis.yml
 exclude Makefile
 exclude test*
+recursive-exclude test *
