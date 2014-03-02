@@ -49,7 +49,7 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 VISIBILITY_PUBLIC, VISIBILITY_PROTECTED, VISIBILITY_PRIVATE = list(range(3))
 
 FUNCTION_NONE = 0x00
-FUNCTION_CONST = 0x01
+FUNCTION_SPECIFIER = 0x01
 FUNCTION_VIRTUAL = 0x02
 FUNCTION_PURE_VIRTUAL = 0x04
 FUNCTION_CTOR = 0x08
@@ -1016,8 +1016,12 @@ class ASTBuilder(object):
             token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
 
         while token.token_type == tokenize.NAME:
-            if token.name == 'const':
-                modifiers |= FUNCTION_CONST
+            if (
+                token.name == 'const' or
+                token.name == 'override' or
+                token.name == 'final'
+            ):
+                modifiers |= FUNCTION_SPECIFIER
                 token = self._get_next_token()
             elif token.name == '__attribute__':
                 # TODO(nnorwitz): handle more __attribute__ details.

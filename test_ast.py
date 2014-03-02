@@ -864,7 +864,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         function = nodes[0].body[0]
         expected = Function('operator[]', list(get_tokens('const B&')),
                             list(get_tokens('const int i')), body=[],
-                            modifiers=ast.FUNCTION_CONST)
+                            modifiers=ast.FUNCTION_SPECIFIER)
         self.assertEqual(expected.return_type, function.return_type)
         self.assertEqual(expected, function)
         self.assertEqual(Class('A', body=[expected]), nodes[0])
