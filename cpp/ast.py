@@ -680,7 +680,6 @@ class ASTBuilder(object):
         if in_class is not None:
             self.in_class_name_only = in_class.split('::')[-1].split('<')[0]
         self.visibility = visibility
-        self.current_token = None
         # Keep the state whether we are currently handling a typedef or not.
         self._handling_typedef = False
 
@@ -697,9 +696,6 @@ class ASTBuilder(object):
             token = self._get_next_token()
             if not token:
                 break
-
-            # Get the next token.
-            self.current_token = token
 
             # Dispatch on the next token type.
             if (
@@ -1103,9 +1099,8 @@ class ASTBuilder(object):
             body = None
             if token.name == '=':
                 token = self._get_next_token()
-                assert_parse(token.token_type == tokenize.CONSTANT, token)
-                assert_parse(token.name == '0', token)
-                modifiers |= FUNCTION_PURE_VIRTUAL
+                if token.name == '0':
+                    modifiers |= FUNCTION_PURE_VIRTUAL
                 token = self._get_next_token()
 
             if token.name == '[':
@@ -1683,10 +1678,6 @@ class ASTBuilder(object):
 
     def handle_return(self):
         tokens = self._get_tokens_up_to(tokenize.SYNTAX, ';')
-        if not tokens:
-            return Return(self.current_token.start,
-                          self.current_token.end,
-                          None)
         return Return(tokens[0].start, tokens[0].end, tokens)
 
     def handle_goto(self):
