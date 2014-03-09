@@ -494,7 +494,7 @@ class TypeConverter(object):
 
         # Handle default (initial) values properly.
         for i, t in enumerate(parts):
-            if t.name == '[':
+            if t.name == '[' and arrayBegin == 0:
                 arrayBegin = i
                 other_tokens.append(t)
             elif t.name == ']':
