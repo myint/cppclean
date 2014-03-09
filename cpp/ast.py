@@ -830,12 +830,25 @@ class ASTBuilder(object):
                 # Remove "define".
                 name = name[6:].strip()
                 assert name
+                # Handle #define \<newline> MACRO.
+                if name.startswith('\\'):
+                    name = name[1:].strip()
                 value = ''
+                paren = 0
+
                 for i, c in enumerate(name):
-                    if c.isspace():
+                    if not paren and c.isspace():
                         value = name[i:].lstrip()
                         name = name[:i]
                         break
+                    if c == ')':
+                        value = name[i+1:].lstrip()
+                        name = name[:paren]
+                        break
+                    if c == '(':
+                        paren = i
+                if value.startswith('\\'):
+                    value = value[1:]
                 return Define(token.start, token.end, name, value)
             if name.startswith('if') and name[2:3].isspace():
                 condition = name[3:].strip()
