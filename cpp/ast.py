@@ -494,7 +494,7 @@ class TypeConverter(object):
 
         # Handle default (initial) values properly.
         for i, t in enumerate(parts):
-            if t.name == '[':
+            if t.name == '[' and arrayBegin == 0:
                 arrayBegin = i
                 other_tokens.append(t)
             elif t.name == ']':
@@ -674,6 +674,7 @@ class ASTBuilder(object):
         # Using a deque should be even better since we access from both sides.
         self.token_queue = []
         self.namespace_stack = namespace_stack[:]
+        self.define = set()
         self.quiet = quiet
         self.in_class = in_class
         self.in_class_name_only = None
@@ -682,7 +683,6 @@ class ASTBuilder(object):
         self.visibility = visibility
         # Keep the state whether we are currently handling a typedef or not.
         self._handling_typedef = False
-
         self.converter = TypeConverter(self.namespace_stack)
 
     def handle_error(self, msg, token):
@@ -830,13 +830,32 @@ class ASTBuilder(object):
                 # Remove "define".
                 name = name[6:].strip()
                 assert name
+                # Handle #define \<newline> MACRO.
+                if name.startswith('\\'):
+                    name = name[1:].strip()
                 value = ''
+                paren = 0
+
                 for i, c in enumerate(name):
-                    if c.isspace():
+                    if not paren and c.isspace():
                         value = name[i:].lstrip()
                         name = name[:i]
                         break
+                    if c == ')':
+                        value = name[i+1:].lstrip()
+                        name = name[:paren]
+                        self.define.add(name)
+                        break
+                    if c == '(':
+                        paren = i
+                if value.startswith('\\'):
+                    value = value[1:]
                 return Define(token.start, token.end, name, value)
+            if name.startswith('undef'):
+                # Remove "undef".
+                name = name[5:].strip()
+                assert name
+                self.define.discard(name)
             if name.startswith('if') and name[2:3].isspace():
                 condition = name[3:].strip()
                 if condition.startswith('0') or condition.startswith('(0)'):
@@ -859,7 +878,12 @@ class ASTBuilder(object):
             elif last_token.name == ']':
                 count -= 1
             tokens.append(last_token)
-            last_token = self._get_next_token()
+            temp_token = self._get_next_token()
+            if temp_token.name == '(' and last_token.name in self.define:
+                # TODO: for now just ignore the tokens inside the parenthesis
+                list(self._get_parameters())
+                temp_token = self._get_next_token()
+            last_token = temp_token
         return tokens, last_token
 
     def _ignore_up_to(self, token_type, token):

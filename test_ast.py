@@ -66,6 +66,7 @@ def _install_equal_methods():
     _install_generic_equal(ast.Method, ('name in_class return_type parameters '
                                         'modifiers templated_types '
                                         'body namespace'))
+    _install_generic_equal(ast.Define, 'name definition')
     _install_generic_equal(ast.Include, 'filename system')
     _install_generic_equal(ast.Typedef, 'name alias namespace')
     _install_generic_equal(ast.VariableDeclaration,
@@ -85,6 +86,9 @@ def MakeBuilder(code_string):
 def Token(name, start=0, end=0, token_type=tokenize.NAME):
     return tokenize.Token(token_type, name, start, end)
 
+
+def Define(name, definition, start=0, end=0):
+    return ast.Define(start, end, name, definition)
 
 def Include(filename, system=False, start=0, end=0):
     return ast.Include(start, end, filename, system)
@@ -952,6 +956,44 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         expected = Function('delete[]', list(get_tokens('void operator')),
                             list(get_tokens('void* ptr')))
         self.assertEqual(expected, nodes[0])
+
+    def test_define(self):
+        nodes = list(MakeBuilder('#define FOO 42').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Define('FOO', '42'), nodes[0])
+
+    def test_define_with_backslash_continuation_works(self):
+        nodes = list(MakeBuilder('#define \\\n FOO 42').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Define('FOO', '42'), nodes[0])
+
+    def test_empty_define(self):
+        nodes = list(MakeBuilder('#define FOO').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Define('FOO', ''), nodes[0])
+
+    def test_function_like_define(self):
+        nodes = list(MakeBuilder('#define FOO(a, b) a##b').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Define('FOO', 'a##b'), nodes[0])
+
+    def test_function_like_define_no_space(self):
+        nodes = list(MakeBuilder('#define FOO(a, b)a##b').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Define('FOO', 'a##b'), nodes[0])
+
+    def test_variable_declaration_with_define(self):
+        code = """
+        #define FOO(str) Type##str
+        int FOO(name);
+        #undef FOO
+        void FOO();
+        """
+        nodes = list(MakeBuilder(code).generate())
+        self.assertEqual(3, len(nodes))
+        self.assertEqual(Define('FOO', 'Type##str'), nodes[0])
+        self.assertEqual(VariableDeclaration('FOO', Type('int')), nodes[1])
+        self.assertEqual(Function('FOO', list(get_tokens('void')), []), nodes[2])
 
 
 if __name__ == '__main__':
