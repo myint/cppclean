@@ -982,6 +982,19 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(1, len(nodes))
         self.assertEqual(Define('FOO', 'a##b'), nodes[0])
 
+    def test_variable_declaration_with_define(self):
+        code = """
+        #define FOO(str) Type##str
+        int FOO(name);
+        #undef FOO
+        void FOO();
+        """
+        nodes = list(MakeBuilder(code).generate())
+        self.assertEqual(3, len(nodes))
+        self.assertEqual(Define('FOO', 'Type##str'), nodes[0])
+        self.assertEqual(VariableDeclaration('FOO', Type('int')), nodes[1])
+        self.assertEqual(Function('FOO', list(get_tokens('void')), []), nodes[2])
+
 
 if __name__ == '__main__':
     unittest.main()
