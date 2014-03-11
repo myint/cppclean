@@ -349,6 +349,19 @@ class TypeConverterToParametersTest(unittest.TestCase):
         self.assertEqual(False, results[0].type.array)
         self.assertEqual('i', results[0].name)
 
+    def test_complex_default_value(self):
+        tokens = get_tokens('int i = 4 * 2)')
+        results = self.converter.to_parameters(list(tokens))
+        self.assertEqual(1, len(results))
+
+        self.assertEqual([], results[0].type.modifiers)
+        self.assertEqual('int', results[0].type.name)
+        self.assertEqual([], results[0].type.templated_types)
+        self.assertEqual(False, results[0].type.pointer)
+        self.assertEqual(False, results[0].type.reference)
+        self.assertEqual(False, results[0].type.array)
+        self.assertEqual('i', results[0].name)
+
 
 class TypeConverterToTypeTest(unittest.TestCase):
 

@@ -615,6 +615,8 @@ class TypeConverter(object):
                 pointer = reference = array = False
                 first_token = None
                 default = []
+            elif default:
+                default.append(s)
             elif s.name == '*':
                 pointer = True
             elif s.name == '&':
@@ -626,8 +628,6 @@ class TypeConverter(object):
             elif s.name == '=':
                 # Got a default value. Add any value (None) as a flag.
                 default.append(None)
-            elif default:
-                default.append(s)
             else:
                 type_modifiers.append(s)
         add_parameter()
