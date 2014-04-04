@@ -842,7 +842,7 @@ class ASTBuilder(object):
                         name = name[:i]
                         break
                     if c == ')':
-                        value = name[i+1:].lstrip()
+                        value = name[i + 1:].lstrip()
                         name = name[:paren]
                         self.define.add(name)
                         break

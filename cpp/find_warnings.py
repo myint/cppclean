@@ -151,7 +151,7 @@ class WarningHunter(object):
                 module = Module(filename,
                                 [_f for _f in builder.generate() if _f])
             except (ast.ParseError,
-                tokenize.TokenError) as error:
+                    tokenize.TokenError) as error:
                 if not self.quiet:
                     print(
                         "Exception while processing '{}': {}".format(
@@ -288,7 +288,7 @@ class WarningHunter(object):
                 # exception should not happen...unless the code relies
                 # on another header for proper compilation.
                 # Store the use since we might really need to #include it.
-                if namespace and not None in namespace and not '::' in name:
+                if namespace and None not in namespace and '::' not in name:
                     name = '::'.join(namespace) + '::' + name
                 file_uses[name] = file_uses.get(name, 0) | USES_DECLARATION
                 return

@@ -90,6 +90,7 @@ def Token(name, start=0, end=0, token_type=tokenize.NAME):
 def Define(name, definition, start=0, end=0):
     return ast.Define(start, end, name, definition)
 
+
 def Include(filename, system=False, start=0, end=0):
     return ast.Include(start, end, filename, system)
 
@@ -1006,7 +1007,8 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(3, len(nodes))
         self.assertEqual(Define('FOO', 'Type##str'), nodes[0])
         self.assertEqual(VariableDeclaration('FOO', Type('int')), nodes[1])
-        self.assertEqual(Function('FOO', list(get_tokens('void')), []), nodes[2])
+        self.assertEqual(Function('FOO', list(get_tokens('void')), []),
+                         nodes[2])
 
 
 if __name__ == '__main__':
