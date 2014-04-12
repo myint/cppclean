@@ -1,11 +1,11 @@
 ========
 cppclean
 ========
-.. image:: https://travis-ci.org/myint/cppclean.png?branch=master
+.. image:: https://travis-ci.org/myint/cppclean.svg?branch=master
    :target: https://travis-ci.org/myint/cppclean
    :alt: Build status
 
-.. image:: https://coveralls.io/repos/myint/cppclean/badge.png?branch=master
+.. image:: https://coveralls.io/repos/myint/cppclean/badge.svg?branch=master
    :target: https://coveralls.io/r/myint/cppclean
    :alt: Test coverage status
 
