@@ -1,17 +1,15 @@
 ========
 cppclean
 ========
+
 .. image:: https://travis-ci.org/myint/cppclean.svg?branch=master
    :target: https://travis-ci.org/myint/cppclean
    :alt: Build status
 
-.. image:: https://coveralls.io/repos/myint/cppclean/badge.png?branch=master
-   :target: https://coveralls.io/r/myint/cppclean
-   :alt: Test coverage status
-
 
 Goal
 ====
+
 cppclean attempts to find problems in C++ source that slow development
 in large code bases, for example various forms of unused code.
 Unused code can be unused functions, methods, data members, types, etc
@@ -24,6 +22,7 @@ page, (which no longer contains code) is: https://code.google.com/p/cppclean/
 
 Features
 ========
+
 - Find and print C++ language constructs: classes, methods, functions, etc.
 - Find classes with virtual methods, no virtual destructor, and no bases
 - Find global/static data that are potential problems when using threads
@@ -43,6 +42,7 @@ http://en.wikipedia.org/wiki/Abstract_syntax_tree
 
 Installation
 ============
+
 ::
 
     $ pip install --upgrade cppclean
@@ -50,6 +50,7 @@ Installation
 
 Run
 ===
+
 ::
 
     $ cppclean <path>
@@ -62,6 +63,7 @@ Multiple include paths can be specified::
 
 Current status
 ==============
+
 The parser works pretty well for header files, parsing about 99% of Google's
 header files. Anything which inspects structure of C++ source files should
 work reasonably well. Function bodies are not transformed to an AST,
@@ -70,6 +72,15 @@ but left as tokens.
 
 Non-goals
 =========
+
 - Parsing all valid C++ source
 - Handling invalid C++ source gracefully
 - Compiling to machine code (or anything beyond an AST)
+
+
+Links
+=====
+
+* Coveralls_
+
+.. _`Coveralls`: https://coveralls.io/r/myint/cppclean
