@@ -23,14 +23,15 @@ page, which no longer contains code, is: https://code.google.com/p/cppclean/
 Features
 ========
 
-- Find and print C++ language constructs: classes, methods, functions, etc.
-- Find classes with virtual methods, no virtual destructor, and no bases
-- Find global/static data that are potential problems when using threads
-- Find functions that are declared but not defined
+cppclean finds the following:
+
+- Classes with virtual methods, no virtual destructor, and no bases
+- Global/static data that are potential problems when using threads
+- Functions that are declared but not defined
 - Unnecessary forward class declarations
 - Unnecessary function declarations
 - Undeclared function definitions
-- Find unnecessary header files #included
+- Unnecessary header files #included
     - No direct reference to anything in the header
     - Header is unnecessary if classes were forward declared instead
 - (planned) Source files that reference headers not directly #included,
