@@ -26,6 +26,7 @@ Features
 - Find and print C++ language constructs: classes, methods, functions, etc.
 - Find classes with virtual methods, no virtual destructor, and no bases
 - Find global/static data that are potential problems when using threads
+- Find functions that are declared but not defined
 - Unnecessary forward class declarations
 - Unnecessary function declarations
 - Undeclared function definitions
