@@ -38,6 +38,7 @@ cppclean finds the following:
   ie, files that rely on a transitive #include from another header
 - (planned) Unused members (private, protected, & public) methods and data
 - (planned) ``using namespace std`` in header files
+- (planned) Methods that are declared but not defined
 
 AST is Abstract Syntax Tree, a representation of parsed source code.
 http://en.wikipedia.org/wiki/Abstract_syntax_tree
