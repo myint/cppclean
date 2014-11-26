@@ -22,7 +22,7 @@ check:
 		cpp cppclean setup.py
 	pep8 cpp $(wildcard *.py)
 	check-manifest
-	python setup.py --long-description | rst2html.py --strict > /dev/null
+	python setup.py --long-description | rstcheck -
 
 coverage:
 	@coverage erase
