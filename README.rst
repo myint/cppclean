@@ -31,9 +31,10 @@ cppclean finds the following:
 - Unnecessary forward class declarations
 - Unnecessary function declarations
 - Undeclared function definitions
-- Unnecessary header files #included
+- Unnecessary #includes in header files
     - No direct reference to anything in the header
     - Header is unnecessary if classes were forward declared instead
+- (planned) Unnecessary #includes in source files
 - (planned) Source files that reference headers not directly #included,
   ie, files that rely on a transitive #include from another header
 - (planned) Unused members (private, protected, & public) methods and data
