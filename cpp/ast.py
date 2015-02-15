@@ -943,10 +943,14 @@ class ASTBuilder(object):
 
     def get_name(self, seq=None):
         """Returns ([tokens], next_token_info)."""
-        get_next_token = self._get_next_token
         if seq is not None:
             it = iter(seq)
-            get_next_token = lambda: next(it)
+
+            def get_next_token():
+                return next(it)
+        else:
+            get_next_token = self._get_next_token
+
         next_token = get_next_token()
         tokens = []
         last_token_was_name = False
