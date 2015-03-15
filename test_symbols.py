@@ -92,7 +92,7 @@ class SymbolTableTest(unittest.TestCase):
 
         self.assertEqual(True, st._add(symbol_name, namespace, node, module))
         self.assertEqual(1, len(namespace))
-        self.assertEqual(['foo'], list(namespace.keys()))
+        self.assertEqual(['foo'], list(namespace))
 
         # Adding again should return False.
         self.assertEqual(False, st._add(symbol_name, namespace, node, module))
