@@ -41,8 +41,8 @@ cppclean finds the following:
 - (planned) ``using namespace std`` in header files
 - (planned) Methods that are declared but not defined
 
-AST is Abstract Syntax Tree, a representation of parsed source code.
-http://en.wikipedia.org/wiki/Abstract_syntax_tree
+AST is Abstract Syntax Tree, a representation of parsed source code
+(https://en.wikipedia.org/wiki/Abstract_syntax_tree).
 
 
 Installation
