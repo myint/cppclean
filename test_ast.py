@@ -1023,6 +1023,11 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(Function('FOO', list(get_tokens('void')), []),
                          nodes[2])
 
+    def test_template_function(self):
+        nodes = list(MakeBuilder('template <> void equal<0>();').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Function('equal', list(get_tokens('void')), [], templated_types={}), nodes[0])
+
 
 if __name__ == '__main__':
     unittest.main()
