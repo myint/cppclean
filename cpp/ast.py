@@ -491,6 +491,9 @@ class TypeConverter(object):
         arrayEnd = 0
         default = []
         other_tokens = []
+        
+        if parts[0].name == '::':
+            parts = parts[1:]
 
         # Handle default (initial) values properly.
         for i, t in enumerate(parts):
@@ -1160,14 +1163,8 @@ class ASTBuilder(object):
         # TODO(nnorwitz): if there is only One name like in the
         # example above, punt and assume the last bit is the class name.
 
-        # Ignore a :: prefix, if exists so we can find the first real name.
         i = 0
-        if token_seq[0].name == '::':
-            i = 1
-        # Ignore a :: suffix, if exists.
         end = len(token_seq) - 1
-        if token_seq[end - 1].name == '::':
-            end -= 1
 
         # Make a copy of the sequence so we can append a sentinel
         # value. This is required for get_name will has to have some
@@ -1183,8 +1180,6 @@ class ASTBuilder(object):
                 new_name.append(next_item)
             names.append(new_name)
             i += len(new_name)
-
-        # Now that we have the names, it's time to undo what we did.
 
         # Remove the sentinel value.
         names[-1].pop()
