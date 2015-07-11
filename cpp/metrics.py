@@ -28,10 +28,6 @@ class Metrics(object):
     def __init__(self, source):
         self.source = source
 
-    def get_line(self, index):
-        """Return the line in the source based on the index."""
-        return self.source.split('\n')[self.get_line_number(index) - 1]
-
     def get_line_number(self, index):
         """Return the line number in the source based on the index."""
         return 1 + self.source.count('\n', 0, index)

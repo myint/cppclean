@@ -658,6 +658,14 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(
             VariableDeclaration('foo', Type('Foo', modifiers=['struct'])),
             nodes[0])
+            
+    def test_typedef(self):
+        for argument in ('bool', 'char', 'int', 'long', 'short', 'double',
+                         'float', 'void', 'wchar_t', 'unsigned', 'signed'):
+            code = 'typedef %s Type;' % argument
+            nodes = list(MakeBuilder(code).generate())
+            self.assertEqual(1, len(nodes))
+            self.assertEqual(Typedef('Type', alias=[None]), nodes[0])
 
     def test_anon_class_typedef(self):
         nodes = list(MakeBuilder('typedef class { int zz; } Anon;').generate())
