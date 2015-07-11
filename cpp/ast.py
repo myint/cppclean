@@ -849,7 +849,7 @@ class ASTBuilder(object):
                     if c == '(':
                         paren = i
                 if value.startswith('\\'):
-                    value = value[1:]
+                    value = value[1:].strip()
                 return Define(token.start, token.end, name, value)
             if name.startswith('undef'):
                 # Remove "undef".

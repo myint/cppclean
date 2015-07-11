@@ -984,8 +984,13 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(1, len(nodes))
         self.assertEqual(Define('FOO', '42'), nodes[0])
 
-    def test_define_with_backslash_continuation_works(self):
+    def test_define_with_backslash_continuation(self):
         nodes = list(MakeBuilder('#define \\\n FOO 42').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Define('FOO', '42'), nodes[0])
+        
+    def test_define_with_backslash_continuation_between_declaration(self):
+        nodes = list(MakeBuilder('#define FOO \\\n 42').generate())
         self.assertEqual(1, len(nodes))
         self.assertEqual(Define('FOO', '42'), nodes[0])
 
