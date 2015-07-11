@@ -375,9 +375,11 @@ class WarningHunter(object):
                         _add_template_use('<typedef>', alias.templated_types,
                                           node.namespace)
                 elif isinstance(node, ast.Friend):
-                    if node.expr and node.expr[0].name == 'class':
-                        name = ''.join([n.name for n in node.expr[1:]])
-                        _add_reference(name, node.namespace)
+                    expr = node.expr
+                    if isinstance(expr, ast.Type):
+                        _add_reference(expr.name, node.namespace)
+                    elif isinstance(expr, ast.Function):
+                        _process_function(expr)
                 elif isinstance(node, ast.Class) and node.body is not None:
                     if node.body:
                         ast_seq.append(node.body)

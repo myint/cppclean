@@ -1390,10 +1390,19 @@ class ASTBuilder(object):
         self.visibility = VISIBILITY_PRIVATE
 
     def handle_friend(self):
-        tokens = self._get_tokens_up_to(tokenize.SYNTAX, ';')
-        assert tokens
-        t0 = tokens[0]
-        return Friend(t0.start, t0.end, tokens, self.namespace_stack)
+        tokens, last = self._get_var_tokens_up_to(tokenize.SYNTAX, '(', ';')
+        if last.name == '(':
+            tokens.append(last)
+            self._add_back_tokens(tokens)
+            token = self._get_next_token()
+            result = self._generate_one(token)
+        else:
+            if tokens[0].name == 'class':
+                tokens = tokens[1:]
+            result = self.converter.to_type(tokens)[0]
+
+        assert result
+        return Friend(result.start, result.end, result, self.namespace_stack)
 
     def handle_static_cast(self):
         pass
