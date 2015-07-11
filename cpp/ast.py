@@ -1062,14 +1062,17 @@ class ASTBuilder(object):
                 modifiers |= FUNCTION_THROW
                 token = self._get_next_token()
                 assert_parse(token.name == '(', token)
-                # Consume everything between the (parens).
+                # Consume everything between the parens.
                 list(self._get_matching_char('(', ')'))
                 token = self._get_next_token()
             elif token.name == token.name.upper():
-                # HACK(nnorwitz):  assume that all upper-case names
-                # are some macro we aren't expanding.
+                # Assume that all upper-case names are some macro.
                 modifiers |= FUNCTION_UNKNOWN_ANNOTATION
                 token = self._get_next_token()
+                if token.name == '(':
+                    # Consume everything between the parens.
+                    list(self._get_matching_char('(', ')'))
+                    token = self._get_next_token()
             else:
                 self._add_back_token(token)
                 token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
@@ -1078,7 +1081,7 @@ class ASTBuilder(object):
         if token.name == '&' or token.name == '&&':
             token = self._get_next_token()
 
-        if token.name == '}' or token.name == '#endif':
+        if token.name == '}' or token.token_type == tokenize.PREPROCESSOR:
             self._add_back_token(token)
             token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
 
