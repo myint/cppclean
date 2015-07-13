@@ -229,9 +229,9 @@ class TypeConverterToParametersTest(unittest.TestCase):
         self.assertEqual([], results[0].type.modifiers)
         self.assertEqual('int', results[0].type.name)
         self.assertEqual([], results[0].type.templated_types)
-        self.assertEqual(False, results[0].type.pointer)
+        self.assertEqual(True, results[0].type.pointer)
         self.assertEqual(False, results[0].type.reference)
-        self.assertEqual(True, results[0].type.array)
+        self.assertEqual(False, results[0].type.array)
         self.assertEqual('bar', results[0].name)
 
     def test_array_pointer_reference(self):
@@ -243,9 +243,9 @@ class TypeConverterToParametersTest(unittest.TestCase):
         self.assertEqual(['const'], results[0].type.modifiers)
         self.assertEqual('int', results[0].type.name)
         self.assertEqual([], results[0].type.templated_types)
-        self.assertEqual(False, results[0].type.pointer)
+        self.assertEqual(True, results[0].type.pointer)
         self.assertEqual(False, results[0].type.reference)
-        self.assertEqual(True, results[0].type.array)
+        self.assertEqual(False, results[0].type.array)
         self.assertEqual('bar', results[0].name)
 
         self.assertEqual(['mutable'], results[1].type.modifiers)
@@ -272,9 +272,9 @@ class TypeConverterToParametersTest(unittest.TestCase):
         self.assertEqual([], results[0].type.modifiers)
         self.assertEqual('Bar', results[0].type.name)
         self.assertEqual([], results[0].type.templated_types)
-        self.assertEqual(False, results[0].type.pointer)
+        self.assertEqual(True, results[0].type.pointer)
         self.assertEqual(False, results[0].type.reference)
-        self.assertEqual(True, results[0].type.array)
+        self.assertEqual(False, results[0].type.array)
         self.assertEqual('bar', results[0].name)
 
     def test_multiple_args(self):

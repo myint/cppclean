@@ -18,7 +18,7 @@ test/foo.h:208: static data 'garbage_state'
 test/foo.h:225: static data 'flags_'
 test/foo.h:239: static data 'foo'
 test/foo.h:241: static data 'GlobalKey'
-test/foo.h:268: static data 'instance_'
+test/foo.h:268: static data 'Singleton::instance_'
 test/foo.h:274: static data 'string_list'
 test/include.h:1: 'empty.cc' does not need to be #included
 test/include.h:1: should not #include C++ source file 'empty.cc'
