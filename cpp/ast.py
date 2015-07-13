@@ -1600,7 +1600,8 @@ class ASTBuilder(object):
 
         body = None
         if token.token_type == tokenize.SYNTAX and token.name == '{':
-            ast = ASTBuilder(self.get_scope(), self.filename, class_name,
+            name = class_name or '__unamed__'
+            ast = ASTBuilder(self.get_scope(), self.filename, name,
                              visibility, self.namespace_stack,
                              quiet=self.quiet)
             body = list(ast.generate())
