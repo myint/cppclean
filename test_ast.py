@@ -596,6 +596,12 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
                                              initial_value='fct()+42'),
                          nodes[0])
 
+    def test_variable_anonymous_class(self):
+        nodes = list(MakeBuilder('class {public:} a;').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(VariableDeclaration('a', Type(Class(None, body=[]))),
+                         nodes[0])
+
     def test_function_one_argument_with_name(self):
         for argument in ('Foo f', 'const Foo f', 'Foo& f', 'const Foo& f',
                          'unsigned int f', 'ns::foo f', 'std::vector<int> f',
