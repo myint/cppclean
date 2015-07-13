@@ -511,18 +511,15 @@ class TypeConverter(object):
         if arrayBegin < arrayEnd:
             parts = parts[:arrayBegin] + parts[arrayEnd + 1:]
 
-        name = None
-        if needs_name_removed and len(parts) > 1:
-            name = parts.pop().name
-
         modifiers = []
-        type_name = []
+        type_name = ['']
+        last_type = tokenize.SYNTAX
         templated_types = []
         i = 0
         end = len(parts)
         while i < end:
             p = parts[i]
-            if keywords.is_keyword(p.name):
+            if keywords.is_builtin_modifiers(p.name):
                 modifiers.append(p.name)
             elif p.name == '<':
                 templated_tokens, new_end = self._get_template_end(
@@ -534,20 +531,21 @@ class TypeConverter(object):
                 if next_index < end and parts[next_index].name == '::':
                     i += 1
             elif p.name not in ('*', '&', '>'):
-                # Ensure that names have a space between them.
-                if (type_name and type_name[-1].token_type == tokenize.NAME and
-                        p.token_type == tokenize.NAME):
-                    type_name.append(
-                        tokenize.Token(
-                            tokenize.SYNTAX,
-                            ' ',
-                            0,
-                            0))
-                type_name.append(p)
+                if last_type == tokenize.NAME and p.token_type == tokenize.NAME:
+                    type_name.append('')
+                type_name[-1] += p.name
+                last_type = p.token_type
             else:
                 other_tokens.append(p)
             i += 1
-        type_name = ''.join([t.name for t in type_name])
+
+        name = None
+        if len(type_name) == 1 or keywords.is_builtin_type(type_name[-1]):
+            needs_name_removed = False
+        if needs_name_removed:
+            name = type_name.pop()
+
+        type_name = ' '.join([t for t in type_name])
         return (name,
                 type_name,
                 templated_types,
@@ -572,23 +570,9 @@ class TypeConverter(object):
                 del default[0]  # Remove flag.
             end = type_modifiers[-1].end
 
-            needs_name_removed = True
-            if len(type_modifiers) == 1:
-                needs_name_removed = False
-            else:
-                last = type_modifiers[-1].name
-                second_to_last = type_modifiers[-2].name
-                if (
-                    last == '>' or
-                    keywords.is_builtin_type(last) or
-                    second_to_last == '::' or
-                    keywords.is_builtin_type_modifiers(second_to_last)
-                ):
-                    needs_name_removed = False
-
             (name, type_name, templated_types, modifiers,
              _, __) = self.declaration_to_parts(type_modifiers,
-                                                needs_name_removed)
+                                                True)
 
             parameter_type = Type(first_token.start, first_token.end,
                                   type_name, templated_types, modifiers,

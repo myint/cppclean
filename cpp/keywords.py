@@ -27,16 +27,17 @@ TYPES = frozenset(['bool', 'char', 'int', 'long', 'short', 'double', 'float',
 TYPE_MODIFIERS = frozenset(['auto', 'register', 'const', 'inline', 'extern',
                             'static', 'virtual', 'volatile', 'mutable'])
 
+OTHER_MODIFIERS = frozenset(['class', 'struct', 'union', 'enum'])
+
 ACCESS = frozenset(['public', 'protected', 'private', 'friend'])
 
 CASTS = frozenset(['static_cast', 'const_cast', 'dynamic_cast',
                    'reinterpret_cast'])
 
-OTHERS = frozenset(['true', 'false', 'asm', 'class', 'namespace', 'using',
-                    'explicit', 'this', 'operator', 'sizeof'])
-
-OTHER_TYPES = frozenset(['new', 'delete', 'typedef', 'struct', 'union', 'enum',
-                         'typeid', 'typename', 'template'])
+OTHERS = frozenset(['true', 'false', 'asm', 'namespace', 'using',
+                    'explicit', 'this', 'operator', 'sizeof',
+                    'new', 'delete', 'typedef', 'typeid',
+                    'typename', 'template'])
 
 CONTROL = frozenset(['case', 'switch', 'default', 'if', 'else', 'return',
                      'goto'])
@@ -45,8 +46,8 @@ EXCEPTION = frozenset(['try', 'catch', 'throw'])
 
 LOOP = frozenset(['while', 'do', 'for', 'break', 'continue'])
 
-ALL = (TYPES | TYPE_MODIFIERS | ACCESS | CASTS | OTHERS | OTHER_TYPES |
-       CONTROL | EXCEPTION | LOOP)
+ALL = (TYPES | TYPE_MODIFIERS | OTHER_MODIFIERS | ACCESS | CASTS |
+       OTHERS | CONTROL | EXCEPTION | LOOP)
 
 
 def is_keyword(token):
@@ -60,5 +61,7 @@ def is_builtin_type(token):
     return token in TYPES or token in TYPE_MODIFIERS
 
 
-def is_builtin_type_modifiers(token):
-    return token in TYPE_MODIFIERS
+def is_builtin_modifiers(token):
+    if token in ('auto'):
+        return False
+    return token in TYPE_MODIFIERS or token in OTHER_MODIFIERS
