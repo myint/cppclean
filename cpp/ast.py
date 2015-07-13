@@ -526,11 +526,7 @@ class TypeConverter(object):
                     parts, i + 1)
                 templated_types = self.to_type(templated_tokens)
                 i = new_end - 1
-                # Don't add a spurious :: to data members being initialized.
-                next_index = i + 1
-                if next_index < end and parts[next_index].name == '::':
-                    i += 1
-            elif p.name not in ('*', '&', '>'):
+            elif p.name not in ('*', '&'):
                 if last_type == tokenize.NAME and p.token_type == tokenize.NAME:
                     type_name.append('')
                 type_name[-1] += p.name
@@ -559,7 +555,7 @@ class TypeConverter(object):
 
         result = []
         type_modifiers = []
-        pointer = reference = array = False
+        pointer = reference = False
         first_token = None
         default = []
 
@@ -576,7 +572,7 @@ class TypeConverter(object):
 
             parameter_type = Type(first_token.start, first_token.end,
                                   type_name, templated_types, modifiers,
-                                  reference, pointer, array)
+                                  reference, pointer, False)
             p = Parameter(first_token.start, end, name,
                           parameter_type, default)
             result.append(p)
@@ -599,7 +595,7 @@ class TypeConverter(object):
             if s.name == ',':
                 add_parameter()
                 type_modifiers = []
-                pointer = reference = array = False
+                pointer = reference = False
                 first_token = None
                 default = []
             elif default:
@@ -609,7 +605,7 @@ class TypeConverter(object):
             elif s.name == '&':
                 reference = True
             elif s.name == '[':
-                array = True
+                pointer = True
             elif s.name == ']':
                 pass  # Just don't add to type_modifiers.
             elif s.name == '=':
