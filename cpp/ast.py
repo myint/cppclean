@@ -1571,7 +1571,9 @@ class ASTBuilder(object):
             # Handle attribute.
             elif token.token_type == tokenize.NAME:
                 self._add_back_token(token)
-                name_tokens, token = self.get_name()
+                attribute, token = self.get_name()
+                if len(attribute) > 1 or attribute[0].name != 'final':
+                    name_tokens = attribute
             class_name = ''.join([t.name for t in name_tokens])
         bases = None
         if token.token_type == tokenize.SYNTAX:

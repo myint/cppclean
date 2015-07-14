@@ -744,6 +744,11 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(1, len(nodes))
         self.assertEqual(Struct('Foo', body=[]), nodes[0])
 
+    def test_class_final(self):
+        nodes = list(MakeBuilder('class Foo final {};').generate())
+        self.assertEqual(1, len(nodes))
+        self.assertEqual(Class('Foo', body=[]), nodes[0])
+
     def test_class_exported(self):
         nodes = list(MakeBuilder('class DLLEXPORT Foo {};').generate())
         self.assertEqual(1, len(nodes))
