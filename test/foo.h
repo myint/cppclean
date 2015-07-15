@@ -234,6 +234,7 @@ class MyF {
 class Colon {
   virtual ::Foo GetFoo();
   ::Foo GetFoo2();
+  friend ::Foo& fn();
 };
 
 string foo = "\nX=\"/*\"";
