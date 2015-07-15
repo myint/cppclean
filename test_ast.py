@@ -602,6 +602,13 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(VariableDeclaration('a', Type(Class(None, body=[]))),
                          nodes[0])
 
+    def test_variable_anonymous_class2(self):
+        nodes = list(MakeBuilder('const class {public:} a;').generate())
+        self.assertEqual(1, len(nodes))
+        # TODO: modifiers=['const']
+        self.assertEqual(VariableDeclaration('a', Type(Class(None, body=[]))),
+                         nodes[0])
+
     def test_function_one_argument_with_name(self):
         for argument in ('Foo f', 'const Foo f', 'Foo& f', 'const Foo& f',
                          'unsigned int f', 'ns::foo f', 'std::vector<int> f',
