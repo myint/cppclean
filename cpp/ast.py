@@ -769,13 +769,11 @@ class ASTBuilder(object):
             if last_token.name == '{':
                 assert_parse(temp_tokens, 'not enough tokens')
 
-                self._add_back_tokens(temp_tokens[1:])
                 self._add_back_token(last_token)
+                self._add_back_tokens(temp_tokens[1:])
                 method_name = temp_tokens[0].name
                 method = getattr(self, 'handle_' + method_name, None)
                 if not method:
-                    # Must be declaring a variable.
-                    # TODO(nnorwitz): handle the declaration.
                     return None
                 return method()
             return self._get_method(temp_tokens, 0, None, False)
