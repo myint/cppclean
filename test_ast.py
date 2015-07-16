@@ -605,8 +605,8 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
     def test_variable_anonymous_class2(self):
         nodes = list(MakeBuilder('const class {public:} a;').generate())
         self.assertEqual(1, len(nodes))
-        # TODO: modifiers=['const']
-        self.assertEqual(VariableDeclaration('a', Type(Class(None, body=[]))),
+        self.assertEqual(VariableDeclaration('a', Type(Class(None, body=[]),
+                                                       modifiers=['const'])),
                          nodes[0])
 
     def test_function_one_argument_with_name(self):

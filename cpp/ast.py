@@ -666,6 +666,7 @@ class ASTBuilder(object):
         self.visibility = visibility
         # Keep the state whether we are currently handling a typedef or not.
         self._handling_typedef = False
+        self._handling_const = False
         self.converter = TypeConverter(self.namespace_stack)
 
     def handle_error(self, msg, token):
@@ -1324,7 +1325,11 @@ class ASTBuilder(object):
         pass
 
     def handle_const(self):
-        pass
+        self._handling_const = True
+        token = self._get_next_token()
+        result = self._generate_one(token)
+        self._handling_const = False
+        return result
 
     def handle_inline(self):
         pass
@@ -1617,7 +1622,7 @@ class ASTBuilder(object):
                                            class_name, bases, None,
                                            body, self.namespace_stack)
 
-                    modifiers = []
+                    modifiers = ['const'] if self._handling_const else []
                     return self._create_variable(class_token,
                                                  token.name, new_class,
                                                  modifiers, token.name)
