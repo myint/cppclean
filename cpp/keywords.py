@@ -65,3 +65,6 @@ def is_builtin_modifiers(token):
     if token in ('auto'):
         return False
     return token in TYPE_MODIFIERS or token in OTHER_MODIFIERS
+
+def is_builtin_other_modifiers(token):
+    return token in OTHER_MODIFIERS

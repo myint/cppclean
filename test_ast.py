@@ -680,7 +680,8 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
             code = 'typedef %s Type;' % argument
             nodes = list(MakeBuilder(code).generate())
             self.assertEqual(1, len(nodes))
-            self.assertEqual(Typedef('Type', alias=[None]), nodes[0])
+            self.assertEqual(Typedef('Type', alias=Type('%s' % argument)),
+                             nodes[0])
 
     def test_anon_class_typedef(self):
         nodes = list(MakeBuilder('typedef class { int zz; } Anon;').generate())

@@ -1410,8 +1410,7 @@ class ASTBuilder(object):
     def handle_typedef(self):
         token = self._get_next_token()
         if (token.token_type == tokenize.NAME and
-                keywords.is_keyword(token.name)):
-            # Token must be struct/enum/union/class.
+                keywords.is_builtin_other_modifiers(token.name)):
             method = getattr(self, 'handle_' + token.name)
             self._handling_typedef = True
             tokens = [method()]
