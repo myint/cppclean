@@ -145,22 +145,22 @@ class WarningHunter(object):
             msg = "unable to find '{}'".format(filename)
             self._add_warning(msg, node)
         else:
+            ast_list = None
             try:
                 builder = ast.builder_from_source(source, filename,
                                                   quiet=self.quiet)
-                module = Module(filename,
-                                [_f for _f in builder.generate() if _f])
-            except (ast.ParseError,
-                    tokenize.TokenError) as error:
+                ast_list = [_f for _f in builder.generate() if _f]
+            except tokenize.TokenError:
+                pass
+            except ast.ParseError as error:
                 if not self.quiet:
                     print(
                         "Exception while processing '{}': {}".format(
                             filename,
                             error),
                         file=sys.stderr)
-                module = Module(filename, None)
-            else:
-                self._update_symbol_table(module)
+            module = Module(filename, ast_list)
+            self._update_symbol_table(module)
         return module
 
     def _read_and_parse_includes(self):

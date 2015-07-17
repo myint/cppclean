@@ -102,7 +102,7 @@ def _get_char(source, start, i):
     return i + 1 if i != -1 else start + 1
 
 
-def get_tokens(source, quiet=False):
+def get_tokens(source):
     """Returns a sequence of Tokens.
 
     Args:
@@ -269,13 +269,7 @@ def get_tokens(source, quiet=False):
             i += 1
             continue
         else:
-            if not quiet:
-                sys.stderr.write(
-                    'Got invalid token in %s @ %d token:%s: %r\n' %
-                    ('?', i, c, source[i - 10:i + 10]))
-            raise TokenError('unexpected token')
+            raise TokenError('unexpected token %s' % c)
 
-        if i <= 0:
-            print('Invalid index, exiting now.')
-            return
+        assert i > 0
         yield Token(token_type, source[start:i], start, i)

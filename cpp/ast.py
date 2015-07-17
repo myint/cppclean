@@ -1743,7 +1743,7 @@ def builder_from_source(source, filename, quiet=False):
       ASTBuilder
 
     """
-    return ASTBuilder(tokenize.get_tokens(source, quiet=quiet),
+    return ASTBuilder(tokenize.get_tokens(source),
                       filename,
                       quiet=quiet)
 
