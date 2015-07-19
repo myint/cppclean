@@ -251,11 +251,20 @@ def get_tokens(source):
                     continue
 
                 if got_if:
-                    condition = source[start + 4:i].lstrip()
+                    begin = source.find('(', start, i)
+                    if begin == -1:
+                        begin = source.find(' ', start)
+                    begin = begin + 1
+                    s1 = source.find(' ', begin)
+                    s2 = source.find(')', begin)
+                    s3 = source.find('\n', begin)
+                    s = min([x for x in (s1, s2, s3, end) if x != -1])
+                    
+                    condition = source[begin:s]
                     if (
                         count_ifs or
-                        condition.startswith('0') or
-                        condition.startswith('(0)')
+                        condition == '0' or
+                        condition == '__OBJC__'
                     ):
                         count_ifs += 1
                 break
