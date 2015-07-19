@@ -409,7 +409,12 @@ class TypeConverter(object):
                 count -= 1
                 if count == 0:
                     break
-        return tokens[start:end - 1], end
+            elif token.name == '>>':
+                t1 = tokenize.Token(tokenize.SYNTAX, '>', token.start, token.start + 1)
+                t2 = tokenize.Token(tokenize.SYNTAX, '>', token.start + 1, token.end)
+                tokens = tokens[:end - 1] + [t1, t2] + tokens[end:]
+                end -= 1
+        return tokens, end
 
     def to_type(self, tokens):
         """Convert [Token,...] to [Class(...), ] useful for base classes.
@@ -449,7 +454,9 @@ class TypeConverter(object):
         while i < end:
             token = tokens[i]
             if token.name == '<':
-                new_tokens, new_end = self._get_template_end(tokens, i + 1)
+                tokens, new_end = self._get_template_end(tokens, i + 1)
+                end = len(tokens)
+                new_tokens = tokens[i + 1:new_end - 1]
                 if new_end < end:
                     if tokens[new_end].name == '::':
                         name_tokens.append(tokens[new_end])
@@ -522,8 +529,9 @@ class TypeConverter(object):
             if keywords.is_builtin_modifiers(p.name):
                 modifiers.append(p.name)
             elif p.name == '<':
-                templated_tokens, new_end = self._get_template_end(
-                    parts, i + 1)
+                parts, new_end = self._get_template_end(parts, i + 1)
+                end = len(parts)
+                templated_tokens = parts[i + 1:new_end - 1]
                 templated_types = self.to_type(templated_tokens)
                 i = new_end - 1
             elif p.name not in ('*', '&'):

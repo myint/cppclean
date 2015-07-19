@@ -323,6 +323,24 @@ class TypeConverterToParametersTest(unittest.TestCase):
         self.assertEqual(False, results[1].type.reference)
         self.assertEqual('bar', results[1].name)
 
+    def test_nested_template(self):
+        tokens = get_tokens('vector<pair<int, float>> data')
+        results = self.converter.to_parameters(list(tokens))
+        self.assertEqual(1, len(results), repr(results))
+        
+        self.assertEqual([], results[0].type.modifiers)
+        self.assertEqual('vector', results[0].type.name)
+        self.assertEqual('data', results[0].name)
+        
+        results = results[0].type.templated_types
+        self.assertEqual(1, len(results), repr(results))
+        self.assertEqual('pair', results[0].name)
+        
+        results = results[0].templated_types
+        self.assertEqual(2, len(results), repr(results))
+        self.assertEqual('int', results[0].name)
+        self.assertEqual('float', results[1].name)
+
     def test_simple_with_initializers(self):
         tokens = get_tokens('Fool* data = NULL')
         results = self.converter.to_parameters(list(tokens))
