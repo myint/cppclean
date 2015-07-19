@@ -76,9 +76,7 @@ class TokenizeTest(unittest.TestCase):
 
     def testget_tokens_if0(self):
         tokens = self.get_tokens('#if 0\n@\n#endif')
-        self.assertEqual(2, len(tokens), tokens)
-        self.assertEqual(Preprocessor('#if 0', 0, 5), tokens[0])
-        self.assertEqual(Preprocessor('#endif', 8, 14), tokens[1])
+        self.assertEqual(0, len(tokens), tokens)
 
     def testget_tokens_define(self):
         tokens = self.get_tokens('#define PI 3.14')

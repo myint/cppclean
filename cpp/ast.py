@@ -838,10 +838,6 @@ class ASTBuilder(object):
                 name = name[5:].strip()
                 assert name
                 self.define.discard(name)
-            if name.startswith('if') and name[2:3].isspace():
-                condition = name[3:].strip()
-                if condition.startswith('0') or condition.startswith('(0)'):
-                    self._skip_if0blocks()
         return None
 
     def _get_tokens_up_to(self, expected_token_type, expected_token):
@@ -870,21 +866,6 @@ class ASTBuilder(object):
 
     def _ignore_up_to(self, token_type, token):
         self._get_tokens_up_to(token_type, token)
-
-    def _skip_if0blocks(self):
-        count = 1
-        while True:
-            token = self._get_next_token()
-            if token.token_type != tokenize.PREPROCESSOR:
-                continue
-
-            name = token.name[1:].lstrip()
-            if name.startswith('endif'):
-                count -= 1
-                if count == 0:
-                    break
-            elif name.startswith('if'):
-                count += 1
 
     def _get_matching_char(self, open_paren, close_paren, get_next_token=None):
         if get_next_token is None:

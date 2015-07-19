@@ -121,8 +121,7 @@ def get_tokens(source):
     int_or_float_digits = INT_OR_FLOAT_DIGITS
     int_or_float_digits2 = int_or_float_digits | set('.')
 
-    # Only ignore errors while in a #if 0 block.
-    ignore_errors = False
+    # Ignore tokens while in a #if 0 block.
     count_ifs = 0
 
     i = 0
@@ -219,10 +218,11 @@ def get_tokens(source):
         elif c == '#':                           # Find pre-processor command.
             token_type = PREPROCESSOR
             got_if = source[i:i + 3] == '#if'
-            if ignore_errors and source[i:i + 6] == '#endif':
+            if count_ifs and source[i:i + 6] == '#endif':
                 count_ifs -= 1
                 if count_ifs == 0:
-                    ignore_errors = False
+                    source = source[:i].ljust(i + 6) + source[i + 6:]
+                    continue
 
             # Handle preprocessor statements (\ continuations).
             while True:
@@ -253,23 +253,25 @@ def get_tokens(source):
                 if got_if:
                     condition = source[start + 4:i].lstrip()
                     if (
-                        ignore_errors or
+                        count_ifs or
                         condition.startswith('0') or
                         condition.startswith('(0)')
                     ):
                         count_ifs += 1
-                        ignore_errors = True
                 break
         elif c == '\\':                          # Handle \ in code.
             # This is different from the pre-processor \ handling.
             i += 1
             continue
-        elif ignore_errors:
+        elif count_ifs:
             # Ignore bogus code when we are inside an #if block.
             i += 1
             continue
         else:
             raise TokenError('unexpected token %s' % c)
+
+        if count_ifs:
+            continue
 
         assert i > 0
         yield Token(token_type, source[start:i], start, i)
