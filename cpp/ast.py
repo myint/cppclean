@@ -409,12 +409,7 @@ class TypeConverter(object):
                 count -= 1
                 if count == 0:
                     break
-            elif token.name == '>>':
-                t1 = tokenize.Token(tokenize.SYNTAX, '>', token.start, token.start + 1)
-                t2 = tokenize.Token(tokenize.SYNTAX, '>', token.start + 1, token.end)
-                tokens = tokens[:end - 1] + [t1, t2] + tokens[end:]
-                end -= 1
-        return tokens, end
+        return tokens[start:end - 1], end
 
     def to_type(self, tokens):
         """Convert [Token,...] to [Class(...), ] useful for base classes.
@@ -454,9 +449,7 @@ class TypeConverter(object):
         while i < end:
             token = tokens[i]
             if token.name == '<':
-                tokens, new_end = self._get_template_end(tokens, i + 1)
-                end = len(tokens)
-                new_tokens = tokens[i + 1:new_end - 1]
+                new_tokens, new_end = self._get_template_end(tokens, i + 1)
                 if new_end < end:
                     if tokens[new_end].name == '::':
                         name_tokens.append(tokens[new_end])
@@ -529,9 +522,8 @@ class TypeConverter(object):
             if keywords.is_builtin_modifiers(p.name):
                 modifiers.append(p.name)
             elif p.name == '<':
-                parts, new_end = self._get_template_end(parts, i + 1)
-                end = len(parts)
-                templated_tokens = parts[i + 1:new_end - 1]
+                templated_tokens, new_end = self._get_template_end(
+                    parts, i + 1)
                 templated_types = self.to_type(templated_tokens)
                 i = new_end - 1
             elif p.name not in ('*', '&'):
@@ -964,6 +956,14 @@ class ASTBuilder(object):
             assert_parse(token.name == '(', token)
 
         name = return_type_and_name.pop()
+        if (len(return_type_and_name) > 1 and
+            return_type_and_name[-1].name == '>' and
+            (name.name == '>=' or name.name == '>')):
+            n = return_type_and_name.pop()
+            name = tokenize.Token(tokenize.SYNTAX,
+                                  n.name + name.name,
+                                  n.start, name.end)
+
         if (len(return_type_and_name) > 1 and
             (return_type_and_name[-1].name == 'operator' or
              return_type_and_name[-1].name == '~')):

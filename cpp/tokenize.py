@@ -158,7 +158,8 @@ def get_tokens(source):
             token_type = SYNTAX
             i += 1
             new_ch = source[i]
-            if new_ch == c:
+            # Do not merge '>>' or '>>=' into a single token
+            if new_ch == c and c != '>':
                 i += 1
                 new_ch = source[i]
             if new_ch == '=':

@@ -93,13 +93,12 @@ class TokenizeTest(unittest.TestCase):
             self.assertEqual(Constant('3', 4, 5), tokens[2])
 
     def testget_tokens_multi_char_binary_operators(self):
-        for operator in ('<<', '>>'):
-            #                        0123456
-            tokens = self.get_tokens('5 %s 3' % operator)
-            self.assertEqual(3, len(tokens), tokens)
-            self.assertEqual(Constant('5', 0, 1), tokens[0])
-            self.assertEqual(Syntax(operator, 2, 4), tokens[1])
-            self.assertEqual(Constant('3', 5, 6), tokens[2])
+        #                        0123456
+        tokens = self.get_tokens('5 << 3')
+        self.assertEqual(3, len(tokens), tokens)
+        self.assertEqual(Constant('5', 0, 1), tokens[0])
+        self.assertEqual(Syntax('<<', 2, 4), tokens[1])
+        self.assertEqual(Constant('3', 5, 6), tokens[2])
 
     def testget_tokens_addition_with_comment(self):
         #                        0123456789012 3 4 56789012345
@@ -126,7 +125,7 @@ class TokenizeTest(unittest.TestCase):
 
     def testget_tokens_operators(self):
         for operator in ('+=', '-=', '*=', '==', '!=', '/=', '%=', '^=', '|=',
-                         '<<', '>>', '<=', '>='):
+                         '<<', '<=', '>='):
             #                        0123456
             tokens = self.get_tokens('a %s b' % operator)
             self.assertEqual(3, len(tokens), tokens)
