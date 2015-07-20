@@ -1454,7 +1454,7 @@ class ASTBuilder(object):
         while i < len_tokens:
             key = tokens[i].name
             i += 1
-            if keywords.is_keyword(key) or key == ',':
+            if keywords.is_keyword(key) or key == ',' or key == '.':
                 continue
             type_name = default = None
             if i < len_tokens:
@@ -1463,12 +1463,11 @@ class ASTBuilder(object):
                     assert_parse(i < len_tokens, '%s %s' % (i, tokens))
                     default, _ = self.get_name(tokens[i:])
                     i += len(default)
-                else:
-                    if tokens[i - 1].name != ',':
-                        # We got something like: Type variable.
-                        # Re-adjust the key (variable) and type_name (Type).
-                        key = tokens[i - 1].name
-                        type_name = tokens[i - 2]
+                elif tokens[i - 1].name != ',':
+                    # We got something like: Type variable.
+                    # Re-adjust the key (variable) and type_name (Type).
+                    key = tokens[i - 1].name
+                    type_name = tokens[i - 2]
 
             result[key] = (type_name, default)
         return result
@@ -1530,9 +1529,6 @@ class ASTBuilder(object):
                 token = self._get_next_token()
                 if token.name != 'virtual':
                     self._add_back_token(token)
-                else:
-                    # TODO(nnorwitz): store that we got virtual for this base.
-                    pass
             base, next_token = self.get_name()
             bases_ast = self.converter.to_type(base)
             assert_parse(len(bases_ast) == 1, bases_ast)
