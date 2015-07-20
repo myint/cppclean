@@ -22,7 +22,7 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
 TYPES = frozenset(['bool', 'char', 'int', 'long', 'short', 'double', 'float',
-                   'void', 'wchar_t', 'unsigned', 'signed'])
+                   'void', 'wchar_t', 'unsigned', 'signed', 'size_t'])
 
 TYPE_MODIFIERS = frozenset(['auto', 'register', 'const', 'inline', 'extern',
                             'static', 'virtual', 'volatile', 'mutable'])
