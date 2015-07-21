@@ -299,3 +299,6 @@ class Resource
   {
   };
 };
+
+static_assert(21 < 42, "");
+

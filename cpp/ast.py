@@ -738,6 +738,11 @@ class ASTBuilder(object):
 
             temp_tokens.insert(0, token)
             if last_token.name == '(' or last_token.name == '{':
+                # Ignore static_assert
+                if temp_tokens[-1].name == 'static_assert':
+                    self._ignore_up_to(';')
+                    return None
+
                 # If there is an assignment before the paren,
                 # this is an expression, not a method.
                 for i, elt in reversed(list(enumerate(temp_tokens))):
