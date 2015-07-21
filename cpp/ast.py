@@ -731,9 +731,8 @@ class ASTBuilder(object):
                 # Fall through--handle like any other method.
 
             # Handle data or function declaration/definition.
-            syntax = tokenize.SYNTAX
             temp_tokens, last_token = \
-                self._get_var_tokens_up_to(syntax, '(', ';', '{', '}')
+                self._get_var_tokens_up_to(True, '(', ';', '{', '}')
             if last_token.name == '}':
                 return None
 
@@ -748,7 +747,7 @@ class ASTBuilder(object):
                     ):
                         temp_tokens.append(last_token)
                         new_temp, last_token = \
-                            self._get_var_tokens_up_to(tokenize.SYNTAX, ';')
+                            self._get_var_tokens_up_to(False, ';')
                         temp_tokens.extend(new_temp)
                         break
 
@@ -840,21 +839,30 @@ class ASTBuilder(object):
                 self.define.discard(name)
         return None
 
-    def _get_tokens_up_to(self, expected_token_type, expected_token):
-        return self._get_var_tokens_up_to(expected_token_type,
+    def _get_tokens_up_to(self, expected_token):
+        return self._get_var_tokens_up_to(False,
                                           expected_token)[0]
 
-    def _get_var_tokens_up_to(self, expected_token_type, *expected_tokens):
+    def _get_var_tokens_up_to(self, skip_bracket_content, *expected_tokens):
         last_token = self._get_next_token()
         tokens = []
-        count = 0
-        while (count != 0 or
-               last_token.token_type != expected_token_type or
+        count1 = 0
+        count2 = 0
+        while (count1 != 0 or
+               count2 != 0 or
+               last_token.token_type != tokenize.SYNTAX or
                last_token.name not in expected_tokens):
             if last_token.name == '[':
-                count += 1
+                count1 += 1
             elif last_token.name == ']':
-                count -= 1
+                count1 -= 1
+            if skip_bracket_content:
+                if last_token.name == 'operator':
+                    skip_bracket_content = False
+                elif last_token.name == '<':
+                    count2 += 1
+                elif last_token.name == '>':
+                    count2 -= 1
             tokens.append(last_token)
             temp_token = self._get_next_token()
             if temp_token.name == '(' and last_token.name in self.define:
@@ -864,8 +872,8 @@ class ASTBuilder(object):
             last_token = temp_token
         return tokens, last_token
 
-    def _ignore_up_to(self, token_type, token):
-        self._get_tokens_up_to(token_type, token)
+    def _ignore_up_to(self, token):
+        self._get_tokens_up_to(token)
 
     def _get_matching_char(self, open_paren, close_paren, get_next_token=None):
         if get_next_token is None:
@@ -935,7 +943,7 @@ class ASTBuilder(object):
         return tokens, next_token
 
     def get_method(self, modifiers, templated_types):
-        return_type_and_name = self._get_tokens_up_to(tokenize.SYNTAX, '(')
+        return_type_and_name = self._get_tokens_up_to('(')
         assert len(return_type_and_name) >= 1
         return self._get_method(
             return_type_and_name, modifiers, templated_types,
@@ -1217,12 +1225,12 @@ class ASTBuilder(object):
                 token = next_token
 
         if token.token_type == tokenize.SYNTAX and token.name == '(':
-            self._ignore_up_to(tokenize.SYNTAX, ')')
+            self._ignore_up_to(')')
             token = self._get_next_token()
 
         # Handle underlying type.
         if token.token_type == tokenize.SYNTAX and token.name == ':':
-            _, token = self._get_var_tokens_up_to(tokenize.SYNTAX, '{', ';')
+            _, token = self._get_var_tokens_up_to(False, '{', ';')
 
         # Handle forward declarations.
         if token.token_type == tokenize.SYNTAX and token.name == ';':
@@ -1339,7 +1347,7 @@ class ASTBuilder(object):
             return self.get_method(FUNCTION_VIRTUAL + FUNCTION_DTOR, None)
         assert_parse(token.token_type == tokenize.NAME or token.name == '::',
                      token)
-        return_type_and_name = self._get_tokens_up_to(tokenize.SYNTAX, '(')
+        return_type_and_name = self._get_tokens_up_to('(')
         return_type_and_name.insert(0, token)
         if token2 is not token:
             return_type_and_name.insert(1, token2)
@@ -1365,7 +1373,7 @@ class ASTBuilder(object):
         self.visibility = VISIBILITY_PRIVATE
 
     def handle_friend(self):
-        tokens, last = self._get_var_tokens_up_to(tokenize.SYNTAX, '(', ';')
+        tokens, last = self._get_var_tokens_up_to(False, '(', ';')
         if last.name == '(':
             tokens.append(last)
             self._add_back_tokens(tokens)
@@ -1397,7 +1405,7 @@ class ASTBuilder(object):
         pass
 
     def handle_delete(self):
-        tokens = self._get_tokens_up_to(tokenize.SYNTAX, ';')
+        tokens = self._get_tokens_up_to(';')
         assert tokens
         return Delete(tokens[0].start, tokens[0].end, tokens)
 
@@ -1413,7 +1421,7 @@ class ASTBuilder(object):
             tokens = [token]
 
         # Get the remainder of the typedef up to the semi-colon.
-        tokens.extend(self._get_tokens_up_to(tokenize.SYNTAX, ';'))
+        tokens.extend(self._get_tokens_up_to(';'))
 
         # TODO(nnorwitz): clean all this up.
         assert tokens
@@ -1493,7 +1501,7 @@ class ASTBuilder(object):
             elif token.name == 'friend':
                 return self.handle_friend()
         self._add_back_token(token)
-        tokens, last = self._get_var_tokens_up_to(tokenize.SYNTAX, '(', ';')
+        tokens, last = self._get_var_tokens_up_to(False, '(', ';')
         tokens.append(last)
         self._add_back_tokens(tokens)
         if last.name == '(':
@@ -1645,7 +1653,7 @@ class ASTBuilder(object):
         return None
 
     def handle_using(self):
-        tokens = self._get_tokens_up_to(tokenize.SYNTAX, ';')
+        tokens = self._get_tokens_up_to(';')
         assert tokens
         return Using(tokens[0].start, tokens[0].end, tokens)
 
@@ -1684,11 +1692,11 @@ class ASTBuilder(object):
         pass
 
     def handle_return(self):
-        tokens = self._get_tokens_up_to(tokenize.SYNTAX, ';')
+        tokens = self._get_tokens_up_to(';')
         return Return(tokens[0].start, tokens[0].end, tokens)
 
     def handle_goto(self):
-        tokens = self._get_tokens_up_to(tokenize.SYNTAX, ';')
+        tokens = self._get_tokens_up_to(';')
         assert_parse(len(tokens) == 1, tokens)
         return Goto(tokens[0].start, tokens[0].end, tokens[0].name)
 
@@ -1711,10 +1719,10 @@ class ASTBuilder(object):
         pass
 
     def handle_break(self):
-        self._ignore_up_to(tokenize.SYNTAX, ';')
+        self._ignore_up_to(';')
 
     def handle_continue(self):
-        self._ignore_up_to(tokenize.SYNTAX, ';')
+        self._ignore_up_to(';')
 
 
 def builder_from_source(source, filename, quiet=False):
