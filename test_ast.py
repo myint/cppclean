@@ -327,15 +327,15 @@ class TypeConverterToParametersTest(unittest.TestCase):
         tokens = get_tokens('vector<pair<int, float>> data')
         results = self.converter.to_parameters(list(tokens))
         self.assertEqual(1, len(results), repr(results))
-        
+
         self.assertEqual([], results[0].type.modifiers)
         self.assertEqual('vector', results[0].type.name)
         self.assertEqual('data', results[0].name)
-        
+
         results = results[0].type.templated_types
         self.assertEqual(1, len(results), repr(results))
         self.assertEqual('pair', results[0].name)
-        
+
         results = results[0].templated_types
         self.assertEqual(2, len(results), repr(results))
         self.assertEqual('int', results[0].name)
@@ -691,7 +691,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(
             VariableDeclaration('foo', Type('Foo', modifiers=['struct'])),
             nodes[0])
-            
+
     def test_typedef(self):
         for argument in ('bool', 'char', 'int', 'long', 'short', 'double',
                          'float', 'void', 'wchar_t', 'unsigned', 'signed'):
@@ -1027,7 +1027,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         nodes = list(MakeBuilder('#define \\\n FOO 42').generate())
         self.assertEqual(1, len(nodes))
         self.assertEqual(Define('FOO', '42'), nodes[0])
-        
+
     def test_define_with_backslash_continuation_between_declaration(self):
         nodes = list(MakeBuilder('#define FOO \\\n 42').generate())
         self.assertEqual(1, len(nodes))
@@ -1065,7 +1065,10 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
     def test_template_function(self):
         nodes = list(MakeBuilder('template <> void equal<0>();').generate())
         self.assertEqual(1, len(nodes))
-        self.assertEqual(Function('equal', list(get_tokens('void')), [], templated_types={}), nodes[0])
+        self.assertEqual(
+            Function('equal', list(get_tokens('void')), [],
+                     templated_types={}),
+            nodes[0])
 
 
 if __name__ == '__main__':

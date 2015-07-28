@@ -491,7 +491,7 @@ class TypeConverter(object):
         arrayEnd = 0
         default = []
         other_tokens = []
-        
+
         if parts[0].name == '::':
             parts = parts[1:]
 
@@ -527,7 +527,10 @@ class TypeConverter(object):
                 templated_types = self.to_type(templated_tokens)
                 i = new_end - 1
             elif p.name not in ('*', '&'):
-                if last_type == tokenize.NAME and p.token_type == tokenize.NAME:
+                if (
+                    last_type == tokenize.NAME and
+                    p.token_type == tokenize.NAME
+                ):
                     type_name.append('')
                 type_name[-1] += p.name
                 last_type = p.token_type
@@ -970,8 +973,8 @@ class ASTBuilder(object):
 
         name = return_type_and_name.pop()
         if (len(return_type_and_name) > 1 and
-            return_type_and_name[-1].name == '>' and
-            (name.name == '>=' or name.name == '>')):
+                return_type_and_name[-1].name == '>' and
+                (name.name == '>=' or name.name == '>')):
             n = return_type_and_name.pop()
             name = tokenize.Token(tokenize.SYNTAX,
                                   n.name + name.name,

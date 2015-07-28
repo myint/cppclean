@@ -19,7 +19,6 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import sys
 
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
@@ -260,7 +259,7 @@ def get_tokens(source):
                     s2 = source.find(')', begin)
                     s3 = source.find('\n', begin)
                     s = min([x for x in (s1, s2, s3, end) if x != -1])
-                    
+
                     condition = source[begin:s]
                     if (
                         count_ifs or
