@@ -143,9 +143,6 @@ def Method(name, in_class, return_type, parameters, start=0, end=0,
 
 
 def Typedef(name, start=0, end=0, alias=None, namespace=None):
-    if alias is None:
-        alias = []
-
     if namespace is None:
         namespace = []
 
@@ -159,6 +156,13 @@ def VariableDeclaration(name, var_type, start=0, end=0, initial_value='',
 
     return ast.VariableDeclaration(start, end, name, var_type, initial_value,
                                    namespace)
+
+
+class CoverageTest(unittest.TestCase):
+
+    def test_coverage(self):
+        self.assertFalse(Type('Foo') == Type('Bar'))
+        self.assertFalse(Type('Foo') == Typedef('Foo'))
 
 
 class TypeConverterDeclarationToPartsTest(unittest.TestCase):
@@ -586,6 +590,12 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
 
     """
 
+    def test_variable_array(self):
+        nodes = list(MakeBuilder('int value[42];').generate())
+        self.assertEqual(1, len(nodes), repr(nodes))
+        self.assertEqual(VariableDeclaration('value', Type('int', array=True)),
+                         nodes[0])
+
     def test_variable_initialization_with_initializer_list(self):
         nodes = list(MakeBuilder('int value = {42};').generate())
         self.assertEqual(1, len(nodes), repr(nodes))
@@ -911,12 +921,19 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
             };
         };
         """
+        types1 = {}
+        types1['Alloc'] = (None,list(get_tokens('std::allocator<T>')))
+        types1['T'] = (None,None)
+        types2 = {}
+        types2['U'] = (None,None)
+
         nodes = list(MakeBuilder(code).generate())
         self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Class('AnotherAllocator', bases=[Type('Alloc')],
-                               body=[Struct('rebind', body=[])]),
+                               body=[Struct('rebind', body=[],
+                                            templated_types=types2)],
+                               templated_types=types1,),
                          nodes[0])
-        # TODO(nnorwitz): assert more about the body of the class.
 
     def test_function_parses_operator_bracket(self):
         code = """
@@ -1001,6 +1018,11 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         nodes = list(MakeBuilder('#include \\\n  "test.h"').generate())
         self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Include('test.h'), nodes[0])
+
+    def test_system_include(self):
+        nodes = list(MakeBuilder('#include <vector>').generate())
+        self.assertEqual(1, len(nodes), repr(nodes))
+        self.assertEqual(Include('vector', system=True), nodes[0])
 
     def test_operator_new_bracket(self):
         nodes = list(

@@ -287,7 +287,8 @@ class Class(_GenericDeclaration):
     def __str__(self):
         name = self.name
         if self.templated_types:
-            name += '<%s>' % self.templated_types
+            types = ','.join([t for t in self.templated_types])
+            name += '<%s>' % types
         suffix = '%s, %s, %s' % (name, self.bases, self.body)
         return self._type_string_helper(suffix)
 
@@ -423,7 +424,7 @@ class TypeConverter(object):
         """
         result = []
         name_tokens = []
-        reference = pointer = array = False
+        reference = pointer = False
 
         def add_type(templated_types):
             if not name_tokens:
@@ -441,7 +442,7 @@ class TypeConverter(object):
 
             result.append(Type(name_tokens[0].start, name_tokens[-1].end,
                                name, templated_types, modifiers,
-                               reference, pointer, array))
+                               reference, pointer, False))
             del name_tokens[:]
 
         i = 0
@@ -465,10 +466,10 @@ class TypeConverter(object):
                 # If there is a comma after the template, we need to consume
                 # that here otherwise it becomes part of the name.
                 i = new_end
-                reference = pointer = array = False
+                reference = pointer = False
             elif token.name == ',' or token.name == '(':
                 add_type([])
-                reference = pointer = array = False
+                reference = pointer = False
             elif token.name == '*':
                 pointer = True
             elif token.name == '&':
@@ -1625,7 +1626,7 @@ class ASTBuilder(object):
             self._add_back_token(token)
 
         return class_type(class_token.start, class_token.end, class_name,
-                          bases, None, body, self.namespace_stack)
+                          bases, templated_types, body, self.namespace_stack)
 
     def handle_namespace(self):
         token = self._get_next_token()
