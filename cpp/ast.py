@@ -1063,6 +1063,10 @@ class ASTBuilder(object):
         if token.name == '&' or token.name == '&&':
             token = self._get_next_token()
 
+        # Handle trailing return types.
+        if token.name == '->':
+            return_type, token = self._get_var_tokens_up_to(False, '{', ';')
+
         if token.name == '}' or token.token_type == tokenize.PREPROCESSOR:
             self._add_back_token(token)
             token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)

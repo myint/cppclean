@@ -7,3 +7,5 @@ class Y {
   Y& operator=(const Y&) = default;
   Y(const Y&) = default;
 };
+
+auto bar(void) -> void;
