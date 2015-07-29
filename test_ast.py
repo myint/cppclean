@@ -211,7 +211,7 @@ class TypeConverterToParametersTest(unittest.TestCase):
     def test_really_simple(self):
         tokens = get_tokens('int bar')
         results = self.converter.to_parameters(list(tokens))
-        self.assertEqual(1, len(results))
+        self.assertEqual(1, len(results), repr(results))
 
         self.assertEqual([], results[0].type.modifiers)
         self.assertEqual('int', results[0].type.name)
@@ -224,7 +224,7 @@ class TypeConverterToParametersTest(unittest.TestCase):
     def test_array(self):
         tokens = get_tokens('int[] bar')
         results = self.converter.to_parameters(list(tokens))
-        self.assertEqual(1, len(results))
+        self.assertEqual(1, len(results), repr(results))
 
         self.assertEqual([], results[0].type.modifiers)
         self.assertEqual('int', results[0].type.name)
@@ -238,7 +238,7 @@ class TypeConverterToParametersTest(unittest.TestCase):
         params = 'const int[] bar, mutable char* foo, volatile Bar& babar'
         tokens = get_tokens(params)
         results = self.converter.to_parameters(list(tokens))
-        self.assertEqual(3, len(results))
+        self.assertEqual(3, len(results), repr(results))
 
         self.assertEqual(['const'], results[0].type.modifiers)
         self.assertEqual('int', results[0].type.name)
@@ -267,7 +267,7 @@ class TypeConverterToParametersTest(unittest.TestCase):
     def test_array_with_class(self):
         tokens = get_tokens('Bar[] bar')
         results = self.converter.to_parameters(list(tokens))
-        self.assertEqual(1, len(results))
+        self.assertEqual(1, len(results), repr(results))
 
         self.assertEqual([], results[0].type.modifiers)
         self.assertEqual('Bar', results[0].type.name)
@@ -280,7 +280,7 @@ class TypeConverterToParametersTest(unittest.TestCase):
     def test_multiple_args(self):
         tokens = get_tokens('const volatile Fool* data, int bar, enum X foo')
         results = self.converter.to_parameters(list(tokens))
-        self.assertEqual(3, len(results))
+        self.assertEqual(3, len(results), repr(results))
 
         self.assertEqual(['const', 'volatile'], results[0].type.modifiers)
         self.assertEqual('Fool', results[0].type.name)
@@ -344,7 +344,7 @@ class TypeConverterToParametersTest(unittest.TestCase):
     def test_simple_with_initializers(self):
         tokens = get_tokens('Fool* data = NULL')
         results = self.converter.to_parameters(list(tokens))
-        self.assertEqual(1, len(results))
+        self.assertEqual(1, len(results), repr(results))
 
         self.assertEqual([], results[0].type.modifiers)
         self.assertEqual('Fool', results[0].type.name)
@@ -358,7 +358,7 @@ class TypeConverterToParametersTest(unittest.TestCase):
     def test_templated_default_value(self):
         tokens = get_tokens('int i = Handle<Value>()')
         results = self.converter.to_parameters(list(tokens))
-        self.assertEqual(1, len(results))
+        self.assertEqual(1, len(results), repr(results))
 
         self.assertEqual([], results[0].type.modifiers)
         self.assertEqual('int', results[0].type.name)
@@ -371,7 +371,7 @@ class TypeConverterToParametersTest(unittest.TestCase):
     def test_complex_default_value(self):
         tokens = get_tokens('int i = 4 * 2)')
         results = self.converter.to_parameters(list(tokens))
-        self.assertEqual(1, len(results))
+        self.assertEqual(1, len(results), repr(results))
 
         self.assertEqual([], results[0].type.modifiers)
         self.assertEqual('int', results[0].type.name)
