@@ -655,9 +655,6 @@ class ASTBuilder(object):
 
         self.tokens = token_stream
         self.filename = filename
-        # TODO(nnorwitz): use a better data structure (deque) for the queue.
-        # Switching directions of the "queue" improved perf by about 25%.
-        # Using a deque should be even better since we access from both sides.
         self.token_queue = []
         self.namespace_stack = namespace_stack[:]
         self.define = set()
@@ -1347,18 +1344,13 @@ class ASTBuilder(object):
 
     def handle_virtual(self):
         # What follows must be a method.
-        token = token2 = self._get_next_token()
+        token = self._get_next_token()
         if token.name == 'inline':
-            # HACK(nnorwitz): handle inline dtors by ignoring 'inline'.
-            token2 = self._get_next_token()
-        if token2.token_type == tokenize.SYNTAX and token2.name == '~':
+            token = self._get_next_token()
+        if token.token_type == tokenize.SYNTAX and token.name == '~':
             return self.get_method(FUNCTION_VIRTUAL + FUNCTION_DTOR, None)
-        assert_parse(token.token_type == tokenize.NAME or token.name == '::',
-                     token)
         return_type_and_name = self._get_tokens_up_to('(')
         return_type_and_name.insert(0, token)
-        if token2 is not token:
-            return_type_and_name.insert(1, token2)
         return self._get_method(return_type_and_name, FUNCTION_VIRTUAL,
                                 None, False)
 
@@ -1373,11 +1365,11 @@ class ASTBuilder(object):
         self.visibility = VISIBILITY_PUBLIC
 
     def handle_protected(self):
-        assert self.in_class
+        assert_parse(self.in_class, 'expected to be in a class')
         self.visibility = VISIBILITY_PROTECTED
 
     def handle_private(self):
-        assert self.in_class
+        assert_parse(self.in_class, 'expected to be in a class')
         self.visibility = VISIBILITY_PRIVATE
 
     def handle_friend(self):

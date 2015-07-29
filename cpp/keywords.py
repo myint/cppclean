@@ -22,10 +22,10 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
 TYPES = frozenset(['bool', 'char', 'int', 'long', 'short', 'double', 'float',
-                   'void', 'wchar_t', 'unsigned', 'signed', 'size_t'])
+                   'void', 'wchar_t', 'unsigned', 'signed', 'size_t', 'auto'])
 
-TYPE_MODIFIERS = frozenset(['auto', 'register', 'const', 'inline', 'extern',
-                            'static', 'virtual', 'volatile', 'mutable'])
+TYPE_MODIFIERS = frozenset(['register', 'const', 'extern',
+                            'static', 'volatile', 'mutable'])
 
 OTHER_MODIFIERS = frozenset(['class', 'struct', 'union', 'enum'])
 
@@ -37,7 +37,7 @@ CASTS = frozenset(['static_cast', 'const_cast', 'dynamic_cast',
 OTHERS = frozenset(['true', 'false', 'asm', 'namespace', 'using',
                     'explicit', 'this', 'operator', 'sizeof',
                     'new', 'delete', 'typedef', 'typeid',
-                    'typename', 'template'])
+                    'typename', 'template', 'virtual', 'inline'])
 
 CONTROL = frozenset(['case', 'switch', 'default', 'if', 'else', 'return',
                      'goto'])
@@ -55,15 +55,10 @@ def is_keyword(token):
 
 
 def is_builtin_type(token):
-    if token in ('virtual', 'inline'):
-        # These only apply to methods, they can't be types by themselves.
-        return False
     return token in TYPES or token in TYPE_MODIFIERS
 
 
 def is_builtin_modifiers(token):
-    if token in ['auto']:
-        return False
     return token in TYPE_MODIFIERS or token in OTHER_MODIFIERS
 
 
