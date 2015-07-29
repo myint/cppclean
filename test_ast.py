@@ -588,41 +588,41 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
 
     def test_variable_initialization_with_initializer_list(self):
         nodes = list(MakeBuilder('int value = {42};').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(VariableDeclaration('value', Type('int'),
                                              initial_value='{42}'),
                          nodes[0])
 
     def test_variable_initialization_with_initializer_list2(self):
         nodes = list(MakeBuilder('auto il = {10,20,30};').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(VariableDeclaration('il', Type('auto'),
                                              initial_value='{10,20,30}'),
                          nodes[0])
 
     def test_variable_initialization_with_function(self):
         nodes = list(MakeBuilder('int value = fct();').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(VariableDeclaration('value', Type('int'),
                                              initial_value='fct()'),
                          nodes[0])
 
     def test_variable_initialization_with_complex_expression(self):
         nodes = list(MakeBuilder('int value = fct() + 42;').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(VariableDeclaration('value', Type('int'),
                                              initial_value='fct()+42'),
                          nodes[0])
 
     def test_variable_anonymous_class(self):
         nodes = list(MakeBuilder('class {public:} a;').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(VariableDeclaration('a', Type(Class(None, body=[]))),
                          nodes[0])
 
     def test_variable_anonymous_class2(self):
         nodes = list(MakeBuilder('const class {public:} a;').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(VariableDeclaration('a', Type(Class(None, body=[]),
                                                        modifiers=['const'])),
                          nodes[0])
@@ -633,7 +633,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
                          'const Foo* const f', 'auto f'):
             code = 'void fct(%s);' % argument
             nodes = list(MakeBuilder(code).generate())
-            self.assertEqual(1, len(nodes))
+            self.assertEqual(1, len(nodes), repr(nodes))
             self.assertEqual(1, len(nodes[0].parameters))
             self.assertEqual('f', nodes[0].parameters[0].name)
 
@@ -643,51 +643,51 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
                          'const Foo* const', 'auto int'):
             code = 'void fct(%s);' % argument
             nodes = list(MakeBuilder(code).generate())
-            self.assertEqual(1, len(nodes))
+            self.assertEqual(1, len(nodes), repr(nodes))
             self.assertEqual(1, len(nodes[0].parameters))
             self.assertEqual(None, nodes[0].parameters[0].name)
 
     def test_no_argument(self):
         nodes = list(MakeBuilder('FOO();').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Function('FOO', [], []), nodes[0])
 
     def test_one_argument(self):
         nodes = list(MakeBuilder('FOO(1);').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Function('FOO', [], list(get_tokens('1'))), nodes[0])
 
     def test_two_arguments(self):
         nodes = list(MakeBuilder('FOO(1,0);').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(
             Function('FOO', [], list(get_tokens('1,0'))), nodes[0])
 
     def test_two_arguments_first_empty(self):
         nodes = list(MakeBuilder('FOO( ,0);').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Function('FOO', [], list(get_tokens('0'))), nodes[0])
 
     def test_two_arguments_second_empty(self):
         nodes = list(MakeBuilder('FOO(1, );').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Function('FOO', [], list(get_tokens('1'))), nodes[0])
 
     def test_two_arguments_both_empty(self):
         nodes = list(MakeBuilder('FOO( , );').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Function('FOO', [], []), nodes[0])
 
     def test_class_variable_declaration(self):
         nodes = list(MakeBuilder('class Foo foo;').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(
             VariableDeclaration('foo', Type('Foo', modifiers=['class'])),
             nodes[0])
 
     def test_struct_variable_declaration(self):
         nodes = list(MakeBuilder('struct Foo foo;').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(
             VariableDeclaration('foo', Type('Foo', modifiers=['struct'])),
             nodes[0])
@@ -697,13 +697,13 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
                          'float', 'void', 'wchar_t', 'unsigned', 'signed'):
             code = 'typedef %s Type;' % argument
             nodes = list(MakeBuilder(code).generate())
-            self.assertEqual(1, len(nodes))
+            self.assertEqual(1, len(nodes), repr(nodes))
             self.assertEqual(Typedef('Type', alias=Type('%s' % argument)),
                              nodes[0])
 
     def test_anon_class_typedef(self):
         nodes = list(MakeBuilder('typedef class { int zz; } Anon;').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(
             Typedef('Anon',
                     alias=[Class(None,
@@ -714,7 +714,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
     def test_anon_struct_typedef(self):
         nodes = list(
             MakeBuilder('typedef struct { int zz; } Anon;').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(
             Typedef('Anon',
                     alias=[Struct(None,
@@ -725,98 +725,98 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
     def test_class_typedef(self):
         nodes = list(
             MakeBuilder('typedef class _IplImage IplImage;').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Typedef('IplImage', alias=[Class('_IplImage')]),
                          nodes[0])
 
     def test_struct_typedef(self):
         nodes = list(
             MakeBuilder('typedef struct _IplImage IplImage;').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Typedef('IplImage', alias=[Struct('_IplImage')]),
                          nodes[0])
 
     def test_class_pointer_typedef(self):
         nodes = list(
             MakeBuilder('typedef class _IplImage *IplImage;').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Typedef('IplImage', alias=[Class('_IplImage*')]),
                          nodes[0])
 
     def test_struct_pointer_typedef(self):
         nodes = list(
             MakeBuilder('typedef struct _IplImage *IplImage;').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Typedef('IplImage', alias=[Struct('_IplImage*')]),
                          nodes[0])
 
     def test_class_forward_declaration(self):
         nodes = list(MakeBuilder('class Foo;').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Class('Foo', body=None), nodes[0])
 
     def test_struct_forward_declaration(self):
         nodes = list(MakeBuilder('struct Foo;').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Struct('Foo', body=None), nodes[0])
 
     def test_class_empty_body(self):
         nodes = list(MakeBuilder('class Foo {};').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Class('Foo', body=[]), nodes[0])
 
     def test_struct_empty_body(self):
         nodes = list(MakeBuilder('struct Foo {};').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Struct('Foo', body=[]), nodes[0])
 
     def test_class_final(self):
         nodes = list(MakeBuilder('class Foo final {};').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Class('Foo', body=[]), nodes[0])
 
     def test_class_exported(self):
         nodes = list(MakeBuilder('class DLLEXPORT Foo {};').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Class('Foo', body=[]), nodes[0])
 
     def test_struct_exported(self):
         nodes = list(MakeBuilder('struct DLLEXPORT Foo {};').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Struct('Foo', body=[]), nodes[0])
 
     def test_class_in_namespace_single(self):
         nodes = list(MakeBuilder('namespace N { class Foo; }').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Class('Foo', namespace=['N']), nodes[0])
 
     def test_class_in_namespace_multiple(self):
         code = 'namespace A { namespace B { namespace C { class Foo; }}}'
         nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Class('Foo', namespace=['A', 'B', 'C']), nodes[0])
 
     def test_class_in_namespace_multiple_with_one_closed(self):
         code = 'namespace A { namespace B {} namespace C { class Foo; }}'
         nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Class('Foo', namespace=['A', 'C']), nodes[0])
 
     def test_class_in_anonymous_namespace_single(self):
         nodes = list(MakeBuilder('namespace { class Foo; }').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Class('Foo', namespace=[None]), nodes[0])
 
     def test_class_in_anonymous_namespace_multiple(self):
         code = 'namespace A { namespace { namespace B { class Foo; }}}'
         nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Class('Foo', namespace=['A', None, 'B']), nodes[0])
 
     def test_template_typedef(self):
         code = 'class Foo; typedef Bar<Foo*> v;'
         nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(2, len(nodes))
+        self.assertEqual(2, len(nodes), repr(nodes))
         self.assertEqual(Class('Foo'), nodes[0])
         self.assertEqual(
             Typedef('v',
@@ -829,32 +829,32 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
                          '>', '^=', '<<=', '>>='):
             code = 'void Foo::operator%s();' % operator
             nodes = list(MakeBuilder(code).generate())
-            self.assertEqual(1, len(nodes))
+            self.assertEqual(1, len(nodes), repr(nodes))
             self.assertEqual(Method(('operator%s' % operator),
                                     list(get_tokens('Foo')),
                                     list(get_tokens('void')), []), nodes[0])
 
     def test_class_no_anonymous_namespace(self):
         nodes = list(MakeBuilder('class Foo;').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Class('Foo', namespace=[]), nodes[0])
 
     def test_class_virtual_inheritance(self):
         code = 'class Foo : public virtual Bar {};'
         nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Class('Foo', bases=[Type('Bar')], body=[]), nodes[0])
 
     def test_class_virtual_inheritance_reverse(self):
         code = 'class Foo : virtual public Bar {};'
         nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Class('Foo', bases=[Type('Bar')], body=[]), nodes[0])
 
     def test_constructor(self):
         code = 'Foo::Foo() {}'
         nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Method('Foo', list(get_tokens('Foo')), [], [],
                                 body=[]),
                          nodes[0])
@@ -862,7 +862,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
     def test_destructor(self):
         code = 'Foo::~Foo() {}'
         nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Method('~Foo', list(get_tokens('Foo')), [], [],
                                 body=[]),
                          nodes[0])
@@ -872,7 +872,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
                          '>'):
             code = 'class Foo { void operator%s(); };' % operator
             nodes = list(MakeBuilder(code).generate())
-            self.assertEqual(1, len(nodes))
+            self.assertEqual(1, len(nodes), repr(nodes))
             function = nodes[0].body[0]
             expected = Function(('operator%s' % operator),
                                 list(get_tokens('void')), [])
@@ -883,7 +883,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
     def test_class_virtual_inline_destructor(self):
         code = 'class Foo { virtual inline ~Foo(); };'
         nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         function = nodes[0].body[0]
         expected = Function('Foo', [], [],
                             modifiers=ast.FUNCTION_DTOR | ast.FUNCTION_VIRTUAL)
@@ -895,7 +895,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         method_body = 'XXX(1) << "should work";'
         code = 'class Foo::Bar { ~Bar() { %s } };' % method_body
         nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         function = nodes[0].body[0]
         expected = Function('Bar', [], [], body=list(get_tokens(method_body)),
                             modifiers=ast.FUNCTION_DTOR)
@@ -912,7 +912,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         };
         """
         nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Class('AnotherAllocator', bases=[Type('Alloc')],
                                body=[Struct('rebind', body=[])]),
                          nodes[0])
@@ -925,7 +925,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         };
         """
         nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         function = nodes[0].body[0]
         expected = Function('operator[]', list(get_tokens('const B&')),
                             list(get_tokens('const int i')), body=[],
@@ -940,7 +940,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         char (&ASH(T (&seq)[N]))[N];
         """
         nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         # TODO(nnorwitz): this doesn't parse correctly, but at least
         # it doesn't raise an exception anymore. Improve the parsing.
 
@@ -951,7 +951,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         }
         """
         nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         expected = Method('Write', list(get_tokens('EVM::VH<T>')),
                           list(get_tokens('inline void')), [],
                           templated_types={'T': (None, None)},
@@ -968,7 +968,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         }
         """
         nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         expected = Method('Write', list(get_tokens('EVM::VH<T, U>')),
                           list(get_tokens('inline void')), [],
                           templated_types={'T': (None, None),
@@ -986,7 +986,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         }
         """
         nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         tt = (None, None)
         expected = Method('Create', list(get_tokens('Worker<CT, IT, DT>')),
                           list(get_tokens('DT*')), [],
@@ -999,13 +999,13 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
 
     def test_include_with_backslash_continuation_works(self):
         nodes = list(MakeBuilder('#include \\\n  "test.h"').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Include('test.h'), nodes[0])
 
     def test_operator_new_bracket(self):
         nodes = list(
             MakeBuilder('void* operator new[](std::size_t size);').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         expected = Function('new[]', list(get_tokens('void* operator')),
                             list(get_tokens('std::size_t size')))
         self.assertEqual(expected, nodes[0])
@@ -1013,39 +1013,39 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
     def test_operator_delete_bracket(self):
         nodes = list(
             MakeBuilder('void operator delete[](void* ptr);').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         expected = Function('delete[]', list(get_tokens('void operator')),
                             list(get_tokens('void* ptr')))
         self.assertEqual(expected, nodes[0])
 
     def test_define(self):
         nodes = list(MakeBuilder('#define FOO 42').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Define('FOO', '42'), nodes[0])
 
     def test_define_with_backslash_continuation(self):
         nodes = list(MakeBuilder('#define \\\n FOO 42').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Define('FOO', '42'), nodes[0])
 
     def test_define_with_backslash_continuation_between_declaration(self):
         nodes = list(MakeBuilder('#define FOO \\\n 42').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Define('FOO', '42'), nodes[0])
 
     def test_empty_define(self):
         nodes = list(MakeBuilder('#define FOO').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Define('FOO', ''), nodes[0])
 
     def test_function_like_define(self):
         nodes = list(MakeBuilder('#define FOO(a, b) a##b').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Define('FOO', 'a##b'), nodes[0])
 
     def test_function_like_define_no_space(self):
         nodes = list(MakeBuilder('#define FOO(a, b)a##b').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Define('FOO', 'a##b'), nodes[0])
 
     def test_variable_declaration_with_define(self):
@@ -1056,7 +1056,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         void FOO();
         """
         nodes = list(MakeBuilder(code).generate())
-        self.assertEqual(3, len(nodes))
+        self.assertEqual(3, len(nodes), repr(nodes))
         self.assertEqual(Define('FOO', 'Type##str'), nodes[0])
         self.assertEqual(VariableDeclaration('FOO', Type('int')), nodes[1])
         self.assertEqual(Function('FOO', list(get_tokens('void')), []),
@@ -1064,7 +1064,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
 
     def test_template_function(self):
         nodes = list(MakeBuilder('template <> void equal<0>();').generate())
-        self.assertEqual(1, len(nodes))
+        self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(
             Function('equal', list(get_tokens('void')), [],
                      templated_types={}),
