@@ -147,10 +147,6 @@ class Return(Expr):
     pass
 
 
-class Delete(Expr):
-    pass
-
-
 class Friend(Expr):
 
     def __init__(self, start, end, expr, namespace):
@@ -398,18 +394,13 @@ class TypeConverter(object):
     def _get_template_end(self, tokens, start):
         count = 1
         end = start
-        while True:
-            try:
-                token = tokens[end]
-            except IndexError:
-                raise ParseError(tokens)
+        while count:
+            token = tokens[end]
             end += 1
             if token.name == '<':
                 count += 1
             elif token.name == '>':
                 count -= 1
-                if count == 0:
-                    break
         return tokens[start:end - 1], end
 
     def to_type(self, tokens):
@@ -679,8 +670,6 @@ class ASTBuilder(object):
     def generate(self):
         while True:
             token = self._get_next_token()
-            if not token:
-                break
 
             # Dispatch on the next token type.
             if (
@@ -690,13 +679,9 @@ class ASTBuilder(object):
                 self.namespace_stack.pop()
                 continue
 
-            try:
-                result = self._generate_one(token)
-                if result is not None:
-                    yield result
-            except:
-                self.handle_error('exception', token)
-                raise
+            result = self._generate_one(token)
+            if result is not None:
+                yield result
 
     def _create_variable(self, pos_token, name, type_name, type_modifiers,
                          ref_pointer_name_seq, templated_types=None, value=''):
@@ -1178,39 +1163,6 @@ class ASTBuilder(object):
         class_name = names[-1]
         return return_type, class_name
 
-    def handle_bool(self):
-        pass
-
-    def handle_char(self):
-        pass
-
-    def handle_int(self):
-        pass
-
-    def handle_long(self):
-        pass
-
-    def handle_short(self):
-        pass
-
-    def handle_double(self):
-        pass
-
-    def handle_float(self):
-        pass
-
-    def handle_void(self):
-        pass
-
-    def handle_wchar_t(self):
-        pass
-
-    def handle_unsigned(self):
-        pass
-
-    def handle_signed(self):
-        pass
-
     def _get_nested_type(self, ctor):
         # Handle strongly typed enumerations.
         token = self._get_next_token()
@@ -1325,12 +1277,6 @@ class ASTBuilder(object):
     def handle_enum(self):
         return self._get_nested_type(Enum)
 
-    def handle_auto(self):
-        pass
-
-    def handle_register(self):
-        pass
-
     def handle_const(self):
         self._handling_const = True
         token = self._get_next_token()
@@ -1344,9 +1290,6 @@ class ASTBuilder(object):
     def handle_extern(self):
         pass
 
-    def handle_static(self):
-        pass
-
     def handle_virtual(self):
         # What follows must be a method.
         token = self._get_next_token()
@@ -1358,12 +1301,6 @@ class ASTBuilder(object):
         return_type_and_name.insert(0, token)
         return self._get_method(return_type_and_name, FUNCTION_VIRTUAL,
                                 None, False)
-
-    def handle_volatile(self):
-        pass
-
-    def handle_mutable(self):
-        pass
 
     def handle_public(self):
         assert_parse(self.in_class, 'expected to be in a class')
@@ -1394,26 +1331,6 @@ class ASTBuilder(object):
         assert result
         return Friend(result.start, result.end, result, self.namespace_stack)
 
-    def handle_static_cast(self):
-        pass
-
-    def handle_const_cast(self):
-        pass
-
-    def handle_dynamic_cast(self):
-        pass
-
-    def handle_reinterpret_cast(self):
-        pass
-
-    def handle_new(self):
-        pass
-
-    def handle_delete(self):
-        tokens = self._get_tokens_up_to(';')
-        assert tokens
-        return Delete(tokens[0].start, tokens[0].end, tokens)
-
     def handle_typedef(self):
         token = self._get_next_token()
         if (token.token_type == tokenize.NAME and
@@ -1428,29 +1345,22 @@ class ASTBuilder(object):
         # Get the remainder of the typedef up to the semi-colon.
         tokens.extend(self._get_tokens_up_to(';'))
 
-        # TODO(nnorwitz): clean all this up.
-        assert tokens
         name = tokens.pop()
-        indices = name
-        if tokens:
-            indices = tokens[0]
-        if not indices:
-            indices = token
         if name.name == ')':
             # HACK(nnorwitz): Handle pointers to functions "properly".
             if (len(tokens) >= 4 and
                     tokens[1].name == '(' and tokens[2].name == '*'):
                 tokens.append(name)
                 name = tokens[3]
-        elif name.name == ']':
+        elif name.name == ']' and len(tokens) >= 2:
             # HACK(nnorwitz): Handle arrays properly.
-            if len(tokens) >= 2:
-                tokens.append(name)
-                name = tokens[1]
+            tokens.append(name)
+            name = tokens[1]
+            del tokens[1]
         new_type = tokens
         if tokens and isinstance(tokens[0], tokenize.Token):
             new_type = self.converter.to_type(tokens)[0]
-        return Typedef(indices.start, indices.end, name.name,
+        return Typedef(name.start, name.end, name.name,
                        new_type, self.namespace_stack)
 
     def handle_typeid(self):

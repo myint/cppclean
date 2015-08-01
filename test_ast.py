@@ -844,11 +844,6 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
                                     list(get_tokens('Foo')),
                                     list(get_tokens('void')), []), nodes[0])
 
-    def test_class_no_anonymous_namespace(self):
-        nodes = list(MakeBuilder('class Foo;').generate())
-        self.assertEqual(1, len(nodes), repr(nodes))
-        self.assertEqual(Class('Foo', namespace=[]), nodes[0])
-
     def test_class_virtual_inheritance(self):
         code = 'class Foo : public virtual Bar {};'
         nodes = list(MakeBuilder(code).generate())
@@ -1092,6 +1087,12 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
                      templated_types={}),
             nodes[0])
 
+    def test_inline_function(self):
+        nodes = list(MakeBuilder('inline void fn();').generate())
+        self.assertEqual(1, len(nodes), repr(nodes))
+        self.assertEqual(
+            Function('fn', list(get_tokens('void')), []),
+            nodes[0])
 
 if __name__ == '__main__':
     unittest.main()
