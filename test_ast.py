@@ -1087,6 +1087,11 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
                      templated_types={}),
             nodes[0])
 
+    def test_explicit_template_instantiation(self):
+        nodes = list(MakeBuilder('template class basic_string<int>;').generate())
+        self.assertEqual(1, len(nodes), repr(nodes))
+        self.assertEqual(Class('basic_string<int>'), nodes[0])
+
     def test_inline_function(self):
         nodes = list(MakeBuilder('inline void fn();').generate())
         self.assertEqual(1, len(nodes), repr(nodes))
