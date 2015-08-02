@@ -673,7 +673,10 @@ class ASTBuilder(object):
 
     def generate(self):
         while True:
-            token = self._get_next_token()
+            try:
+                token = self._get_next_token()
+            except StopIteration:
+                break
 
             # Dispatch on the next token type.
             if (
