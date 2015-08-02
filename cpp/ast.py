@@ -122,17 +122,6 @@ class Include(Node):
                                    fmt % self.filename)
 
 
-class Goto(Node):
-
-    def __init__(self, start, end, label):
-        Node.__init__(self, start, end)
-        self.label = label
-
-    def __str__(self):
-        return self._string_helper(self.__class__.__name__,
-                                   unicode(self.label))
-
-
 class Expr(Node):
 
     def __init__(self, start, end, expr):
@@ -141,10 +130,6 @@ class Expr(Node):
 
     def __str__(self):
         return self._string_helper(self.__class__.__name__, unicode(self.expr))
-
-
-class Return(Expr):
-    pass
 
 
 class Friend(Expr):
@@ -1581,65 +1566,9 @@ class ASTBuilder(object):
         # This must be a ctor.
         return self.get_method(FUNCTION_CTOR, None)
 
-    def handle_this(self):
-        pass  # Nothing to do.
-
     def handle_operator(self):
         # Pull off the next token(s?) and make that part of the method name.
         pass
-
-    def handle_sizeof(self):
-        pass
-
-    def handle_case(self):
-        pass
-
-    def handle_switch(self):
-        pass
-
-    def handle_default(self):
-        token = self._get_next_token()
-        assert token.token_type == tokenize.SYNTAX
-        assert token.name == ':'
-
-    def handle_if(self):
-        pass
-
-    def handle_else(self):
-        pass
-
-    def handle_return(self):
-        tokens = self._get_tokens_up_to(';')
-        return Return(tokens[0].start, tokens[0].end, tokens)
-
-    def handle_goto(self):
-        tokens = self._get_tokens_up_to(';')
-        assert_parse(len(tokens) == 1, tokens)
-        return Goto(tokens[0].start, tokens[0].end, tokens[0].name)
-
-    def handle_try(self):
-        pass  # Not needed yet.
-
-    def handle_catch(self):
-        pass  # Not needed yet.
-
-    def handle_throw(self):
-        pass  # Not needed yet.
-
-    def handle_while(self):
-        pass
-
-    def handle_do(self):
-        pass
-
-    def handle_for(self):
-        pass
-
-    def handle_break(self):
-        self._ignore_up_to(';')
-
-    def handle_continue(self):
-        self._ignore_up_to(';')
 
 
 def builder_from_source(source, filename, quiet=False):
