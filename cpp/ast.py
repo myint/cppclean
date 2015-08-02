@@ -312,8 +312,12 @@ class Function(_GenericDeclaration):
         return self.body is not None
 
     def is_exportable(self):
-        if self.return_type and 'static' in self.return_type.modifiers:
-            return False
+        if self.return_type:
+            if (
+                'static' in self.return_type.modifiers or
+                'constexpr' in self.return_type.modifiers
+            ):
+                return False
         return None not in self.namespace
 
     def __str__(self):

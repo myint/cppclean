@@ -53,7 +53,10 @@ def _find_warnings(filename, lines, ast_list, static_is_optional):
         if isinstance(node, ast.VariableDeclaration):
             # Ignore 'static' at module scope so we can find globals too.
             is_static = 'static' in node.type.modifiers
-            is_not_const = 'const' not in node.type.modifiers
+            is_not_const = (
+                'const' not in node.type.modifiers and
+                'constexpr' not in node.type.modifiers
+            )
 
             if is_not_const and (static_is_optional or is_static):
                 print_warning(node, node.name)

@@ -24,7 +24,7 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 TYPES = frozenset(['bool', 'char', 'int', 'long', 'short', 'double', 'float',
                    'void', 'wchar_t', 'unsigned', 'signed', 'size_t', 'auto'])
 
-TYPE_MODIFIERS = frozenset(['register', 'const', 'extern',
+TYPE_MODIFIERS = frozenset(['register', 'const', 'constexpr', 'extern',
                             'static', 'volatile', 'mutable'])
 
 OTHER_MODIFIERS = frozenset(['class', 'struct', 'union', 'enum'])
