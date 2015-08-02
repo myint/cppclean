@@ -917,10 +917,10 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         };
         """
         types1 = {}
-        types1['Alloc'] = (None,list(get_tokens('std::allocator<T>')))
-        types1['T'] = (None,None)
+        types1['Alloc'] = (None, list(get_tokens('std::allocator<T>')))
+        types1['T'] = (None, None)
         types2 = {}
-        types2['U'] = (None,None)
+        types2['U'] = (None, None)
 
         nodes = list(MakeBuilder(code).generate())
         self.assertEqual(1, len(nodes), repr(nodes))
@@ -1088,7 +1088,8 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
             nodes[0])
 
     def test_explicit_template_instantiation(self):
-        nodes = list(MakeBuilder('template class basic_string<int>;').generate())
+        nodes = list(
+            MakeBuilder('template class basic_string<int>;').generate())
         self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Class('basic_string<int>'), nodes[0])
 
