@@ -498,6 +498,18 @@ class TypeConverterToTypeTest(unittest.TestCase):
                  Type('int')]
         self.assertEqual(Type('function', templated_types=types), result[0])
 
+    def test_array(self):
+        tokens = get_tokens('Foo[]')
+        result = self.converter.to_type(list(tokens))
+        self.assertEqual(1, len(result))
+        self.assertEqual(Type('Foo', pointer=True), result[0])
+
+    def test_array_with_size(self):
+        tokens = get_tokens('Foo[42]')
+        result = self.converter.to_type(list(tokens))
+        self.assertEqual(1, len(result))
+        self.assertEqual(Type('Foo', array=True), result[0])
+
 
 class TypeConverterCreateReturnTypeTest(unittest.TestCase):
 

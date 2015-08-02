@@ -419,9 +419,12 @@ class TypeConverter(object):
         """
         result = []
         name_tokens = []
-        reference = pointer = False
+        reference = pointer = array = False
+        inside_array = False
+        empty_array = True
+        templated_tokens = []
 
-        def add_type(templated_types):
+        def add_type():
             if not name_tokens:
                 return
 
@@ -435,51 +438,43 @@ class TypeConverter(object):
                     names.append(t.name)
             name = ''.join(names)
 
+            templated_types = self.to_type(templated_tokens)
             result.append(Type(name_tokens[0].start, name_tokens[-1].end,
                                name, templated_types, modifiers,
-                               reference, pointer, False))
+                               reference, pointer, array))
             del name_tokens[:]
+            del templated_tokens[:]
 
         i = 0
         end = len(tokens)
         while i < end:
             token = tokens[i]
-            if token.name == '<':
-                new_tokens, new_end = self._get_template_end(tokens, i + 1)
-                if new_end < end:
-                    if tokens[new_end].name == '::':
-                        name_tokens.append(tokens[new_end])
-                        name_tokens.append(tokens[new_end + 1])
-                        new_end += 2
-                    elif tokens[new_end].name == '*':
-                        pointer = True
-                        new_end += 1
-                    elif tokens[new_end].name == '&':
-                        reference = True
-                        new_end += 1
-                add_type(self.to_type(new_tokens))
-                # If there is a comma after the template, we need to consume
-                # that here otherwise it becomes part of the name.
-                i = new_end
-                reference = pointer = False
+            if token.name == ']':
+                inside_array = False
+                if empty_array:
+                    pointer = True
+                else:
+                    array = True
+            elif inside_array:
+                empty_array = False
+            elif token.name == '<':
+                templated_tokens, i = self._get_template_end(tokens, i + 1)
+                continue
             elif token.name == ',' or token.name == '(':
-                add_type([])
-                reference = pointer = False
+                add_type()
+                reference = pointer = array = False
+                empty_array = True
             elif token.name == '*':
                 pointer = True
             elif token.name == '&':
                 reference = True
             elif token.name == '[':
-                pointer = True
-            elif token.name == ']' or token.name == ')':
-                pass
-            else:
+                inside_array = True
+            elif token.name != ')':
                 name_tokens.append(token)
             i += 1
 
-        if name_tokens:
-            # No '<' in the tokens, just a simple name and no template.
-            add_type([])
+        add_type()
         return result
 
     def declaration_to_parts(self, parts, needs_name_removed):
