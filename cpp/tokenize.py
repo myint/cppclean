@@ -149,9 +149,12 @@ def get_tokens(source):
                 i = _get_string(source, i)
         elif c == '/' and source[i + 1] == '/':  # Find // comments.
             i = source.find('\n', i)
+            assert i != -1
             continue
         elif c == '/' and source[i + 1] == '*':  # Find /* comments. */
-            i = source.find('*/', i) + 2
+            result = source.find('*/', i)
+            assert result != -1
+            i = result + 2
             continue
         elif c in '<>':                          # Handle '<' and '>' tokens.
             token_type = SYNTAX
@@ -235,13 +238,17 @@ def get_tokens(source):
 
                 # Handle comments in #define macros.
                 if i == i3:
-                    i = source.find('*/', i) + 2
+                    result = source.find('*/', i)
+                    assert result != -1
+                    i = result + 2
                     source = source[:i3].ljust(i) + source[i:]
                     continue
 
                 # Handle #include "dir//foo.h" properly.
                 if source[i] == '"':
-                    i = source.find('"', i + 1) + 1
+                    result = source.find('"', i + 1)
+                    assert result != -1
+                    i = result + 1
                     assert i > 0
                     continue
 
