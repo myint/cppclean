@@ -61,29 +61,29 @@ class TokenizeTest(unittest.TestCase):
     def get_tokens(self, string):
         return list(tokenize.get_tokens(string))
 
-    def testget_tokens_empty_string(self):
+    def test_get_tokens_empty_string(self):
         self.assertEqual([], self.get_tokens(''))
 
-    def testget_tokens_whitespace(self):
+    def test_get_tokens_whitespace(self):
         self.assertEqual([], self.get_tokens('   '))
         self.assertEqual([], self.get_tokens('   \n\n\n'))
 
-    def testget_tokens_cpp_comment(self):
+    def test_get_tokens_cpp_comment(self):
         self.assertEqual([], self.get_tokens('// comment'))
 
-    def testget_tokens_multiline_comment(self):
+    def test_get_tokens_multiline_comment(self):
         self.assertEqual([], self.get_tokens('/* comment\n\n\nfoo */'))
 
-    def testget_tokens_if0(self):
+    def test_get_tokens_if0(self):
         tokens = self.get_tokens('#if 0\n@\n#endif')
         self.assertEqual(0, len(tokens), tokens)
 
-    def testget_tokens_define(self):
+    def test_get_tokens_define(self):
         tokens = self.get_tokens('#define PI 3.14')
         self.assertEqual(1, len(tokens), tokens)
         self.assertEqual(Preprocessor('#define PI 3.14', 0, 15), tokens[0])
 
-    def testget_tokens_binary_operators(self):
+    def test_get_tokens_binary_operators(self):
         for operator in '+-*/%&|^<>':
             #                        012 345
             tokens = self.get_tokens('5 %s 3' % operator)
@@ -92,7 +92,7 @@ class TokenizeTest(unittest.TestCase):
             self.assertEqual(Syntax(operator, 2, 3), tokens[1])
             self.assertEqual(Constant('3', 4, 5), tokens[2])
 
-    def testget_tokens_multi_char_binary_operators(self):
+    def test_get_tokens_multi_char_binary_operators(self):
         #                        0123456
         tokens = self.get_tokens('5 << 3')
         self.assertEqual(3, len(tokens), tokens)
@@ -100,7 +100,7 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Syntax('<<', 2, 4), tokens[1])
         self.assertEqual(Constant('3', 5, 6), tokens[2])
 
-    def testget_tokens_addition_with_comment(self):
+    def test_get_tokens_addition_with_comment(self):
         #                        0123456789012 3 4 56789012345
         tokens = self.get_tokens('5 /* comment\n\n\nfoo */ + 3')
         self.assertEqual(3, len(tokens), tokens)
@@ -108,7 +108,7 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Syntax('+', 22, 23), tokens[1])
         self.assertEqual(Constant('3', 24, 25), tokens[2])
 
-    def testget_tokens_logical_operators(self):
+    def test_get_tokens_logical_operators(self):
         for operator in ('&&', '||'):
             #                        0123456
             tokens = self.get_tokens('a %s b' % operator)
@@ -123,7 +123,7 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Syntax('!', 0, 1), tokens[0])
         self.assertEqual(Name('not', 1, 4), tokens[1])
 
-    def testget_tokens_operators(self):
+    def test_get_tokens_operators(self):
         for operator in ('+=', '-=', '*=', '==', '!=', '/=', '%=', '^=', '|=',
                          '<<', '<=', '>='):
             #                        0123456
@@ -133,14 +133,14 @@ class TokenizeTest(unittest.TestCase):
             self.assertEqual(Syntax(operator, 2, 4), tokens[1])
             self.assertEqual(Name('b', 5, 6), tokens[2])
 
-    def testget_tokens_ones_complement(self):
+    def test_get_tokens_ones_complement(self):
         #                        01234
         tokens = self.get_tokens('~not')
         self.assertEqual(2, len(tokens), tokens)
         self.assertEqual(Syntax('~', 0, 1), tokens[0])
         self.assertEqual(Name('not', 1, 4), tokens[1])
 
-    def testget_tokens_pre_increment_operators(self):
+    def test_get_tokens_pre_increment_operators(self):
         for operator in ('++', '--'):
             #                        012345
             tokens = self.get_tokens('%sFOO' % operator)
@@ -154,7 +154,7 @@ class TokenizeTest(unittest.TestCase):
             self.assertEqual(Syntax(operator, 0, 2), tokens[0])
             self.assertEqual(Name('FOO', 3, 6), tokens[1])
 
-    def testget_tokens_post_increment_operators(self):
+    def test_get_tokens_post_increment_operators(self):
         for operator in ('++', '--'):
             #                        012345
             tokens = self.get_tokens('FOO%s' % operator)
@@ -168,7 +168,7 @@ class TokenizeTest(unittest.TestCase):
             self.assertEqual(Name('FOO', 0, 3), tokens[0])
             self.assertEqual(Syntax(operator, 4, 6), tokens[1])
 
-    def testget_tokens_semicolons(self):
+    def test_get_tokens_semicolons(self):
         #                        0123456 789012
         tokens = self.get_tokens('  foo;\n  bar;')
         self.assertEqual(4, len(tokens), tokens)
@@ -177,7 +177,7 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Name('bar', 9, 12), tokens[2])
         self.assertEqual(Syntax(';', 12, 13), tokens[3])
 
-    def testget_tokens_pointers1(self):
+    def test_get_tokens_pointers1(self):
         #                        0123456789
         tokens = self.get_tokens('foo->bar;')
         self.assertEqual(4, len(tokens), tokens)
@@ -186,7 +186,7 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Name('bar', 5, 8), tokens[2])
         self.assertEqual(Syntax(';', 8, 9), tokens[3])
 
-    def testget_tokens_pointers2(self):
+    def test_get_tokens_pointers2(self):
         #                        01234567890
         tokens = self.get_tokens('(*foo).bar;')
         self.assertEqual(7, len(tokens), tokens)
@@ -198,7 +198,7 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Name('bar', 7, 10), tokens[5])
         self.assertEqual(Syntax(';', 10, 11), tokens[6])
 
-    def testget_tokens_block(self):
+    def test_get_tokens_block(self):
         #                        0123456
         tokens = self.get_tokens('{ 0; }')
         self.assertEqual(4, len(tokens), tokens)
@@ -207,7 +207,7 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Syntax(';', 3, 4), tokens[2])
         self.assertEqual(Syntax('}', 5, 6), tokens[3])
 
-    def testget_tokens_bit_fields(self):
+    def test_get_tokens_bit_fields(self):
         #                        012345678901234567
         tokens = self.get_tokens('unsigned foo : 1;')
         self.assertEqual(5, len(tokens), tokens)
@@ -217,7 +217,7 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Constant('1', 15, 16), tokens[3])
         self.assertEqual(Syntax(';', 16, 17), tokens[4])
 
-    def testget_tokens_assignment(self):
+    def test_get_tokens_assignment(self):
         #                        012345678901234567
         tokens = self.get_tokens('unsigned foo = 1;')
         self.assertEqual(5, len(tokens), tokens)
@@ -245,7 +245,7 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Constant('1', 17, 18), tokens[3])
         self.assertEqual(Syntax(';', 18, 19), tokens[4])
 
-    def testget_tokens_int_constants(self):
+    def test_get_tokens_int_constants(self):
         #                        01234
         tokens = self.get_tokens('123;')
         self.assertEqual(2, len(tokens), tokens)
@@ -271,7 +271,7 @@ class TokenizeTest(unittest.TestCase):
             self.assertEqual(Constant(value, 0, size), tokens[0])
             self.assertEqual(Syntax(';', size, size + 1), tokens[1])
 
-    def testget_tokens_octal_constants(self):
+    def test_get_tokens_octal_constants(self):
         #                        0123456789
         tokens = self.get_tokens('01234567;')
         self.assertEqual(2, len(tokens), tokens)
@@ -297,7 +297,7 @@ class TokenizeTest(unittest.TestCase):
             self.assertEqual(Constant(value, 0, size), tokens[0])
             self.assertEqual(Syntax(';', size, size + 1), tokens[1])
 
-    def testget_tokens_hex_constants(self):
+    def test_get_tokens_hex_constants(self):
         #                        012345678901
         tokens = self.get_tokens('0xDeadBEEF;')
         self.assertEqual(2, len(tokens), tokens)
@@ -323,7 +323,7 @@ class TokenizeTest(unittest.TestCase):
             self.assertEqual(Constant(value, 0, size), tokens[0])
             self.assertEqual(Syntax(';', size, size + 1), tokens[1])
 
-    def testget_tokens_float_constants(self):
+    def test_get_tokens_float_constants(self):
         #                        012345678901
         tokens = self.get_tokens('3.14;')
         self.assertEqual(2, len(tokens), tokens)
@@ -408,7 +408,7 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Constant('.14L', 0, 4), tokens[0])
         self.assertEqual(Syntax(';', 4, 5), tokens[1])
 
-    def testget_tokens_char_constants(self):
+    def test_get_tokens_char_constants(self):
         #                        012345678901
         tokens = self.get_tokens("'5';")
         self.assertEqual(2, len(tokens), tokens)
@@ -457,7 +457,7 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Constant(r"U'\''", 0, 5), tokens[0])
         self.assertEqual(Syntax(';', 5, 6), tokens[1])
 
-    def testget_tokens_string_constants(self):
+    def test_get_tokens_string_constants(self):
         #                        0123456
         tokens = self.get_tokens('"str";')
         self.assertEqual(2, len(tokens), tokens)
@@ -494,7 +494,7 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Constant(r'"str\\"', 0, 7), tokens[0])
         self.assertEqual(Syntax(';', 7, 8), tokens[1])
 
-    def testget_tokens_ternary_operator(self):
+    def test_get_tokens_ternary_operator(self):
         #                        012345678901234567
         tokens = self.get_tokens('cond ? foo : bar;')
         self.assertEqual(6, len(tokens), tokens)
@@ -505,7 +505,7 @@ class TokenizeTest(unittest.TestCase):
         self.assertEqual(Name('bar', 13, 16), tokens[4])
         self.assertEqual(Syntax(';', 16, 17), tokens[5])
 
-    def testget_tokens_identifier(self):
+    def test_get_tokens_identifier(self):
         #                        0123456
         tokens = self.get_tokens('U elt;')
         self.assertEqual(3, len(tokens), tokens)

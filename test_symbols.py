@@ -36,20 +36,20 @@ class SymbolTableTest(unittest.TestCase):
         st.add_symbol(name, ns_stack, node, module)
         return node, module
 
-    def testlookup_symbol_with_global_that_does_not_exist(self):
+    def test_lookup_symbol_with_global_that_does_not_exist(self):
         st = symbols.SymbolTable()
         self.assertRaises(symbols.Error, st.lookup_symbol, 'foo', None)
 
-    def testlookup_symbol_with_namespace_that_does_not_exist(self):
+    def test_lookup_symbol_with_namespace_that_does_not_exist(self):
         st = symbols.SymbolTable()
         self.assertRaises(symbols.Error, st.lookup_symbol, 'foo', ['n'])
 
-    def testlookup_symbol_with_global_that_exists(self):
+    def test_lookup_symbol_with_global_that_exists(self):
         st = symbols.SymbolTable()
         node, module = self._add_symbol(st, 'foo', None)
         self.assertEqual((node, module), st.lookup_symbol('foo', None))
 
-    def testlookup_symbol_with_complex_global_that_exists(self):
+    def test_lookup_symbol_with_complex_global_that_exists(self):
         st = symbols.SymbolTable()
         node, module = self._add_symbol(st, 'foo', ['ns1', 'ns2'])
         self.assertEqual((node, module),
@@ -57,7 +57,7 @@ class SymbolTableTest(unittest.TestCase):
         self.assertEqual((node, module),
                          st.lookup_symbol('ns1::ns2::foo', None))
 
-    def testlookup_symbol_in_namespaces(self):
+    def test_lookup_symbol_in_namespaces(self):
         st = symbols.SymbolTable()
 
         # 3 nested namespaces, all contain the same symbol (foo).
@@ -97,7 +97,7 @@ class SymbolTableTest(unittest.TestCase):
         # Adding again should return False.
         self.assertEqual(False, st._add(symbol_name, namespace, node, module))
 
-    def testadd_symbol_in_global_namespace(self):
+    def test_add_symbol_in_global_namespace(self):
         st = symbols.SymbolTable()
         node = object()
         module = object()
@@ -112,7 +112,7 @@ class SymbolTableTest(unittest.TestCase):
         # Already added, verify we get false.
         self.assertEqual(False, st.add_symbol(name, ns_stack, node, module))
 
-    def testadd_symbol_in_namespace_with_one_level(self):
+    def test_add_symbol_in_namespace_with_one_level(self):
         st = symbols.SymbolTable()
         node = object()
         module = object()
@@ -127,7 +127,7 @@ class SymbolTableTest(unittest.TestCase):
         # Already added, verify we get false.
         self.assertEqual(False, st.add_symbol(name, ns_stack, node, module))
 
-    def testadd_symbol_in_namespace_with_three_levels(self):
+    def test_add_symbol_in_namespace_with_three_levels(self):
         st = symbols.SymbolTable()
         node = object()
         module = object()
@@ -173,7 +173,7 @@ class SymbolTableTest(unittest.TestCase):
         # Verify ns3 still has 1 element ('foo').
         self.assertEqual(1, len(st.namespaces['ns1']['ns2']['ns3']))
 
-    def testget_namespace(self):
+    def test_get_namespace(self):
         # Setup.
         st = symbols.SymbolTable()
         node = object()
