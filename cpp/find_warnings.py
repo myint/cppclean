@@ -344,16 +344,20 @@ class WarningHunter(object):
                     next(iterator)
 
         def _add_template_use(name, types, namespace):
-            if types:
-                for cls in types:
-                    if name.endswith('_ptr') or cls.pointer:
-                        # Special case templated classes that end w/_ptr.
-                        # These are things like auto_ptr which do
-                        # not require the class definition, only decl.
-                        _add_reference(cls.name, namespace)
-                    else:
-                        _add_use(cls.name, namespace)
-                    _add_template_use(cls.name, cls.templated_types, namespace)
+            for cls in types or ():
+                if name.endswith('_ptr') or cls.pointer:
+                    # Special case templated classes that end w/_ptr.
+                    # These are things like auto_ptr which do
+                    # not require the class definition, only decl.
+                    _add_reference(cls.name, namespace)
+                else:
+                    _add_use(cls.name, namespace)
+                _add_template_use(cls.name, cls.templated_types, namespace)
+
+        def _process_types(nodes, namespace):
+            for node in nodes:
+                if isinstance(node, ast.Type):
+                    _add_variable(node, namespace)
 
         # Iterate through the source AST/tokens, marking each symbols use.
         ast_seq = [self.ast_list]
@@ -366,14 +370,7 @@ class WarningHunter(object):
                     if node.body:
                         _process_function_body(node, node.namespace)
                 elif isinstance(node, ast.Typedef):
-                    alias = node.alias
-                    if isinstance(alias, ast.Type):
-                        if alias.reference or alias.pointer:
-                            _add_reference(alias.name, node.namespace)
-                        else:
-                            _add_use(alias.name, node.namespace)
-                        _add_template_use('<typedef>', alias.templated_types,
-                                          node.namespace)
+                    _process_types(node.alias, node.namespace)
                 elif isinstance(node, ast.Friend):
                     expr = node.expr
                     if isinstance(expr, ast.Type):
@@ -401,8 +398,6 @@ class WarningHunter(object):
     def _find_header_warnings(self):
         self._find_unused_warnings()
         # TODO(nnorwitz): other warnings to add:
-        #   * too much non-template impl in header file
-        #   * too many methods/data members
         #   * missing include for classes used for inheritenace
 
     def _find_public_function_warnings(self, node, name, primary_header,

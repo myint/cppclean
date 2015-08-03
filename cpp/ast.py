@@ -1334,19 +1334,30 @@ class ASTBuilder(object):
 
         name = tokens.pop()
         if name.name == ')':
-            # HACK(nnorwitz): Handle pointers to functions "properly".
-            if (len(tokens) >= 4 and
-                    tokens[1].name == '(' and tokens[2].name == '*'):
-                tokens.append(name)
-                name = tokens[3]
+            tokens.append(name)
+            end = len(tokens) - 2
+            count = 1
+            while count:
+                if tokens[end].name == '(':
+                    count -= 1
+                elif tokens[end].name == ')':
+                    count += 1
+                end -= 1
+            start = end
+            if tokens[start].name == ')':
+                name = tokens[start - 1]
+                while tokens[start].name != '(':
+                    start -= 1
+            else:
+                name = tokens[start]
+            del tokens[start:end + 1]
         elif name.name == ']' and len(tokens) >= 2:
-            # HACK(nnorwitz): Handle arrays properly.
             tokens.append(name)
             name = tokens[1]
             del tokens[1]
         new_type = tokens
         if tokens and isinstance(tokens[0], tokenize.Token):
-            new_type = self.converter.to_type(tokens)[0]
+            new_type = self.converter.to_type(tokens)
         return Typedef(name.start, name.end, name.name,
                        new_type, self.namespace_stack)
 
