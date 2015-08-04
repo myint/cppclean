@@ -110,12 +110,15 @@ def main():
                                               filename,
                                               quiet=args.quiet)
             entire_ast = list([_f for _f in builder.generate() if _f])
-        except tokenize.TokenError:
+        except tokenize.TokenError as exception:
+            if args.verbose:
+                print('{}: token error: {}'.format(filename, exception),
+                      file=sys.stderr)
             continue
         except (ast.ParseError,
                 UnicodeDecodeError) as exception:
             if not args.quiet:
-                print('{}: parsing error {}'.format(filename, exception),
+                print('{}: parsing error: {}'.format(filename, exception),
                       file=sys.stderr)
             continue
 

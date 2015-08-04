@@ -148,13 +148,10 @@ def get_tokens(source):
                 token_type = CONSTANT
                 i = _get_string(source, i)
         elif c == '/' and source[i + 1] == '/':  # Find // comments.
-            i = source.find('\n', i)
-            assert i != -1
+            i = _find(source, '\n', i)
             continue
         elif c == '/' and source[i + 1] == '*':  # Find /* comments. */
-            result = source.find('*/', i)
-            assert result != -1
-            i = result + 2
+            i = _find(source, '*/', i) + 2
             continue
         elif c in '<>':                          # Handle '<' and '>' tokens.
             token_type = SYNTAX
@@ -238,17 +235,13 @@ def get_tokens(source):
 
                 # Handle comments in #define macros.
                 if i == i3:
-                    result = source.find('*/', i)
-                    assert result != -1
-                    i = result + 2
+                    i = _find(source, '*/', i) + 2
                     source = source[:i3].ljust(i) + source[i:]
                     continue
 
                 # Handle #include "dir//foo.h" properly.
                 if source[i] == '"':
-                    result = source.find('"', i + 1)
-                    assert result != -1
-                    i = result + 1
+                    i = _find(source, '"', i + 1) + 1
                     assert i > 0
                     continue
 
@@ -291,3 +284,11 @@ def get_tokens(source):
 
         assert i > 0
         yield Token(token_type, source[start:i], start, i)
+
+
+def _find(string, sub_string, start_index):
+    """Return index of sub_string in source."""
+    result = string.find(sub_string, start_index)
+    if result == -1:
+        raise TokenError("expected '{0}'".format('*/'))
+    return result
