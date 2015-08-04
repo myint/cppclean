@@ -1,4 +1,5 @@
 #include "bar.h"
+#include "me.h"
 
 class Test
 {

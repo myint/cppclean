@@ -302,3 +302,4 @@ class Resource
 
 static_assert(21 < 42, "");
 
+#include "foo.hxx"

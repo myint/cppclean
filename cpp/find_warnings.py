@@ -48,10 +48,6 @@ except NameError:
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
-# The filename extension used for the primary header file associated w/.cc
-# file.
-PRIMARY_HEADER_EXTENSION = '.h'
-
 HEADER_EXTENSIONS = frozenset(['.h', '.hh', '.hpp', '.h++', '.hxx', '.cuh'])
 CPP_EXTENSIONS = frozenset(['.cc', '.cpp', '.c++', '.cxx', '.cu'])
 
@@ -69,7 +65,6 @@ class Module(object):
 
     def __init__(self, filename, ast_list):
         self.filename = filename
-        self.normalized_filename = os.path.abspath(filename)
         self.ast_list = ast_list
         self.public_symbols = self._get_exported_symbols()
 
@@ -93,7 +88,6 @@ class WarningHunter(object):
 
     def __init__(self, filename, source, ast_list, include_paths, quiet=False):
         self.filename = filename
-        self.normalized_filename = os.path.abspath(filename)
         self.source = source
         self.ast_list = ast_list
         self.include_paths = include_paths[:]
@@ -106,8 +100,6 @@ class WarningHunter(object):
     def _add_warning(self, msg, node, filename=None):
         if filename is not None:
             contents = utils.read_file(filename)
-            if contents is None:
-                return
             src_metrics = metrics.Metrics(contents)
         else:
             filename = self.filename
@@ -133,12 +125,8 @@ class WarningHunter(object):
             self.symbol_table.add_symbol(name, node.namespace, node, module)
 
     def _get_module(self, node):
-        filename = node.filename
-
-        (source, filename) = headers.read_source(
-            filename,
-            include_paths=[os.path.dirname(self.filename)] + self.include_paths
-        )
+        include_paths = [os.path.dirname(self.filename)] + self.include_paths
+        source, filename = headers.read_source(node.filename, include_paths)
 
         if source is None:
             module = Module(filename, None)
@@ -168,51 +156,40 @@ class WarningHunter(object):
         included_files = {}
         # Map declaration-name: AST node.
         forward_declarations = {}
-        for node in self.ast_list:
-            # Ignore #include <> files. Only handle #include "".
-            # Assume that <> are used for only basic C/C++ headers.
-            if isinstance(node, ast.Include) and not node.system:
-                module = self._get_module(node)
-                included_files[module.normalized_filename] = node, module
-            if isinstance(node, DECLARATION_TYPES) and node.is_declaration():
-                forward_declarations[node.full_name()] = node
-
-        return included_files, forward_declarations
-
-    def _verify_includes(self):
-        """Read and parse all the #include'd files and warn about really stupid
-        things that can be determined from the #include'd file name."""
         files_seen = {}
         for node in self.ast_list:
-            # Ignore #include <> files. Only handle #include "".
-            # Assume that <> are used for only basic C/C++ headers.
-            if isinstance(node, ast.Include) and not node.system:
-                module = self._get_module(node)
-                filename = module.normalized_filename
-
-                normalized_filename = module.normalized_filename
-
+            if isinstance(node, ast.Include):
+                if node.system:
+                    filename = node.filename
+                else:
+                    module = self._get_module(node)
+                    filename = module.filename
+                    _, ext = os.path.splitext(filename)
+                    if ext.lower() != '.hxx':
+                        included_files[filename] = node, module
                 if is_cpp_file(filename):
                     self._add_warning(
                         "should not #include C++ source file '{}'".format(
                             node.filename),
                         node)
-
-                if normalized_filename == self.normalized_filename:
+                if filename == self.filename:
                     self._add_warning(
                         "'{}' #includes itself".format(node.filename),
                         node)
-
-                if normalized_filename in files_seen:
-                    include_node = files_seen[normalized_filename]
+                if filename in files_seen:
+                    include_node = files_seen[filename]
                     line_num = get_line_number(self.metrics, include_node)
                     self._add_warning(
                         "'{}' already #included on line {}".format(
                             node.filename,
                             line_num),
                         node)
+                else:
+                    files_seen[filename] = node
+            if isinstance(node, DECLARATION_TYPES) and node.is_declaration():
+                forward_declarations[node.full_name()] = node
 
-                files_seen[normalized_filename] = node
+        return included_files, forward_declarations
 
     def _verify_include_files_used(self, file_uses, included_files):
         """Find all #include files that are unnecessary."""
@@ -265,7 +242,7 @@ class WarningHunter(object):
                     file_use_node = symbol_table.lookup_symbol(name, namespace)
                 except symbols.Error:
                     return
-                name = file_use_node[1].normalized_filename
+                name = file_use_node[1].filename
                 if name in file_uses:
                     if isinstance(file_use_node[0], ast.Typedef):
                         file_uses[name] |= USES_DECLARATION
@@ -294,7 +271,7 @@ class WarningHunter(object):
                 return
 
             # TODO(nnorwitz): do proper check for ref/pointer/symbol.
-            name = file_use_node[1].normalized_filename
+            name = file_use_node[1].filename
             if name in file_uses:
                 file_uses[name] |= USES_DECLARATION
 
@@ -386,19 +363,28 @@ class WarningHunter(object):
 
         return file_uses, decl_uses
 
-    def _find_unused_warnings(self):
-        included_files, forward_declarations = self._read_and_parse_includes()
-        file_uses, decl_uses = self._determine_uses(included_files,
-                                                    forward_declarations)
-        self._verify_includes()
+    def _find_unused_warnings(self, included_files, forward_declarations, primary_header=None):
+        for node in forward_declarations.values():
+            try:
+                file_use_node = self.symbol_table.lookup_symbol(node.name, node.namespace)
+            except symbols.Error:
+                continue
+            name = file_use_node[1].filename
+            if name in included_files:
+                msg = "'%s' forward declared, but already #included in '%s'" % (node.name, name)
+                self._add_warning(msg, node)
+
+        file_uses, decl_uses = \
+            self._determine_uses(included_files, forward_declarations)
+        if primary_header and primary_header.filename in file_uses:
+            file_uses[primary_header.filename] |= USES_DECLARATION
         self._verify_include_files_used(file_uses, included_files)
         self._verify_forward_declarations_used(forward_declarations, decl_uses,
                                                file_uses)
 
     def _find_header_warnings(self):
-        self._find_unused_warnings()
-        # TODO(nnorwitz): other warnings to add:
-        #   * missing include for classes used for inheritenace
+        included_files, forward_declarations = self._read_and_parse_includes()
+        self._find_unused_warnings(included_files, forward_declarations)
 
     def _find_public_function_warnings(self, node, name, primary_header,
                                        all_headers):
@@ -423,7 +409,7 @@ class WarningHunter(object):
                     ' or any other directly #included header'.format(
                         primary_header.filename))
 
-            if name != 'main':
+            if name != 'main' and name != name.upper():
                 self._add_warning("'{}' not found {}".format(name, where),
                                   node)
 
@@ -469,15 +455,16 @@ class WarningHunter(object):
                     self._add_warning(msg, node, primary_header.filename)
 
     def _get_primary_header(self, included_files):
-        basename = os.path.splitext(self.normalized_filename)[0]
-
-        primary_header = included_files.get(
-            basename + PRIMARY_HEADER_EXTENSION)
-
-        if not primary_header:
-            primary_header = included_files.get(basename)
+        basename = os.path.basename(os.path.splitext(self.filename)[0])
+        include_paths = [os.path.dirname(self.filename)] + self.include_paths
+        source, filename = headers.read_source(basename + '.h', include_paths)
+        primary_header = included_files.get(filename)
         if primary_header:
             return primary_header[1]
+        if source is not None:
+            msg = "should #include header file '{}'".format(
+                    filename)
+            self.warnings.add((self.filename, 0, msg))
         return None
 
     def _find_source_warnings(self):
@@ -497,11 +484,6 @@ class WarningHunter(object):
         # primary_header first. Expect that is the most likely location.
         # Use of primary_header is primarily an optimization.
         primary_header = self._get_primary_header(included_files)
-        if not primary_header and not any(node for node in self.ast_list
-                                          if isinstance(node, ast.Function) and
-                                          node.name == 'main'):
-            msg = 'unable to find header file with matching name'
-            self.warnings.add((self.filename, 0, msg))
 
         self._check_public_functions(primary_header, included_files)
         if primary_header and primary_header.ast_list is not None:

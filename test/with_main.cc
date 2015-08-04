@@ -9,6 +9,10 @@ using namespace std;
 class Foo;
 class Bar;
 
+FOO()
+{
+}
+
 int main()
 {
 }

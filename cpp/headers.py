@@ -27,11 +27,10 @@ from . import utils
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
-def read_source(relative_filename, include_paths):
-    source = None
+def read_source(filename, include_paths):
     for path in include_paths:
-        filename = os.path.join(path, relative_filename)
-        source = utils.read_file(filename, False)
+        actual_filename = os.path.join(path, filename)
+        source = utils.read_file(actual_filename, False)
         if source is not None:
-            return source, filename
-    return None, relative_filename
+            return source, actual_filename
+    return None, filename
