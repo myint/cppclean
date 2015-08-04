@@ -17,7 +17,7 @@ to unnecessary #include directives. Unnecessary #includes can cause
 considerable extra compiles increasing the edit-compile-run cycle.
 
 This is a fork of the original cppclean project. The original project home
-page, which no longer contains code, is: https://code.google.com/p/cppclean/
+page, which no longer contains code, is at https://code.google.com/p/cppclean/.
 
 
 Features
