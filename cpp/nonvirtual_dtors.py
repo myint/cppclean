@@ -25,7 +25,7 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
 def _find_warnings(filename, source, ast_list):
-    status = 0
+    count = 0
     for node in ast_list:
         if isinstance(node, ast.Class) and node.body:
             class_node = node
@@ -49,9 +49,9 @@ def _find_warnings(filename, source, ast_list):
                         end=' ')
                     print("'{}' has virtual methods without a virtual "
                           'dtor'.format(class_node.name))
-                    status = 1
+                    count +=1
 
-    return status
+    return count
 
 
 def run(filename, source, entire_ast, include_paths, quiet):

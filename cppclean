@@ -128,7 +128,7 @@ def main():
                        static_data]:
             if module.run(filename, source, entire_ast,
                           include_paths=args.include_paths,
-                          quiet=args.quiet) != 0:
+                          quiet=args.quiet):
                 status = 1
 
     return status
