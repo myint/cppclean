@@ -277,7 +277,7 @@ def get_tokens(source):
             i += 1
             continue
         else:
-            raise TokenError('unexpected token %s' % c)
+            raise TokenError("unexpected token '{0}'".format(c))
 
         if count_ifs:
             continue
