@@ -843,7 +843,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(
             Typedef('v',
                     alias=[Type('Bar',
-                               templated_types=[Type('Foo', pointer=True)])]),
+                                templated_types=[Type('Foo', pointer=True)])]),
             nodes[1])
 
     def test_operators(self):
