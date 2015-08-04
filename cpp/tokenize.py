@@ -287,7 +287,11 @@ def get_tokens(source):
 
 
 def _find(string, sub_string, start_index):
-    """Return index of sub_string in string."""
+    """Return index of sub_string in string.
+
+    Raise TokenError if sub_string is not found.
+
+    """
     result = string.find(sub_string, start_index)
     if result == -1:
         raise TokenError("expected '{0}'".format('*/'))
