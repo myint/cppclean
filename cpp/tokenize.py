@@ -294,5 +294,5 @@ def _find(string, sub_string, start_index):
     """
     result = string.find(sub_string, start_index)
     if result == -1:
-        raise TokenError("expected '{0}'".format('*/'))
+        raise TokenError("expected '{0}'".format(sub_string))
     return result
