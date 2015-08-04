@@ -97,8 +97,10 @@ def main():
     args = parser.parse_args()
 
     status = 0
-    for filename in find_files(args.files,
-                               exclude_patterns=args.exclude_patterns):
+    for filename in (
+        sorted(find_files(args.files,
+                          exclude_patterns=args.exclude_patterns))
+    ):
         if args.verbose:
             print('Processing', filename, file=sys.stderr)
 
