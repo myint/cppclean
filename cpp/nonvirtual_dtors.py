@@ -49,7 +49,7 @@ def _find_warnings(filename, source, ast_list):
                         end=' ')
                     print("'{}' has virtual methods without a virtual "
                           'dtor'.format(class_node.name))
-                    count +=1
+                    count += 1
 
     return count
 
