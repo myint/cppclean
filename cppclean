@@ -96,6 +96,7 @@ def main():
                         help='ignore parse errors')
     args = parser.parse_args()
 
+    status = 0
     for filename in find_files(args.files,
                                exclude_patterns=args.exclude_patterns):
         if args.verbose:
@@ -125,9 +126,12 @@ def main():
         for module in [find_warnings,
                        nonvirtual_dtors,
                        static_data]:
-            module.run(filename, source, entire_ast,
-                       include_paths=args.include_paths,
-                       quiet=args.quiet)
+            if module.run(filename, source, entire_ast,
+                          include_paths=args.include_paths,
+                          quiet=args.quiet) != 0:
+                status = 1
+
+    return status
 
 
 try:

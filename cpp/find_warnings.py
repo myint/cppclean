@@ -533,3 +533,4 @@ def run(filename, source, entire_ast, include_paths, quiet):
                            quiet=quiet)
     hunter.find_warnings()
     hunter.show_warnings()
+    return 1 if hunter.warnings else 0
