@@ -46,8 +46,6 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 # * exceptions
 
 
-VISIBILITY_PUBLIC, VISIBILITY_PROTECTED, VISIBILITY_PRIVATE = list(range(3))
-
 FUNCTION_NONE = 0x00
 FUNCTION_SPECIFIER = 0x01
 FUNCTION_VIRTUAL = 0x02
@@ -624,7 +622,7 @@ class TypeConverter(object):
 
 class ASTBuilder(object):
 
-    def __init__(self, token_stream, filename, in_class=None, visibility=None,
+    def __init__(self, token_stream, filename, in_class=None,
                  namespace_stack=None, quiet=False):
         if namespace_stack is None:
             namespace_stack = []
@@ -639,7 +637,6 @@ class ASTBuilder(object):
         self.in_class_name_only = None
         if in_class is not None:
             self.in_class_name_only = in_class.split('::')[-1].split('<')[0]
-        self.visibility = visibility
         # Keep the state whether we are currently handling a typedef or not.
         self._handling_typedef = False
         self._handling_const = False
@@ -1204,7 +1201,7 @@ class ASTBuilder(object):
         assert_parse(token.token_type == tokenize.NAME, token)
         return self._create_variable(token, token.name, name, [], '')
 
-    def _handle_class_and_struct(self, class_type, class_str, visibility):
+    def _handle_class_and_struct(self, class_type, class_str):
         # Special case the handling typedef/aliasing of classes/structs here.
         name_tokens, var_token = self.get_name()
         if name_tokens and not self._handling_typedef:
@@ -1248,15 +1245,13 @@ class ASTBuilder(object):
         else:
             self._add_back_token(var_token)
         self._add_back_tokens(name_tokens)
-        return self._get_class(class_type, visibility, None)
+        return self._get_class(class_type, None)
 
     def handle_class(self):
-        return self._handle_class_and_struct(Class, 'class',
-                                             VISIBILITY_PRIVATE)
+        return self._handle_class_and_struct(Class, 'class')
 
     def handle_struct(self):
-        return self._handle_class_and_struct(Struct, 'struct',
-                                             VISIBILITY_PUBLIC)
+        return self._handle_class_and_struct(Struct, 'struct')
 
     def handle_union(self):
         return self._get_nested_type(Union)
@@ -1291,15 +1286,12 @@ class ASTBuilder(object):
 
     def handle_public(self):
         assert_parse(self.in_class, 'expected to be in a class')
-        self.visibility = VISIBILITY_PUBLIC
 
     def handle_protected(self):
         assert_parse(self.in_class, 'expected to be in a class')
-        self.visibility = VISIBILITY_PROTECTED
 
     def handle_private(self):
         assert_parse(self.in_class, 'expected to be in a class')
-        self.visibility = VISIBILITY_PRIVATE
 
     def handle_friend(self):
         tokens, last = self._get_var_tokens_up_to(False, '(', ';')
@@ -1405,11 +1397,9 @@ class ASTBuilder(object):
         if token.token_type == tokenize.NAME:
             if token.name == 'class':
                 return self._get_class(Class,
-                                       VISIBILITY_PRIVATE,
                                        templated_types)
             elif token.name == 'struct':
                 return self._get_class(Struct,
-                                       VISIBILITY_PUBLIC,
                                        templated_types)
             elif token.name == 'friend':
                 return self.handle_friend()
@@ -1462,7 +1452,7 @@ class ASTBuilder(object):
             assert_parse(next_token.name == ',', next_token)
         return bases, token
 
-    def _get_class(self, class_type, visibility, templated_types):
+    def _get_class(self, class_type, templated_types):
         class_name = None
         class_token = self._get_next_token()
         if class_token.token_type != tokenize.NAME:
@@ -1514,7 +1504,7 @@ class ASTBuilder(object):
         if token.token_type == tokenize.SYNTAX and token.name == '{':
             name = class_name or '__unamed__'
             ast = ASTBuilder(self.get_scope(), self.filename, name,
-                             visibility, self.namespace_stack,
+                             self.namespace_stack,
                              quiet=self.quiet)
             body = list(ast.generate())
 
