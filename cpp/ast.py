@@ -688,7 +688,7 @@ class ASTBuilder(object):
                 try:
                     method = getattr(self, 'handle_' + token.name)
                 except AttributeError as exception:
-                    raise ParseError(exception)
+                    raise ParseError('{}: {}'.format(token, exception))
                 return method()
             elif token.name == self.in_class_name_only:
                 # The token name is the same as the class, must be a ctor if
