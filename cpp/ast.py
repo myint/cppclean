@@ -685,7 +685,10 @@ class ASTBuilder(object):
         if token.token_type == tokenize.NAME:
             if (keywords.is_keyword(token.name) and
                     not keywords.is_builtin_type(token.name)):
-                method = getattr(self, 'handle_' + token.name)
+                try:
+                    method = getattr(self, 'handle_' + token.name)
+                except AttributeError as exception:
+                    raise ParseError(exception)
                 return method()
             elif token.name == self.in_class_name_only:
                 # The token name is the same as the class, must be a ctor if
