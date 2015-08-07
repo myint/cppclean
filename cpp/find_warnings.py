@@ -363,15 +363,18 @@ class WarningHunter(object):
 
         return file_uses, decl_uses
 
-    def _find_unused_warnings(self, included_files, forward_declarations, primary_header=None):
+    def _find_unused_warnings(self, included_files, forward_declarations,
+                              primary_header=None):
         for node in forward_declarations.values():
             try:
-                file_use_node = self.symbol_table.lookup_symbol(node.name, node.namespace)
+                file_use_node = self.symbol_table.lookup_symbol(node.name,
+                                                                node.namespace)
             except symbols.Error:
                 continue
             name = file_use_node[1].filename
             if name in included_files:
-                msg = "'%s' forward declared, but already #included in '%s'" % (node.name, name)
+                msg = ("'{}' forward declared, "
+                       "but already #included in '{}'".format(node.name, name))
                 self._add_warning(msg, node)
 
         file_uses, decl_uses = \
@@ -462,8 +465,7 @@ class WarningHunter(object):
         if primary_header:
             return primary_header[1]
         if source is not None:
-            msg = "should #include header file '{}'".format(
-                    filename)
+            msg = "should #include header file '{}'".format(filename)
             self.warnings.add((self.filename, 0, msg))
         return None
 
