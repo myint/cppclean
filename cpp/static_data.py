@@ -70,14 +70,17 @@ def _find_warnings(filename, lines, ast_list, static_is_optional):
     return count
 
 
+def _get_static_declarations(ast_list):
+    for node in ast_list:
+        if (isinstance(node, ast.VariableDeclaration) and
+                'static' in node.type.modifiers):
+            for name in node.name.split(','):
+                yield (name, node)
+
+
 def _find_unused_static_warnings(filename, lines, ast_list):
     """Warn about unused static variables."""
-    static_declarations = {
-        node.name: node
-        for node in ast_list
-        if (isinstance(node, ast.VariableDeclaration) and
-            'static' in node.type.modifiers)
-    }
+    static_declarations = dict(_get_static_declarations(ast_list))
 
     def find_variables_use(body):
         for child in body:
