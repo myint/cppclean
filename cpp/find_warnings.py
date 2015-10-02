@@ -208,6 +208,8 @@ class WarningHunter(object):
         """Find all the forward declarations that are not used."""
         for cls in forward_declarations:
             if cls in file_uses:
+                # TODO: Avoid the false positive in the case where the forward
+                # declaration is of a class that is defined in that same file.
                 if not decl_uses[cls] & USES_DECLARATION:
                     node = forward_declarations[cls]
                     msg = ("'{}' forward declared, "
@@ -377,8 +379,8 @@ class WarningHunter(object):
                        "but already #included in '{}'".format(node.name, name))
                 self._add_warning(msg, node)
 
-        file_uses, decl_uses = \
-            self._determine_uses(included_files, forward_declarations)
+        file_uses, decl_uses = self._determine_uses(included_files,
+                                                    forward_declarations)
         if primary_header and primary_header.filename in file_uses:
             file_uses[primary_header.filename] |= USES_DECLARATION
         self._verify_include_files_used(file_uses, included_files)
@@ -408,8 +410,8 @@ class WarningHunter(object):
             where = 'in any directly #included header'
             if primary_header:
                 where = (
-                    "in expected header '{}'"
-                    ' or any other directly #included header'.format(
+                    "in expected header '{}' "
+                    'or any other directly #included header'.format(
                         primary_header.filename))
 
             if name != 'main' and name != name.upper():
