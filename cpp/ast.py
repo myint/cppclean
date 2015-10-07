@@ -998,7 +998,8 @@ class ASTBuilder(object):
             if (
                 token.name == 'const' or
                 token.name == 'override' or
-                token.name == 'final'
+                token.name == 'final' or
+                token.name == 'noexcept'
             ):
                 modifiers |= FUNCTION_SPECIFIER
                 token = self._get_next_token()
