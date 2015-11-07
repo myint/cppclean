@@ -277,21 +277,24 @@ class WarningHunter(object):
             if name in file_uses:
                 file_uses[name] |= USES_DECLARATION
 
-        def _add_variable(node, namespace):
-            if node.reference or node.pointer:
+        def _add_variable(node, namespace, reference=False):
+            if node.reference or node.pointer or reference:
                 _add_reference(node.name, namespace)
             else:
                 _add_use(node.name, namespace)
             # This needs to recurse when the node is a templated type.
             _add_template_use(node.name,
                               node.templated_types,
-                              namespace)
+                              namespace,
+                              reference)
 
         def _process_function(function):
             if function.return_type:
                 return_type = function.return_type
-                _add_variable(return_type,
-                              function.namespace)
+                _add_variable(return_type, function.namespace)
+
+            for s in function.specializations:
+                _add_variable(s, function.namespace, not function.body)
 
             templated_types = function.templated_types or ()
             for p in function.parameters:
@@ -322,16 +325,17 @@ class WarningHunter(object):
                     # Skip tokens after a dereference.
                     next(iterator)
 
-        def _add_template_use(name, types, namespace):
+        def _add_template_use(name, types, namespace, reference=False):
             for cls in types or ():
-                if name.endswith('_ptr') or cls.pointer:
+                if name.endswith('_ptr') or cls.pointer or reference:
                     # Special case templated classes that end w/_ptr.
                     # These are things like auto_ptr which do
                     # not require the class definition, only decl.
                     _add_reference(cls.name, namespace)
                 else:
                     _add_use(cls.name, namespace)
-                _add_template_use(cls.name, cls.templated_types, namespace)
+                _add_template_use(cls.name, cls.templated_types,
+                                  namespace, reference)
 
         def _process_types(nodes, namespace):
             for node in nodes:

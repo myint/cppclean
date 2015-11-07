@@ -279,11 +279,12 @@ class Struct(Class):
 class Function(_GenericDeclaration):
 
     def __init__(self, start, end, name, return_type, parameters,
-                 modifiers, templated_types, body, namespace):
+                 specializations, modifiers, templated_types, body, namespace):
         _GenericDeclaration.__init__(self, start, end, name, namespace)
         converter = TypeConverter(namespace)
         self.return_type = converter.create_return_type(return_type)
         self.parameters = converter.to_parameters(parameters)
+        self.specializations = converter.to_type(specializations)
         self.modifiers = modifiers
         self.body = body
         self.templated_types = templated_types
@@ -314,9 +315,10 @@ class Function(_GenericDeclaration):
 class Method(Function):
 
     def __init__(self, start, end, name, in_class, return_type, parameters,
-                 modifiers, templated_types, body, namespace):
+                 specializations, modifiers, templated_types, body, namespace):
         Function.__init__(self, start, end, name, return_type, parameters,
-                          modifiers, templated_types, body, namespace)
+                          specializations, modifiers, templated_types,
+                          body, namespace)
         # TODO(nnorwitz): in_class could also be a namespace which can
         # mess up finding functions properly.
         self.in_class = in_class
@@ -927,21 +929,22 @@ class ASTBuilder(object):
 
     def _get_method(self, return_type_and_name, modifiers, templated_types,
                     get_paren):
-        template_portion = None
+        specializations = []
         if get_paren:
             token = self._get_next_token()
             assert_parse(token.token_type == tokenize.SYNTAX, token)
             if token.name == '<':
                 # Handle templatized dtors.
-                template_portion = [token]
-                template_portion.extend(self._get_matching_char('<', '>'))
+                specializations = list(self._get_matching_char('<', '>'))
+                del specializations[-1]
                 token = self._get_next_token()
             assert_parse(token.token_type == tokenize.SYNTAX, token)
             assert_parse(token.name == '(', token)
 
         name = return_type_and_name.pop()
-        if (len(return_type_and_name) > 1 and
+        if (len(return_type_and_name) > 2 and
                 return_type_and_name[-1].name == '>' and
+                return_type_and_name[-2].name == 'operator' and
                 (name.name == '>=' or name.name == '>')):
             n = return_type_and_name.pop()
             name = tokenize.Token(tokenize.SYNTAX,
@@ -956,10 +959,16 @@ class ASTBuilder(object):
                                   op.start, name.end)
         # Handle templatized ctors.
         elif name.name == '>':
-            index = 1
-            while return_type_and_name[index].name != '<':
-                index += 1
-            template_portion = return_type_and_name[index:] + [name]
+            count = 1
+            index = len(return_type_and_name)
+            while count and index > 0:
+                index -= 1
+                tok = return_type_and_name[index]
+                if tok.name == '<':
+                    count -= 1
+                elif tok.name == '>':
+                    count += 1
+            specializations = return_type_and_name[index+1:]
             del return_type_and_name[index:]
             name = return_type_and_name.pop()
         elif name.name == ']':
@@ -968,7 +977,6 @@ class ASTBuilder(object):
             name = tokenize.Token(tokenize.NAME, name_seq.name + '[]',
                                   name_seq.start, name.end)
 
-        # TODO(nnorwitz): store template_portion.
         return_type = return_type_and_name
         indices = name
         if return_type:
@@ -1108,11 +1116,11 @@ class ASTBuilder(object):
             return_type, in_class = \
                 self._get_return_type_and_class_name(return_type)
             return Method(indices.start, indices.end, name.name, in_class,
-                          return_type, parameters, modifiers, templated_types,
-                          body, self.namespace_stack)
+                          return_type, parameters, specializations, modifiers,
+                          templated_types, body, self.namespace_stack)
         return Function(indices.start, indices.end, name.name, return_type,
-                        parameters, modifiers, templated_types, body,
-                        self.namespace_stack)
+                        parameters, specializations, modifiers,
+                        templated_types, body, self.namespace_stack)
 
     def _get_return_type_and_class_name(self, token_seq):
         # Splitting the return type from the class name in a method

@@ -61,11 +61,11 @@ def _install_equal_methods():
                                       'reference pointer array'))
     _install_generic_equal(ast.Parameter, 'name type default')
     _install_generic_equal(ast.Function, ('name return_type parameters '
-                                          'modifiers templated_types '
-                                          'body namespace'))
+                                          'specializations modifiers '
+                                          'templated_types body namespace'))
     _install_generic_equal(ast.Method, ('name in_class return_type parameters '
-                                        'modifiers templated_types '
-                                        'body namespace'))
+                                        'specializations modifiers '
+                                        'templated_types body namespace'))
     _install_generic_equal(ast.Define, 'name definition')
     _install_generic_equal(ast.Include, 'filename system')
     _install_generic_equal(ast.Typedef, 'name alias namespace')
@@ -125,21 +125,29 @@ def Type(name, start=0, end=0, templated_types=None, modifiers=None,
 
 
 def Function(name, return_type, parameters, start=0, end=0,
-             modifiers=0, templated_types=None, body=None, namespace=None):
+             specializations=None, modifiers=0, templated_types=None,
+             body=None, namespace=None):
+    if specializations is None:
+        specializations = []
     if namespace is None:
         namespace = []
 
     return ast.Function(start, end, name, return_type, parameters,
-                        modifiers, templated_types, body, namespace)
+                        specializations, modifiers, templated_types,
+                        body, namespace)
 
 
 def Method(name, in_class, return_type, parameters, start=0, end=0,
-           modifiers=0, templated_types=None, body=None, namespace=None):
+           specializations=None, modifiers=0, templated_types=None,
+           body=None, namespace=None):
+    if specializations is None:
+        specializations = []
     if namespace is None:
         namespace = []
 
     return ast.Method(start, end, name, in_class, return_type, parameters,
-                      modifiers, templated_types, body, namespace)
+                      specializations, modifiers, templated_types,
+                      body, namespace)
 
 
 def Typedef(name, start=0, end=0, alias=None, namespace=None):
@@ -1096,6 +1104,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(
             Function('equal', list(get_tokens('void')), [],
+                     specializations=[Type('0')],
                      templated_types={}),
             nodes[0])
 
