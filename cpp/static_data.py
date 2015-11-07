@@ -98,7 +98,7 @@ def _find_unused_static_warnings(filename, lines, ast_list):
 
     count = 0
     for name,_ in sorted(static_declarations.items(),
-                         key=lambda (key,value): value.start):
+                         key=lambda x: x[1].start):
         if not static_use_counts[name]:
             print("{}:{}: unused variable '{}'".format(
                 filename,
