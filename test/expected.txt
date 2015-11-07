@@ -51,8 +51,8 @@ test/unused_static.cc:1: static data 'x'
 test/unused_static.cc:2: static data 'y'
 test/unused_static.cc:5: static data 'plugged'
 test/unused_static.cc:6: static data 'array'
-test/unused_static.cc:4: unused variable 'b'
 test/unused_static.cc:3: unused variable 'z'
+test/unused_static.cc:4: unused variable 'b'
 test/with_main.cc:2: 'include.h' already #included on line 1
 test/with_main.cc:3: 'include.h' already #included on line 1
 test/with_main.cc:9: 'Foo' forward declaration not expected in source file
