@@ -1416,15 +1416,6 @@ class ASTBuilder(object):
         # Must be a variable definition.
         return None
 
-    def handle_true(self):
-        pass  # Nothing to do.
-
-    def handle_false(self):
-        pass  # Nothing to do.
-
-    def handle_asm(self):
-        pass  # Not needed yet.
-
     def _get_bases(self):
         # Get base classes.
         bases = []
