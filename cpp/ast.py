@@ -1405,6 +1405,8 @@ class ASTBuilder(object):
                                        templated_types)
             elif token.name == 'friend':
                 return self.handle_friend()
+            elif token.name == 'template':
+                return self.handle_template()
         self._add_back_token(token)
         tokens, last = self._get_var_tokens_up_to(False, '(', ';')
         tokens.append(last)
