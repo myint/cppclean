@@ -1061,11 +1061,10 @@ class ASTBuilder(object):
         # Handle pointer to functions that are really data but look
         # like method declarations.
         if token.name == '(':
-            if parameters[0].name == '*':
+            if parameters[0].name in '*&':
                 # name contains the return type.
+                return_type.append(name)
                 name = parameters.pop()
-                # parameters contains the name of the data.
-                modifiers = [p.name for p in parameters]
                 # Already at the ( to open the parameter list.
                 function_parameters = list(self._get_matching_char('(', ')'))
                 del function_parameters[-1]  # Remove trailing ')'.
@@ -1075,8 +1074,9 @@ class ASTBuilder(object):
                 assert_parse(token.token_type == tokenize.SYNTAX, token)
                 assert_parse(token.name == ';', token)
 
+                types = [t.name for t in return_type]
                 return self._create_variable(indices, name.name, indices.name,
-                                             modifiers, '')
+                                             [], types)
             # At this point, we got something like:
             #  return_type (type::*name_)(params);
             # This is a data member called name_ that is a function pointer.

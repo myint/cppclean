@@ -644,6 +644,12 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
                                              initial_value='fct()+42'),
                          nodes[0])
 
+    def test_variable_function_reference(self):
+        nodes = list(MakeBuilder('int* (&fn)();').generate())
+        self.assertEqual(1, len(nodes), repr(nodes))
+        self.assertEqual(VariableDeclaration('fn', Type('int', pointer=True)),
+                         nodes[0])
+
     def test_variable_anonymous_class(self):
         nodes = list(MakeBuilder('class {public:} a;').generate())
         self.assertEqual(1, len(nodes), repr(nodes))
