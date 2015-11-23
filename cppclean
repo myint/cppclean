@@ -35,12 +35,6 @@ from cpp import tokenize
 from cpp import utils
 
 
-try:
-    unicode
-except NameError:
-    unicode = str
-
-
 def match_file(filename, exclude_patterns):
     """Return True if file is a C++ file or a directory."""
     base_name = os.path.basename(filename)
@@ -103,7 +97,9 @@ def main():
     args = parser.parse_args()
 
     # For Python 2 where argparse does not return Unicode.
-    args.files = [unicode(filename) for filename in args.files]
+    args.files = [filename.decode(sys.getfilesystemencoding())
+                  if hasattr(filename, 'decode') else filename
+                  for filename in args.files]
 
     status = 0
     for filename in (
