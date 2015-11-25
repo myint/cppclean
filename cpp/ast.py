@@ -1311,6 +1311,8 @@ class ASTBuilder(object):
             tokens.append(last)
             self._add_back_tokens(tokens)
             token = self._get_next_token()
+            if token.name == 'inline':
+                token = self._get_next_token()
             if token.name == '::':
                 token = self._get_next_token()
             result = self._generate_one(token)
