@@ -1071,12 +1071,14 @@ class ASTBuilder(object):
                 # TODO(nnorwitz): store the function_parameters.
                 token = self._get_next_token()
 
-                assert_parse(token.token_type == tokenize.SYNTAX, token)
-                assert_parse(token.name == ';', token)
+                default = []
+                if token.name == '=':
+                    default.extend(self._get_tokens_up_to(';'))
 
                 types = [t.name for t in return_type]
+                default = ''.join([t.name for t in default])
                 return self._create_variable(indices, name.name, indices.name,
-                                             [], types)
+                                             [], types, None, default)
             # At this point, we got something like:
             #  return_type (type::*name_)(params);
             # This is a data member called name_ that is a function pointer.

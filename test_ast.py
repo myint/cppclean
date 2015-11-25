@@ -650,6 +650,13 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(VariableDeclaration('fn', Type('int', pointer=True)),
                          nodes[0])
 
+    def test_variable_function_pointer_init(self):
+        nodes = list(MakeBuilder('int (*fn)() = 0;').generate())
+        self.assertEqual(1, len(nodes), repr(nodes))
+        self.assertEqual(VariableDeclaration('fn', Type('int'),
+                                             initial_value='0'),
+                         nodes[0])
+
     def test_variable_anonymous_class(self):
         nodes = list(MakeBuilder('class {public:} a;').generate())
         self.assertEqual(1, len(nodes), repr(nodes))
