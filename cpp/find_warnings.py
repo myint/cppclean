@@ -272,6 +272,8 @@ class WarningHunter(object):
                 file_uses[name] = file_uses.get(name, 0) | USES_DECLARATION
                 return
 
+            if isinstance(file_use_node, dict):
+                return
             # TODO(nnorwitz): do proper check for ref/pointer/symbol.
             name = file_use_node[1].filename
             if name in file_uses:
@@ -311,19 +313,21 @@ class WarningHunter(object):
                         _add_variable(p.type, function.namespace)
 
         def _process_function_body(function, namespace):
-            iterator = iter(function.body)
-            for t in iterator:
+            previous = None
+            save = namespace[:]
+            for t in function.body:
                 if t.token_type == tokenize.NAME:
-                    if not keywords.is_keyword(t.name) and not t.name in namespace:
-                        # TODO(nnorwitz): handle :: names.
+                    previous = t
+                    if not keywords.is_keyword(t.name):
                         # TODO(nnorwitz): handle static function calls.
                         # TODO(nnorwitz): handle using statements in file.
                         # TODO(nnorwitz): handle using statements in function.
                         # TODO(nnorwitz): handle namespace assignment in file.
                         _add_use(t.name, namespace)
-                elif t.name in ('.', '->'):
-                    # Skip tokens after a dereference.
-                    next(iterator)
+                elif t.name == '::' and previous is not None:
+                    namespace.append(previous.name)
+                elif t.name in (':', ';'):
+                    namespace = save[:]
 
         def _add_template_use(name, types, namespace, reference=False):
             for cls in types or ():
