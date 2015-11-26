@@ -314,7 +314,7 @@ class WarningHunter(object):
             iterator = iter(function.body)
             for t in iterator:
                 if t.token_type == tokenize.NAME:
-                    if not keywords.is_keyword(t.name):
+                    if not keywords.is_keyword(t.name) and not t.name in namespace:
                         # TODO(nnorwitz): handle :: names.
                         # TODO(nnorwitz): handle static function calls.
                         # TODO(nnorwitz): handle using statements in file.
