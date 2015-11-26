@@ -1451,6 +1451,8 @@ class ASTBuilder(object):
             bases_ast = self.converter.to_type(base)
             assert_parse(len(bases_ast) == 1, bases_ast)
             bases.append(bases_ast[0])
+            if next_token.token_type == tokenize.PREPROCESSOR:
+                next_token = self._get_next_token()
             assert_parse(next_token.token_type == tokenize.SYNTAX, next_token)
             if next_token.name == '{':
                 token = next_token
@@ -1483,6 +1485,8 @@ class ASTBuilder(object):
                     name_tokens = attribute
             class_name = ''.join([t.name for t in name_tokens])
         bases = None
+        if token.token_type == tokenize.PREPROCESSOR:
+            token = self._get_next_token()
         if token.token_type == tokenize.SYNTAX:
             if token.name == ';':
                 # Forward declaration.
