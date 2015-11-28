@@ -383,7 +383,7 @@ class TypeConverter(object):
     def _get_template_end(self, tokens, start):
         count = 1
         end = start
-        while count:
+        while count and end < len(tokens):
             token = tokens[end]
             end += 1
             if token.name == '<':
@@ -549,12 +549,13 @@ class TypeConverter(object):
              _, __) = self.declaration_to_parts(type_modifiers,
                                                 True)
 
-            parameter_type = Type(first_token.start, first_token.end,
-                                  type_name, templated_types, modifiers,
-                                  reference, pointer, False)
-            p = Parameter(first_token.start, end, name,
-                          parameter_type, default)
-            result.append(p)
+            if type_name:
+                parameter_type = Type(first_token.start, first_token.end,
+                                      type_name, templated_types, modifiers,
+                                      reference, pointer, False)
+                p = Parameter(first_token.start, end, name,
+                              parameter_type, default)
+                result.append(p)
 
         template_count = 0
         for s in tokens:
