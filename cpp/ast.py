@@ -1183,8 +1183,7 @@ class ASTBuilder(object):
                 token = next_token
 
         if token.token_type == tokenize.SYNTAX and token.name == '(':
-            self._ignore_up_to(')')
-            token = self._get_next_token()
+            return self._get_method(name_tokens, 0, None, False)
 
         # Handle underlying type.
         if token.token_type == tokenize.SYNTAX and token.name == ':':
