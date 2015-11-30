@@ -7,7 +7,7 @@ test/define/d1.h:4: 'OnlyDeclared' declared but not defined
 test/define/d2.cc:2: 'SomeFunction' not found in any directly #included header
 test/define/d7.h:4 'Bar' has virtual methods without a virtual dtor
 test/dup.h:3: 'Bar' forward declared, but already #included in 'test/bar.h'
-test/enum.h:18: static data 'color'
+test/enum.h:14: static data 'color'
 test/external/foo.h:1: 'Unused' not used
 test/foo.h:13: 'Baz' forward declared, but needs to be #included
 test/foo.h:14: 'Unused' not used

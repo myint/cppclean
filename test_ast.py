@@ -690,6 +690,13 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
             self.assertEqual(1, len(nodes[0].parameters))
             self.assertEqual(None, nodes[0].parameters[0].name)
 
+    def test_function_return(self):
+        for argument in ('class', 'enum', 'struct', 'union'):
+            code = '%s A fn();' % argument
+            nodes = list(MakeBuilder(code).generate())
+            self.assertEqual(1, len(nodes), repr(nodes))
+            self.assertEqual(Function('fn', list(get_tokens('A')), []), nodes[0])
+
     def test_no_argument(self):
         nodes = list(MakeBuilder('FOO();').generate())
         self.assertEqual(1, len(nodes), repr(nodes))

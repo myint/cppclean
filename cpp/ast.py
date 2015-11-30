@@ -1181,10 +1181,8 @@ class ASTBuilder(object):
             if next_token.name != '(':
                 self._add_back_token(next_token)
             else:
-                token = next_token
-
-        if token.token_type == tokenize.SYNTAX and token.name == '(':
-            return self._get_method(name_tokens, 0, None, False)
+                name_tokens.append(token)
+                return self._get_method(name_tokens, 0, None, False)
 
         # Handle underlying type.
         if token.token_type == tokenize.SYNTAX and token.name == ':':
@@ -1533,7 +1531,8 @@ class ASTBuilder(object):
                                                  modifiers, token.name)
         else:
             if not self._handling_typedef:
-                self.handle_error('non-typedef token', token)
+                name_tokens = [class_token] + name_tokens
+                return self._get_method(name_tokens, 0, None, False)
             self._add_back_token(token)
 
         return class_type(class_token.start, class_token.end, class_name,
