@@ -1049,41 +1049,27 @@ class ASTBuilder(object):
         # Handle pointer to functions that are really data but look
         # like method declarations.
         if token.name == '(':
-            if parameters[0].name in '*&':
-                # name contains the return type.
-                return_type.append(name)
-                name = parameters.pop()
-                # Already at the ( to open the parameter list.
-                function_parameters = list(self._get_matching_char('(', ')'))
-                del function_parameters[-1]  # Remove trailing ')'.
-                # TODO(nnorwitz): store the function_parameters.
-                token = self._get_next_token()
+            # name contains the return type.
+            return_type.append(name)
+            name = parameters.pop()
+            # Already at the ( to open the parameter list.
+            function_parameters = list(self._get_matching_char('(', ')'))
+            del function_parameters[-1]  # Remove trailing ')'.
+            # TODO(nnorwitz): store the function_parameters.
+            token = self._get_next_token()
 
-                default = []
-                if token.name == '=':
-                    default.extend(self._get_tokens_up_to(';'))
+            default = []
+            if token.name == '=':
+                default.extend(self._get_tokens_up_to(';'))
 
-                return self._create_variable(
-                    indices,
-                    name.name,
-                    indices.name,
-                    [],
-                    [t.name for t in return_type],
-                    None,
-                    ''.join([t.name for t in default]))
-            # At this point, we got something like:
-            #  return_type (type::*name_)(params);
-            # This is a data member called name_ that is a function pointer.
-            # With this code: void (sq_type::*field_)(string&);
-            # We get: name=void return_type=[] parameters=sq_type ... field_
-            # TODO(nnorwitz): is return_type always empty?
-            # TODO(nnorwitz): this isn't even close to being correct.
-            # Just put in something so we don't crash and can move on.
-            real_name = parameters[-1]
-            modifiers = [p.name for p in self._get_parameters()]
-            del modifiers[-1]           # Remove trailing ')'.
-            return self._create_variable(indices, real_name.name, indices.name,
-                                         modifiers, '')
+            return self._create_variable(
+                indices,
+                name.name,
+                indices.name,
+                [],
+                [t.name for t in return_type],
+                None,
+                ''.join([t.name for t in default]))
 
         if token.name == '{':
             body = list(self.get_scope())
