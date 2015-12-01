@@ -987,6 +987,7 @@ class ASTBuilder(object):
         if name.name == self.in_class and not modifiers:
             modifiers |= FUNCTION_CTOR
         parameters = list(self._get_parameters())
+        assert_parse(parameters, 'missing closing parenthesis')
         last_token = parameters.pop()    # Remove trailing ')'.
 
         # Handling operator() is especially weird.
