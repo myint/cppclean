@@ -520,9 +520,8 @@ class TypeConverter(object):
         if needs_name_removed:
             name = type_name.pop()
 
-        type_name = ' '.join([t for t in type_name])
         return (name,
-                type_name,
+                ' '.join([t for t in type_name]),
                 templated_types,
                 modifiers,
                 default,
@@ -1077,10 +1076,14 @@ class ASTBuilder(object):
                 if token.name == '=':
                     default.extend(self._get_tokens_up_to(';'))
 
-                types = [t.name for t in return_type]
-                default = ''.join([t.name for t in default])
-                return self._create_variable(indices, name.name, indices.name,
-                                             [], types, None, default)
+                return self._create_variable(
+                    indices,
+                    name.name,
+                    indices.name,
+                    [],
+                    [t.name for t in return_type],
+                    None,
+                    ''.join([t.name for t in default]))
             # At this point, we got something like:
             #  return_type (type::*name_)(params);
             # This is a data member called name_ that is a function pointer.

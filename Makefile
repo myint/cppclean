@@ -9,6 +9,7 @@ check:
 		--disable=missing-docstring \
 		--disable=too-many-arguments \
 		--disable=invalid-name \
+		--disable=simplifiable-if-statement \
 		--disable=too-many-locals \
 		--disable=too-many-return-statements \
 		--disable=too-many-instance-attributes \
