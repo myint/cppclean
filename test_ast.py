@@ -695,7 +695,8 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
             code = '%s A fn();' % argument
             nodes = list(MakeBuilder(code).generate())
             self.assertEqual(1, len(nodes), repr(nodes))
-            self.assertEqual(Function('fn', list(get_tokens('A')), []), nodes[0])
+            self.assertEqual(Function('fn', list(get_tokens('A')), []),
+                             nodes[0])
 
     def test_no_argument(self):
         nodes = list(MakeBuilder('FOO();').generate())
