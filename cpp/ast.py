@@ -730,20 +730,7 @@ class ASTBuilder(object):
                         break
 
             if last_token.name == ';':
-                # Handle data, this isn't a method.
-                name, type_name, templated_types, modifiers, default, _ = \
-                    self.converter.declaration_to_parts(temp_tokens, True)
-
-                assert_parse(temp_tokens, 'not enough tokens')
-
-                t0 = temp_tokens[0]
-                names = [t.name for t in temp_tokens]
-                if templated_types:
-                    start, end = self.converter.get_template_indices(names)
-                    names = names[:start] + names[end:]
-                default = ''.join([t.name for t in default])
-                return self._create_variable(t0, name, type_name, modifiers,
-                                             names, templated_types, default)
+                return self._get_variable(temp_tokens)
             if last_token.name == '{':
                 assert_parse(temp_tokens, 'not enough tokens')
 
@@ -1115,6 +1102,14 @@ class ASTBuilder(object):
                 list(self._get_matching_char('[', ']'))
                 token = self._get_next_token()
 
+            if token.name in '*&':
+                tokens, last = self._get_var_tokens_up_to(False, '(', ';')
+                tokens.insert(0, token)
+                tokens = parameters + tokens
+                if last.name == '(':
+                    return self._get_method(tokens, 0, None, False)
+                return self._get_variable(tokens)
+
             assert_parse(token.name == ';',
                          (token, return_type_and_name, parameters))
 
@@ -1128,6 +1123,22 @@ class ASTBuilder(object):
         return Function(indices.start, indices.end, name.name, return_type,
                         parameters, specializations, modifiers,
                         templated_types, body, self.namespace_stack)
+
+
+    def _get_variable(self, tokens):
+        name, type_name, templated_types, modifiers, default, _ = \
+            self.converter.declaration_to_parts(tokens, True)
+
+        assert_parse(tokens, 'not enough tokens')
+
+        t0 = tokens[0]
+        names = [t.name for t in tokens]
+        if templated_types:
+            start, end = self.converter.get_template_indices(names)
+            names = names[:start] + names[end:]
+        default = ''.join([t.name for t in default])
+        return self._create_variable(t0, name, type_name, modifiers,
+                                     names, templated_types, default)
 
     def _get_return_type_and_class_name(self, token_seq):
         # Splitting the return type from the class name in a method
