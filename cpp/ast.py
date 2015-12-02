@@ -716,6 +716,11 @@ class ASTBuilder(object):
                     self._ignore_up_to(';')
                     return None
 
+                # Ignore __declspec
+                if temp_tokens[-1].name == '__declspec':
+                    self._ignore_up_to(')')
+                    return None
+
                 # If there is an assignment before the paren,
                 # this is an expression, not a method.
                 for i, elt in reversed(list(enumerate(temp_tokens))):

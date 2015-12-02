@@ -1,6 +1,7 @@
 test/baz.h:1: 'bar.h' does not need to be #included; use a forward declaration instead
 test/baz.h:2: 'bar_bis.h' does not need to be #included; use a forward declaration instead
 test/cxx.cxx:1: 'cxx' not found in any directly #included header
+test/declspec.h:1: static data 'NvOptimusEnablement'
 test/define/d1.cc:11: 'SomeFunction1' not found in expected header 'test/define/d1.h' or any other directly #included header
 test/define/d1.cc:15: expected to find 'SomeOtherFunction1' in 'test/define/d1.h', but found in 'test/define/other_defined1.h'
 test/define/d1.h:4: 'OnlyDeclared' declared but not defined
