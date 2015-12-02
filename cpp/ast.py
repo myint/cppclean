@@ -1453,8 +1453,6 @@ class ASTBuilder(object):
             if next_token.name == '{':
                 token = next_token
                 break
-            # Support multiple inheritance.
-            assert_parse(next_token.name == ',', next_token)
         return bases, token
 
     def _get_class(self, class_type, templated_types):
