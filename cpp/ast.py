@@ -955,7 +955,7 @@ class ASTBuilder(object):
                     count -= 1
                 elif tok.name == '>':
                     count += 1
-            specializations = return_type_and_name[index+1:]
+            specializations = return_type_and_name[index + 1:]
             del return_type_and_name[index:]
             name = return_type_and_name.pop()
         elif name.name == ']':
@@ -1109,7 +1109,6 @@ class ASTBuilder(object):
         return Function(indices.start, indices.end, name.name, return_type,
                         parameters, specializations, modifiers,
                         templated_types, body, self.namespace_stack)
-
 
     def _get_variable(self, tokens):
         name, type_name, templated_types, modifiers, default, _ = \
