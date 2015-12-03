@@ -27,11 +27,12 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
 def _find_warnings(filename, lines, ast_list, static_is_optional):
-    def print_warning(node, name):
-        print("{}:{}: static data '{}'".format(
-            filename,
-            lines.get_line_number(node.start),
-            name))
+    def print_warning(node):
+        for name in node.name.split(','):
+            print("{}:{}: static data '{}'".format(
+                filename,
+                lines.get_line_number(node.start),
+                name))
 
     def find_static(function_node):
         tokens = []
@@ -60,7 +61,7 @@ def _find_warnings(filename, lines, ast_list, static_is_optional):
             )
 
             if is_not_const and (static_is_optional or is_static):
-                print_warning(node, node.name)
+                print_warning(node)
                 count += 1
         elif isinstance(node, ast.Function) and node.body:
             find_static(node)
