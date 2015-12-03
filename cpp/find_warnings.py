@@ -343,7 +343,9 @@ class WarningHunter(object):
 
         def _add_template_use(name, types, namespace, reference=False):
             for cls in types or ():
-                if name.endswith('_ptr') or cls.pointer or reference:
+                if cls.pointer or cls.reference or reference:
+                    _add_reference(cls.name, namespace)
+                elif name.endswith('_ptr'):
                     # Special case templated classes that end w/_ptr.
                     # These are things like auto_ptr which do
                     # not require the class definition, only decl.
