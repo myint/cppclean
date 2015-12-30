@@ -220,8 +220,6 @@ class WarningHunter(object):
         """Find all the forward declarations that are not used."""
         for cls in forward_declarations:
             if cls in file_uses:
-                # TODO: Avoid the false positive in the case where the forward
-                # declaration is of a class that is defined in that same file.
                 if not decl_uses[cls] & USES_DECLARATION:
                     node = forward_declarations[cls]
                     msg = ("'{}' forward declared, "
@@ -239,29 +237,34 @@ class WarningHunter(object):
         decl_uses = dict.fromkeys(forward_declarations, UNUSED)
         symbol_table = self.symbol_table
 
-        def _add_reference(name, namespace):
+        def _add(name, namespace, type):
             if name in decl_uses:
-                decl_uses[name] |= USES_REFERENCE
-            else:
-                nss = ''
-                for ns in namespace:
-                    if ns is None:
-                        continue
-                    nss += ns + '::'
-                    if nss + name in decl_uses:
-                        decl_uses[nss + name] |= USES_REFERENCE
-                        return
+                decl_uses[name] |= type
+                return True
 
-                try:
-                    file_use_node = symbol_table.lookup_symbol(name, namespace)
-                except symbols.Error:
-                    return
-                name = file_use_node[1].filename
-                if name in file_uses:
-                    if isinstance(file_use_node[0], ast.Typedef):
-                        file_uses[name] |= USES_DECLARATION
-                    else:
-                        file_uses[name] |= USES_REFERENCE
+            nss = ''
+            for ns in namespace:
+                if ns is not None:
+                    nss += ns + '::'
+                if nss + name in decl_uses:
+                    decl_uses[nss + name] |= type
+                    return True
+            return False
+
+        def _add_reference(name, namespace):
+            if _add(name, namespace, USES_REFERENCE):
+                return
+
+            try:
+                file_use_node = symbol_table.lookup_symbol(name, namespace)
+            except symbols.Error:
+                return
+            name = file_use_node[1].filename
+            if name in file_uses:
+                if isinstance(file_use_node[0], ast.Typedef):
+                    file_uses[name] |= USES_DECLARATION
+                else:
+                    file_uses[name] |= USES_REFERENCE
 
         def _add_use(name, namespace):
             if isinstance(name, list):
@@ -379,9 +382,9 @@ class WarningHunter(object):
                     elif isinstance(expr, ast.Function):
                         _process_function(expr)
                 elif isinstance(node, ast.Class) and node.body is not None:
-                    if node.body:
-                        ast_seq.append(node.body)
+                    _add(node.name, node.namespace, USES_DECLARATION)
                     _add_template_use('', node.bases, node.namespace)
+                    ast_seq.append(node.body)
                 elif isinstance(node, ast.Union) and node.fields:
                     pass  # TODO(nnorwitz): impl
 

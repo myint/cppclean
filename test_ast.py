@@ -791,14 +791,14 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         nodes = list(
             MakeBuilder('typedef class _IplImage *IplImage;').generate())
         self.assertEqual(1, len(nodes), repr(nodes))
-        self.assertEqual(Typedef('IplImage', alias=[Class('_IplImage*')]),
+        self.assertEqual(Typedef('IplImage', alias=[Class('_IplImage')]),
                          nodes[0])
 
     def test_struct_pointer_typedef(self):
         nodes = list(
             MakeBuilder('typedef struct _IplImage *IplImage;').generate())
         self.assertEqual(1, len(nodes), repr(nodes))
-        self.assertEqual(Typedef('IplImage', alias=[Struct('_IplImage*')]),
+        self.assertEqual(Typedef('IplImage', alias=[Struct('_IplImage')]),
                          nodes[0])
 
     def test_class_forward_declaration(self):
@@ -1133,7 +1133,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         nodes = list(
             MakeBuilder('template class basic_string<int>;').generate())
         self.assertEqual(1, len(nodes), repr(nodes))
-        self.assertEqual(Class('basic_string<int>'), nodes[0])
+        self.assertEqual(Class('basic_string'), nodes[0])
 
     def test_inline_function(self):
         nodes = list(MakeBuilder('inline void fn();').generate())

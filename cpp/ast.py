@@ -1482,7 +1482,7 @@ class ASTBuilder(object):
                 attribute, token = self.get_name()
                 if len(attribute) > 1 or attribute[0].name != 'final':
                     name_tokens = attribute
-            class_name = ''.join([t.name for t in name_tokens])
+            class_name = self.converter.to_type(name_tokens)[0].name
         bases = None
         if token.token_type == tokenize.PREPROCESSOR:
             token = self._get_next_token()
