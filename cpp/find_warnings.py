@@ -261,7 +261,11 @@ class WarningHunter(object):
                 return
             name = file_use_node[1].filename
             if name in file_uses:
-                if isinstance(file_use_node[0], ast.Typedef):
+                # enum and typedef can't be forward declared
+                if (
+                    isinstance(file_use_node[0], ast.Enum) or
+                    isinstance(file_use_node[0], ast.Typedef)
+                ):
                     file_uses[name] |= USES_DECLARATION
                 else:
                     file_uses[name] |= USES_REFERENCE
@@ -277,10 +281,6 @@ class WarningHunter(object):
             try:
                 file_use_node = symbol_table.lookup_symbol(name, namespace)
             except symbols.Error:
-                # TODO(nnorwitz): symbols from the current module
-                # should be added to the symbol table and then this
-                # exception should not happen...unless the code relies
-                # on another header for proper compilation.
                 # Store the use since we might really need to #include it.
                 if namespace and None not in namespace and '::' not in name:
                     name = '::'.join(namespace) + '::' + name
