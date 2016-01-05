@@ -1217,48 +1217,23 @@ class ASTBuilder(object):
         return self._create_variable(token, token.name, name, [], '')
 
     def _handle_class_and_struct(self, class_type, class_str):
-        # Special case the handling typedef/aliasing of classes/structs here.
+        if self._handling_typedef:
+            return self._get_class(class_type, None)
+
         name_tokens, var_token = self.get_name()
-        if name_tokens and not self._handling_typedef:
-            # Forward declaration.
-            if var_token.name == ';':
-                return class_type(name_tokens[0].start, name_tokens[0].end,
-                                  name_tokens[0].name, None, None, None,
-                                  self.namespace_stack)
+        if var_token.token_type == tokenize.NAME or var_token.name in '*&':
+            tokens, last = self._get_var_tokens_up_to(False, '(', ';', '{')
+            tokens.insert(0, var_token)
+            tokens = name_tokens + tokens
+            if last.name == '{':
+                self._add_back_token(last)
+                self._add_back_tokens(tokens)
+                return self._get_class(class_type, None)
+            if last.name == '(':
+                return self._get_method(tokens, 0, None, False)
+            return self._get_variable(tokens)
 
-            next_token = self._get_next_token()
-            is_syntax = (var_token.token_type == tokenize.SYNTAX and
-                         var_token.name[0] in '*&')
-            is_variable = (var_token.token_type == tokenize.NAME and
-                           next_token.name == ';')
-            variable = var_token
-            if is_syntax and not is_variable:
-                temp = next_token
-                while variable.token_type != tokenize.NAME:
-                    variable = temp
-                    temp = self._get_next_token()
-                if temp.token_type == tokenize.SYNTAX and temp.name == '(':
-                    # Handle methods declared to return a class/struct.
-                    t0 = name_tokens[0]
-                    token = tokenize.Token(tokenize.NAME, class_str,
-                                           t0.start - 7, t0.start - 2)
-                    type_and_name = [token]
-                    type_and_name.extend(name_tokens)
-                    type_and_name.extend((var_token, next_token))
-                    return self._get_method(type_and_name, 0, None, False)
-
-                assert_parse(temp.name == ';', (temp, name_tokens, var_token))
-
-            if is_syntax or is_variable:
-                modifiers = [class_str]
-                type_name = ''.join([t.name for t in name_tokens])
-                position = name_tokens[0]
-                return self._create_variable(
-                    position, variable.name, type_name,
-                    modifiers, var_token.name)
-            name_tokens.extend((var_token, next_token))
-        else:
-            self._add_back_token(var_token)
+        self._add_back_token(var_token)
         self._add_back_tokens(name_tokens)
         return self._get_class(class_type, None)
 

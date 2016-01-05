@@ -733,15 +733,13 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         nodes = list(MakeBuilder('class Foo foo;').generate())
         self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(
-            VariableDeclaration('foo', Type('Foo', modifiers=['class'])),
-            nodes[0])
+            VariableDeclaration('foo', Type('Foo')), nodes[0])
 
     def test_struct_variable_declaration(self):
         nodes = list(MakeBuilder('struct Foo foo;').generate())
         self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(
-            VariableDeclaration('foo', Type('Foo', modifiers=['struct'])),
-            nodes[0])
+            VariableDeclaration('foo', Type('Foo')), nodes[0])
 
     def test_typedef(self):
         for argument in ('bool', 'char', 'int', 'long', 'short', 'double',
