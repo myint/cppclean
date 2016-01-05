@@ -305,13 +305,13 @@ class WarningHunter(object):
                               namespace,
                               reference)
 
-        def _process_function(function):
+        def _process_function(function, namespace):
             if function.return_type:
                 return_type = function.return_type
-                _add_variable(return_type, function.namespace)
+                _add_variable(return_type, namespace)
 
             for s in function.specializations:
-                _add_variable(s, function.namespace, not function.body)
+                _add_variable(s, namespace, not function.body)
 
             templated_types = function.templated_types or ()
             for p in function.parameters:
@@ -323,9 +323,9 @@ class WarningHunter(object):
                         # better to iterate through the body and determine
                         # actual uses based on local vars and data members
                         # used.
-                        _add_use(p.type.name, function.namespace)
+                        _add_use(p.type.name, namespace)
                     else:
-                        _add_variable(p.type, function.namespace)
+                        _add_variable(p.type, namespace)
 
         def _process_function_body(function, namespace):
             previous = None
@@ -365,26 +365,34 @@ class WarningHunter(object):
 
         # Iterate through the source AST/tokens, marking each symbols use.
         ast_seq = [self.ast_list]
+        namespace_stack = []
         while ast_seq:
             for node in ast_seq.pop():
                 if isinstance(node, ast.VariableDeclaration):
-                    _add_variable(node.type, node.namespace)
+                    namespace = namespace_stack + node.namespace
+                    _add_variable(node.type, namespace)
                 elif isinstance(node, ast.Function):
-                    _process_function(node)
+                    namespace = namespace_stack + node.namespace
+                    _process_function(node, namespace)
                     if node.body:
-                        _process_function_body(node, node.namespace)
+                        _process_function_body(node, namespace)
                 elif isinstance(node, ast.Typedef):
-                    _process_types(node.alias, node.namespace)
+                    namespace = namespace_stack + node.namespace
+                    _process_types(node.alias, namespace)
                 elif isinstance(node, ast.Friend):
                     expr = node.expr
+                    namespace = namespace_stack + node.namespace
                     if isinstance(expr, ast.Type):
-                        _add_reference(expr.name, node.namespace)
+                        _add_reference(expr.name, namespace)
                     elif isinstance(expr, ast.Function):
-                        _process_function(expr)
+                        _process_function(expr, namespace)
                 elif isinstance(node, ast.Class) and node.body is not None:
                     _add(node.name, node.namespace, USES_DECLARATION)
                     _add_template_use('', node.bases, node.namespace)
                     ast_seq.append(node.body)
+                elif isinstance(node, ast.Using):
+                    if node.names[0].name == 'namespace':
+                        namespace_stack.append(node.names[1].name)
                 elif isinstance(node, ast.Union) and node.fields:
                     pass  # TODO(nnorwitz): impl
 
