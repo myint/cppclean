@@ -45,26 +45,22 @@ class SymbolTable(object):
         # None is the global namespace.
         self.namespaces = {None: {}}
 
-    def _lookup_namespace(self, symbol, namespace, kind):
+    def _lookup_namespace(self, symbol, namespace):
         """Helper for lookup_symbol that only looks up variables in a
         namespace.
 
         Args:
           symbol: Symbol
           namespace: pointer into self.namespaces
-          kind: 'kind of namespace for error message'
 
         """
         for namespace_part in symbol.parts:
             namespace = namespace.get(namespace_part)
             if namespace is None:
-                raise Error('%s not found in %snamespace at %s' %
-                            (symbol.name, kind, namespace_part))
-            result = namespace
-            if not isinstance(namespace, dict):
-                # Occurs when a component is not a namespace.
                 break
-        return result
+            if not isinstance(namespace, dict):
+                return namespace
+        raise Error('%s not found' % symbol.name)
 
     def _lookup_global(self, symbol):
         """Helper for lookup_symbol that only looks up global variables.
@@ -80,13 +76,13 @@ class SymbolTable(object):
             namespace = self.namespaces[None]
         try:
             # Try to do a normal, global namespace lookup.
-            return self._lookup_namespace(symbol, namespace, 'global ')
+            return self._lookup_namespace(symbol, namespace)
         except Error as orig_exc:
             try:
                 # The normal lookup can fail if all of the parts aren't
                 # namespaces. This happens with OuterClass::Inner.
                 namespace = self.namespaces[None]
-                return self._lookup_namespace(symbol, namespace, 'global ')
+                return self._lookup_namespace(symbol, namespace)
             except Error:
                 raise orig_exc
 
@@ -110,7 +106,7 @@ class SymbolTable(object):
         # innermost namespace to outermost.
         for namespace in reversed(namespace_stack):
             try:
-                return self._lookup_namespace(symbol, namespace, '')
+                return self._lookup_namespace(symbol, namespace)
             except Error:
                 pass
         return None

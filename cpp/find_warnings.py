@@ -287,8 +287,6 @@ class WarningHunter(object):
                 file_uses[name] = file_uses.get(name, 0) | USES_DECLARATION
                 return
 
-            if isinstance(file_use_node, dict):
-                return
             # TODO(nnorwitz): do proper check for ref/pointer/symbol.
             name = file_use_node[1].filename
             if name in file_uses:
