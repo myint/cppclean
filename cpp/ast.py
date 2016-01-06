@@ -56,9 +56,6 @@ FUNCTION_ATTRIBUTE = 0x20
 FUNCTION_UNKNOWN_ANNOTATION = 0x40
 FUNCTION_THROW = 0x80
 
-_INTERNAL_TOKEN = 'internal'
-_NAMESPACE_POP = 'ns-pop'
-
 
 class ParseError(Exception):
 
@@ -633,9 +630,12 @@ class ASTBuilder(object):
         self.filename = filename
         self.token_queue = []
         self.namespace_stack = namespace_stack[:]
+        self.namespaces = []
         self.define = set()
         self.quiet = quiet
         self.in_class = in_class
+        if in_class:
+            self.namespaces.append(False)
         # Keep the state whether we are currently handling a typedef or not.
         self._handling_typedef = False
         self._handling_const = False
@@ -654,12 +654,12 @@ class ASTBuilder(object):
             except StopIteration:
                 break
 
-            # Dispatch on the next token type.
-            if (
-                token.token_type == _INTERNAL_TOKEN and
-                token.name == _NAMESPACE_POP
-            ):
-                self.namespace_stack.pop()
+            if token.name == '{':
+                self.namespaces.append(False)
+                continue
+            if token.name == '}':
+                if self.namespaces.pop():
+                    self.namespace_stack.pop()
                 continue
 
             result = self._generate_one(token)
@@ -1506,19 +1506,15 @@ class ASTBuilder(object):
             name = token.name
             token = self._get_next_token()
         assert_parse(token.token_type == tokenize.SYNTAX, token)
-        # Create an internal token that denotes when the namespace is complete.
-        internal_token = tokenize.Token(_INTERNAL_TOKEN, _NAMESPACE_POP,
-                                        None, None)
+
         if token.name == '=':
             # TODO(nnorwitz): handle aliasing namespaces.
             name, next_token = self.get_name()
             assert_parse(next_token.name == ';', next_token)
         else:
             assert_parse(token.name == '{', token)
-            tokens = list(self.get_scope())
-            tokens.append(internal_token)
-            self._add_back_tokens(tokens)
             self.namespace_stack.append(name)
+            self.namespaces.append(True)
         return None
 
     def handle_using(self):
