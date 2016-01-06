@@ -636,9 +636,6 @@ class ASTBuilder(object):
         self.define = set()
         self.quiet = quiet
         self.in_class = in_class
-        self.in_class_name_only = None
-        if in_class is not None:
-            self.in_class_name_only = in_class.split('::')[-1].split('<')[0]
         # Keep the state whether we are currently handling a typedef or not.
         self._handling_typedef = False
         self._handling_const = False
@@ -690,18 +687,6 @@ class ASTBuilder(object):
                 method = getattr(self, 'handle_' + token.name, None)
                 assert_parse(method, 'unexpected token: {}'.format(token))
                 return method()
-            elif token.name == self.in_class_name_only:
-                # The token name is the same as the class, must be a ctor if
-                # there is a paren. Otherwise, it's the return type.
-                # Peek ahead to get the next token to figure out which.
-                next_item = self._get_next_token()
-                self._add_back_token(next_item)
-                if (
-                    next_item.token_type == tokenize.SYNTAX and
-                    next_item.name == '('
-                ):
-                    return self._get_method([token], FUNCTION_CTOR, None, True)
-                # Fall through--handle like any other method.
 
             # Handle data or function declaration/definition.
             temp_tokens, last_token = \
@@ -751,11 +736,7 @@ class ASTBuilder(object):
             if token.name == '~' and self.in_class:
                 # Must be a dtor (probably not in method body).
                 token = self._get_next_token()
-                # self.in_class can contain A::Name, but the dtor will only
-                # be Name. Make sure to compare against the right value.
-                if (token.token_type == tokenize.NAME and
-                        token.name == self.in_class_name_only):
-                    return self._get_method([token], FUNCTION_DTOR, None, True)
+                return self._get_method([token], FUNCTION_DTOR, None, True)
             # TODO(nnorwitz): handle a lot more syntax.
         elif token.token_type == tokenize.PREPROCESSOR:
             # TODO(nnorwitz): handle more preprocessor directives.
@@ -1009,7 +990,7 @@ class ASTBuilder(object):
                 modifiers |= FUNCTION_ATTRIBUTE
                 token = self._get_next_token()
                 assert_parse(token.name == '(', token)
-                # Consume everything between the (parens).
+                # Consume everything between the parens.
                 list(self._get_matching_char('(', ')'))
                 token = self._get_next_token()
             elif token.name == 'throw':
@@ -1523,7 +1504,6 @@ class ASTBuilder(object):
         if token.token_type == tokenize.NAME:
             name = token.name
             token = self._get_next_token()
-        self.namespace_stack.append(name)
         assert_parse(token.token_type == tokenize.SYNTAX, token)
         # Create an internal token that denotes when the namespace is complete.
         internal_token = tokenize.Token(_INTERNAL_TOKEN, _NAMESPACE_POP,
@@ -1532,13 +1512,12 @@ class ASTBuilder(object):
             # TODO(nnorwitz): handle aliasing namespaces.
             name, next_token = self.get_name()
             assert_parse(next_token.name == ';', next_token)
-            self._add_back_token(internal_token)
         else:
             assert_parse(token.name == '{', token)
             tokens = list(self.get_scope())
             tokens.append(internal_token)
-            # Handle namespace with nothing in it.
             self._add_back_tokens(tokens)
+            self.namespace_stack.append(name)
         return None
 
     def handle_using(self):
