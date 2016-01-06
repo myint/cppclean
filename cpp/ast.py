@@ -1480,6 +1480,7 @@ class ASTBuilder(object):
                     assert_parse(token.token_type == tokenize.SYNTAX, token)
                     assert_parse(token.name == ';', token)
                 else:
+                    self._ignore_up_to(';')
                     new_class = class_type(class_token.start, class_token.end,
                                            class_name, bases, None,
                                            body, self.namespace_stack)

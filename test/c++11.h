@@ -9,3 +9,7 @@ class Y {
 };
 
 auto bar(void) -> void;
+
+const struct {
+char c[2];
+} c = {.c={'\1'}};
