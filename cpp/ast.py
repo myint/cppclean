@@ -170,8 +170,9 @@ class _GenericDeclaration(Node):
 
     def full_name(self):
         prefix = ''
-        if self.namespace and self.namespace[-1]:
-            prefix = '::'.join(self.namespace) + '::'
+        names = [n for n in self.namespace if n is not None]
+        if names:
+            prefix = '::'.join(names) + '::'
         return prefix + self.name
 
     def _type_string_helper(self, suffix):
@@ -464,9 +465,6 @@ class TypeConverter(object):
         arrayEnd = 0
         default = []
         other_tokens = []
-
-        if parts[0].name == '::':
-            parts = parts[1:]
 
         # Handle default (initial) values properly.
         for i, t in enumerate(parts):

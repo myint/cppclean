@@ -40,6 +40,9 @@ test/itself.h:1: 'itself.h' #includes itself
 test/itself.h:1: 'itself.h' does not need to be #included
 test/latin1.cc:2: 'latin1' not found in any directly #included header
 test/latin1.cc:4: static data 'x'
+test/lookup.h:1: 'A' forward declared, but needs to be #included
+test/lookup.h:14: 'ns1::ns2::B' forward declared, but needs to be #included
+test/lookup.h:48: 'E' not used
 test/macro10.h:1: static data 'ca_names'
 test/macro10.h:2: static data 'skp'
 test/need-class.h:4: 'Bar' forward declared, but needs to be #included

@@ -237,38 +237,38 @@ class WarningHunter(object):
         decl_uses = dict.fromkeys(forward_declarations, UNUSED)
         symbol_table = self.symbol_table
 
-        def _add(name, namespace, type):
-            if name in decl_uses:
-                decl_uses[name] |= type
-                return True
+        for name, node in forward_declarations.items():
+            try:
+                file_use_node = symbol_table.lookup_symbol(node.name, node.namespace)
+                decl_uses[name] |= USES_REFERENCE
+            except symbols.Error:
+                module = Module(name, None)
+                self.symbol_table.add_symbol(node.name, node.namespace, node, module)
 
-            nss = ''
-            for ns in namespace:
-                if ns is not None:
-                    nss += ns + '::'
-                if nss + name in decl_uses:
-                    decl_uses[nss + name] |= type
-                    return True
-            return False
+        def _add_declaration(name, namespace):
+            names = [n for n in namespace if n is not None]
+            if names:
+                name = '::'.join(names) + '::' + name
+            if name in decl_uses:
+                decl_uses[name] |= USES_DECLARATION
 
         def _add_reference(name, namespace):
-            if _add(name, namespace, USES_REFERENCE):
-                return
-
             try:
                 file_use_node = symbol_table.lookup_symbol(name, namespace)
             except symbols.Error:
                 return
+
             name = file_use_node[1].filename
-            if name in file_uses:
-                # enum and typedef can't be forward declared
-                if (
-                    isinstance(file_use_node[0], ast.Enum) or
-                    isinstance(file_use_node[0], ast.Typedef)
-                ):
-                    file_uses[name] |= USES_DECLARATION
-                else:
-                    file_uses[name] |= USES_REFERENCE
+            if file_use_node[1].ast_list is None:
+                decl_uses[name] |= USES_REFERENCE
+            # enum and typedef can't be forward declared
+            elif (
+                isinstance(file_use_node[0], ast.Enum) or
+                isinstance(file_use_node[0], ast.Typedef)
+            ):
+                file_uses[name] |= USES_DECLARATION
+            else:
+                file_uses[name] |= USES_REFERENCE
 
         def _add_use(name, namespace):
             if isinstance(name, list):
@@ -281,16 +281,10 @@ class WarningHunter(object):
             try:
                 file_use_node = symbol_table.lookup_symbol(name, namespace)
             except symbols.Error:
-                # Store the use since we might really need to #include it.
-                if namespace and None not in namespace and '::' not in name:
-                    name = '::'.join(namespace) + '::' + name
-                file_uses[name] = file_uses.get(name, 0) | USES_DECLARATION
                 return
 
-            # TODO(nnorwitz): do proper check for ref/pointer/symbol.
             name = file_use_node[1].filename
-            if name in file_uses:
-                file_uses[name] |= USES_DECLARATION
+            file_uses[name] = file_uses.get(name, 0) | USES_DECLARATION
 
         def _add_variable(node, namespace, reference=False):
             if node.reference or node.pointer or reference:
@@ -385,7 +379,7 @@ class WarningHunter(object):
                     elif isinstance(expr, ast.Function):
                         _process_function(expr, namespace)
                 elif isinstance(node, ast.Class) and node.body is not None:
-                    _add(node.name, node.namespace, USES_DECLARATION)
+                    _add_declaration(node.name, node.namespace)
                     _add_template_use('', node.bases, node.namespace)
                     ast_seq.append(node.body)
                 elif isinstance(node, ast.Using):
@@ -398,18 +392,6 @@ class WarningHunter(object):
 
     def _find_unused_warnings(self, included_files, forward_declarations,
                               primary_header=None):
-        for node in forward_declarations.values():
-            try:
-                file_use_node = self.symbol_table.lookup_symbol(node.name,
-                                                                node.namespace)
-            except symbols.Error:
-                continue
-            name = file_use_node[1].filename
-            if name in included_files:
-                msg = ("'{}' forward declared, "
-                       "but already #included in '{}'".format(node.name, name))
-                self._add_warning(msg, node)
-
         file_uses, decl_uses = self._determine_uses(included_files,
                                                     forward_declarations)
         if primary_header and primary_header.filename in file_uses:
@@ -417,6 +399,20 @@ class WarningHunter(object):
         self._verify_include_files_used(file_uses, included_files)
         self._verify_forward_declarations_used(forward_declarations, decl_uses,
                                                file_uses)
+        for node in forward_declarations.values():
+            try:
+                file_use_node = self.symbol_table.lookup_symbol(node.name,
+                                                                node.namespace)
+            except symbols.Error:
+                continue
+            name = file_use_node[1].filename
+            if (
+                file_use_node[1].ast_list is not None and
+                file_uses[name] & USES_DECLARATION
+            ):
+                msg = ("'{}' forward declared, "
+                       "but already #included in '{}'".format(node.name, name))
+                self._add_warning(msg, node)
 
     def _find_header_warnings(self):
         included_files, forward_declarations = self._read_and_parse_includes()
