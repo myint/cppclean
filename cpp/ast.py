@@ -812,7 +812,8 @@ class ASTBuilder(object):
                     count2 += 1
                 elif last_token.name == '>':
                     count2 -= 1
-            tokens.append(last_token)
+            if last_token.token_type != tokenize.PREPROCESSOR:
+                tokens.append(last_token)
             temp_token = self._get_next_token()
             if temp_token.name == '(' and last_token.name in self.define:
                 # TODO: for now just ignore the tokens inside the parenthesis
