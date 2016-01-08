@@ -639,12 +639,6 @@ class ASTBuilder(object):
         self._handling_const = False
         self.converter = TypeConverter(self.namespace_stack)
 
-    def handle_error(self, msg, token):
-        if not self.quiet:
-            printable_queue = list(reversed(self.token_queue[-20:]))
-            sys.stderr.write('Got %s in %s @ %s %s\n' %
-                             (msg, self.filename, token, printable_queue))
-
     def generate(self):
         while True:
             try:
@@ -1326,9 +1320,6 @@ class ASTBuilder(object):
             new_type = self.converter.to_type(tokens)
         return Typedef(name.start, name.end, name.name,
                        new_type, self.namespace_stack)
-
-    def handle_typeid(self):
-        pass  # Not needed yet.
 
     def handle_typename(self):
         pass  # Not needed yet.
