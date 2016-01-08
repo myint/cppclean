@@ -1027,8 +1027,12 @@ class ASTBuilder(object):
 
         # Handle ctor initializers.
         if token.name == ':':
-            # TODO(nnorwitz): anything else to handle for initializer list?
             while token.name != ';' and token.name != '{':
+                _, token = self.get_name()
+                if token.name == '(':
+                    list(self._get_matching_char('(', ')'))
+                elif token.name == '{':
+                    list(self._get_matching_char('{', '}'))
                 token = self._get_next_token()
 
         # Handle pointer to functions that are really data but look

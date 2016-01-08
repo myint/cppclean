@@ -13,3 +13,5 @@ auto bar(void) -> void;
 const struct {
 char c[2];
 } c = {.c={'\1'}};
+
+A::A() : B::B({}), m1(v1), m2(v2) {}
