@@ -302,4 +302,6 @@ class Resource
 
 static_assert(21 < 42, "");
 
+class Impl;
+void fn(Impl& impl);
 #include "foo.hxx"

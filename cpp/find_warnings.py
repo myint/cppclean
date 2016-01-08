@@ -261,14 +261,15 @@ class WarningHunter(object):
             name = file_use_node[1].filename
             if file_use_node[1].ast_list is None:
                 decl_uses[name] |= USES_REFERENCE
-            # enum and typedef can't be forward declared
-            elif (
-                isinstance(file_use_node[0], ast.Enum) or
-                isinstance(file_use_node[0], ast.Typedef)
-            ):
-                file_uses[name] |= USES_DECLARATION
-            else:
-                file_uses[name] |= USES_REFERENCE
+            elif name in file_uses:
+                # enum and typedef can't be forward declared
+                if (
+                    isinstance(file_use_node[0], ast.Enum) or
+                    isinstance(file_use_node[0], ast.Typedef)
+                ):
+                    file_uses[name] |= USES_DECLARATION
+                else:
+                    file_uses[name] |= USES_REFERENCE
 
         def _add_use(name, namespace):
             if isinstance(name, list):
@@ -408,6 +409,7 @@ class WarningHunter(object):
             name = file_use_node[1].filename
             if (
                 file_use_node[1].ast_list is not None and
+                name in file_uses and
                 file_uses[name] & USES_DECLARATION
             ):
                 msg = ("'{}' forward declared, "
