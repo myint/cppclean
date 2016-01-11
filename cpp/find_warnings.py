@@ -379,6 +379,8 @@ class WarningHunter(object):
                         _add_reference(expr.name, namespace)
                     elif isinstance(expr, ast.Function):
                         _process_function(expr, namespace)
+                elif isinstance(node, ast.Union) and node.body is not None:
+                    ast_seq.append(node.body)
                 elif isinstance(node, ast.Class) and node.body is not None:
                     _add_declaration(node.name, node.namespace)
                     _add_template_use('', node.bases, node.namespace)
@@ -386,8 +388,6 @@ class WarningHunter(object):
                 elif isinstance(node, ast.Using):
                     if node.names[0].name == 'namespace':
                         namespace_stack.append(node.names[1].name)
-                elif isinstance(node, ast.Union) and node.fields:
-                    pass  # TODO(nnorwitz): impl
 
         return file_uses, decl_uses
 

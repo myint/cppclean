@@ -218,7 +218,7 @@ class Typedef(_GenericDeclaration):
         return self._type_string_helper(suffix)
 
 
-class _NestedType(_GenericDeclaration):
+class Enum(_GenericDeclaration):
 
     def __init__(self, start, end, name, fields, namespace):
         _GenericDeclaration.__init__(self, start, end, name, namespace)
@@ -233,14 +233,6 @@ class _NestedType(_GenericDeclaration):
     def __str__(self):
         suffix = '%s, {%s}' % (self.name, self.fields)
         return self._type_string_helper(suffix)
-
-
-class Union(_NestedType):
-    pass
-
-
-class Enum(_NestedType):
-    pass
 
 
 class Class(_GenericDeclaration):
@@ -271,6 +263,10 @@ class Class(_GenericDeclaration):
 
 
 class Struct(Class):
+    pass
+
+
+class Union(Class):
     pass
 
 
@@ -799,7 +795,7 @@ class ASTBuilder(object):
                 count1 += 1
             elif last_token.name == ']':
                 count1 -= 1
-            if skip_bracket_content:
+            if skip_bracket_content and count1 == 0:
                 if last_token.name == 'operator':
                     skip_bracket_content = False
                 elif last_token.name == '<':
@@ -825,18 +821,14 @@ class ASTBuilder(object):
         # Assumes the current token is open_paren and we will consume
         # and return up to the close_paren.
         count = 1
-        token = get_next_token()
-        while True:
+        while count != 0:
+            token = get_next_token()
             if token.token_type == tokenize.SYNTAX:
                 if token.name == open_paren:
                     count += 1
                 elif token.name == close_paren:
                     count -= 1
-                    if count == 0:
-                        break
             yield token
-            token = get_next_token()
-        yield token
 
     def _get_parameters(self):
         return self._get_matching_char('(', ')')
@@ -1143,58 +1135,7 @@ class ASTBuilder(object):
         class_name = names[-1]
         return return_type, class_name
 
-    def _get_nested_type(self, ctor):
-        # Handle strongly typed enumerations.
-        token = self._get_next_token()
-        if token.name != 'class':
-            self._add_back_token(token)
-
-        name = None
-        name_tokens, token = self.get_name()
-        if name_tokens:
-            name = ''.join([t.name for t in name_tokens])
-
-        if token.token_type == tokenize.NAME:
-            if self._handling_typedef:
-                self._add_back_token(token)
-                return ctor(token.start, token.end, name, None,
-                            self.namespace_stack)
-
-            next_token = self._get_next_token()
-            if next_token.name != '(':
-                self._add_back_token(next_token)
-            else:
-                name_tokens.append(token)
-                return self._get_method(name_tokens, 0, None, False)
-
-        # Handle underlying type.
-        if token.token_type == tokenize.SYNTAX and token.name == ':':
-            _, token = self._get_var_tokens_up_to(False, '{', ';')
-
-        # Handle forward declarations.
-        if token.token_type == tokenize.SYNTAX and token.name == ';':
-            return ctor(token.start, token.end, name, None,
-                        self.namespace_stack)
-
-        # Must be the type declaration.
-        if token.token_type == tokenize.SYNTAX and token.name == '{':
-            fields = list(self._get_matching_char('{', '}'))
-            del fields[-1]                  # Remove trailing '}'.
-            next_item = self._get_next_token()
-            new_type = ctor(token.start, token.end, name, fields,
-                            self.namespace_stack)
-            # A name means this is an anonymous type and the name
-            # is the variable declaration.
-            if next_item.token_type != tokenize.NAME:
-                return new_type
-            name = new_type
-            token = next_item
-
-        # Must be variable declaration using the type prefixed with keyword.
-        assert_parse(token.token_type == tokenize.NAME, token)
-        return self._create_variable(token, token.name, name, [], '')
-
-    def _handle_class_and_struct(self, class_type, class_str):
+    def _handle_class_and_struct(self, class_type):
         if self._handling_typedef:
             return self._get_class(class_type, None)
 
@@ -1216,16 +1157,64 @@ class ASTBuilder(object):
         return self._get_class(class_type, None)
 
     def handle_class(self):
-        return self._handle_class_and_struct(Class, 'class')
+        return self._handle_class_and_struct(Class)
 
     def handle_struct(self):
-        return self._handle_class_and_struct(Struct, 'struct')
+        return self._handle_class_and_struct(Struct)
 
     def handle_union(self):
-        return self._get_nested_type(Union)
+        return self._handle_class_and_struct(Union)
 
     def handle_enum(self):
-        return self._get_nested_type(Enum)
+        # Handle strongly typed enumerations.
+        token = self._get_next_token()
+        if token.name != 'class':
+            self._add_back_token(token)
+
+        name = None
+        name_tokens, token = self.get_name()
+        if name_tokens:
+            name = ''.join([t.name for t in name_tokens])
+
+        if token.token_type == tokenize.NAME:
+            if self._handling_typedef:
+                self._add_back_token(token)
+                return Enum(token.start, token.end, name, None,
+                            self.namespace_stack)
+
+            next_token = self._get_next_token()
+            if next_token.name != '(':
+                self._add_back_token(next_token)
+            else:
+                name_tokens.append(token)
+                return self._get_method(name_tokens, 0, None, False)
+
+        # Handle underlying type.
+        if token.token_type == tokenize.SYNTAX and token.name == ':':
+            _, token = self._get_var_tokens_up_to(False, '{', ';')
+
+        # Handle forward declarations.
+        if token.token_type == tokenize.SYNTAX and token.name == ';':
+            return Enum(token.start, token.end, name, None,
+                        self.namespace_stack)
+
+        # Must be the type declaration.
+        if token.token_type == tokenize.SYNTAX and token.name == '{':
+            fields = list(self._get_matching_char('{', '}'))
+            del fields[-1]                  # Remove trailing '}'.
+            next_item = self._get_next_token()
+            new_type = Enum(token.start, token.end, name, fields,
+                            self.namespace_stack)
+            # A name means this is an anonymous type and the name
+            # is the variable declaration.
+            if next_item.token_type != tokenize.NAME:
+                return new_type
+            name = new_type
+            token = next_item
+
+        # Must be variable declaration using the type prefixed with keyword.
+        assert_parse(token.token_type == tokenize.NAME, token)
+        return self._create_variable(token, token.name, name, [], '')
 
     def handle_const(self):
         self._handling_const = True

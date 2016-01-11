@@ -4,6 +4,8 @@ static const int z = 1;
 static const int a, b;
 bool plugged[42];
 int array[2][1];
+int i[1<2];
+int j[1>2];
 
 class Foo
 {
