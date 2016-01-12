@@ -239,11 +239,12 @@ class WarningHunter(object):
 
         for name, node in forward_declarations.items():
             try:
-                file_use_node = symbol_table.lookup_symbol(node.name, node.namespace)
+                symbol_table.lookup_symbol(node.name, node.namespace)
                 decl_uses[name] |= USES_REFERENCE
             except symbols.Error:
                 module = Module(name, None)
-                self.symbol_table.add_symbol(node.name, node.namespace, node, module)
+                self.symbol_table.add_symbol(node.name, node.namespace, node,
+                                             module)
 
         def _add_declaration(name, namespace):
             names = [n for n in namespace if n is not None]

@@ -9,6 +9,7 @@ check:
 		--disable=missing-docstring \
 		--disable=too-many-arguments \
 		--disable=invalid-name \
+		--disable=redefined-variable-type \
 		--disable=simplifiable-if-statement \
 		--disable=too-many-locals \
 		--disable=too-many-return-statements \
@@ -18,6 +19,7 @@ check:
 		--disable=too-many-lines \
 		--disable=too-many-statements \
 		--disable=no-self-use \
+		--disable=undefined-loop-variable \
 		--disable=unused-argument \
 		--disable=too-few-public-methods \
 		cpp cppclean setup.py
