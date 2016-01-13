@@ -310,7 +310,8 @@ class WarningHunter(object):
 
             templated_types = function.templated_types or ()
             for p in function.parameters:
-                if p.type.name not in templated_types:
+                node = p.type
+                if node.name not in templated_types:
                     if function.body and p.name:
                         # Assume that if the the function has a body and a name
                         # the parameter type is really used.
@@ -318,16 +319,22 @@ class WarningHunter(object):
                         # better to iterate through the body and determine
                         # actual uses based on local vars and data members
                         # used.
-                        _add_use(p.type.name, namespace)
+                        _add_use(node.name, namespace)
                     elif (
                         p.default and
                         p.default[0].name != '0' and
                         p.default[0].name != 'NULL' and
                         p.default[0].name != 'nullptr'
                     ):
-                        _add_use(p.type.name, namespace)
+                        _add_use(node.name, namespace)
+                    elif node.reference or node.pointer or reference:
+                        _add_reference(node.name, namespace)
                     else:
-                        _add_variable(p.type, namespace, reference)
+                        _add_use(node.name, namespace)
+                    _add_template_use(node.name,
+                                      node.templated_types,
+                                      namespace,
+                                      reference)
 
         def _process_function_body(function, namespace):
             previous = None
