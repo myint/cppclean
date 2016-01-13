@@ -300,9 +300,10 @@ class WarningHunter(object):
                               reference)
 
         def _process_function(function, namespace):
+            reference = function.body is None
             if function.return_type:
                 return_type = function.return_type
-                _add_variable(return_type, namespace)
+                _add_variable(return_type, namespace, reference)
 
             for s in function.specializations:
                 _add_variable(s, namespace, not function.body)
@@ -310,7 +311,7 @@ class WarningHunter(object):
             templated_types = function.templated_types or ()
             for p in function.parameters:
                 if p.type.name not in templated_types:
-                    if function.body and p.name and p.type.name:
+                    if function.body and p.name:
                         # Assume that if the the function has a body and a name
                         # the parameter type is really used.
                         # NOTE(nnorwitz): this is over-aggressive. It would be
@@ -319,7 +320,7 @@ class WarningHunter(object):
                         # used.
                         _add_use(p.type.name, namespace)
                     else:
-                        _add_variable(p.type, namespace)
+                        _add_variable(p.type, namespace, reference)
 
         def _process_function_body(function, namespace):
             previous = None
