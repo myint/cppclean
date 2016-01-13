@@ -319,6 +319,13 @@ class WarningHunter(object):
                         # actual uses based on local vars and data members
                         # used.
                         _add_use(p.type.name, namespace)
+                    elif (
+                        p.default and
+                        p.default[0].name != '0' and
+                        p.default[0].name != 'NULL' and
+                        p.default[0].name != 'nullptr'
+                    ):
+                        _add_use(p.type.name, namespace)
                     else:
                         _add_variable(p.type, namespace, reference)
 
