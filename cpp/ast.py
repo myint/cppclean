@@ -649,7 +649,7 @@ class ASTBuilder(object):
                 continue
 
             result = self._generate_one(token)
-            if result is not None:
+            if result:
                 yield result
 
     def _create_variable(self, pos_token, name, type_name, type_modifiers,
@@ -676,9 +676,7 @@ class ASTBuilder(object):
 
             # Handle data or function declaration/definition.
             temp_tokens, last_token = \
-                self._get_var_tokens_up_to(True, '(', ';', '{', '}')
-            if last_token.name == '}':
-                return None
+                self._get_var_tokens_up_to(True, '(', ';', '{')
 
             temp_tokens.insert(0, token)
             if last_token.name == '(' or last_token.name == '{':
@@ -689,8 +687,16 @@ class ASTBuilder(object):
 
                 # Ignore __declspec
                 if temp_tokens[-1].name == '__declspec':
-                    self._ignore_up_to(')')
+                    list(self._get_parameters())
                     return None
+
+                # Ignore __attribute__
+                if temp_tokens[-1].name == '__attribute__':
+                    list(self._get_parameters())
+                    new_temp, last_token = \
+                            self._get_var_tokens_up_to(True, '(', ';', '{')
+                    del temp_tokens[-1]
+                    temp_tokens.extend(new_temp)
 
                 # If there is an assignment before the paren,
                 # this is an expression, not a method.
@@ -959,7 +965,10 @@ class ASTBuilder(object):
         except StopIteration:
             token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
 
-        while token.token_type == tokenize.NAME:
+        while (
+            token.token_type == tokenize.NAME or
+            token.token_type == tokenize.PREPROCESSOR
+        ):
             if (
                 token.name == 'const' or
                 token.name == 'override' or
@@ -991,6 +1000,8 @@ class ASTBuilder(object):
                     # Consume everything between the parens.
                     list(self._get_matching_char('(', ')'))
                     token = self._get_next_token()
+            elif token.token_type == tokenize.PREPROCESSOR:
+                token = self._get_next_token()
             else:
                 self._add_back_token(token)
                 token = tokenize.Token(tokenize.SYNTAX, ';', 0, 0)
