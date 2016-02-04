@@ -500,7 +500,7 @@ class WarningHunter(object):
         for name, declared_only in declared_only_symbols.items():
             if declared_only:
                 node = public_symbols[name]
-                if not node.templated_types:
+                if node.templated_types is None:
                     msg = "'{}' declared but not defined".format(name)
                     self._add_warning(msg, node, primary_header.filename)
 
