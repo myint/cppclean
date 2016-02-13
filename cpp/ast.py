@@ -694,7 +694,7 @@ class ASTBuilder(object):
                 if temp_tokens[-1].name == '__attribute__':
                     list(self._get_parameters())
                     new_temp, last_token = \
-                            self._get_var_tokens_up_to(True, '(', ';', '{')
+                        self._get_var_tokens_up_to(True, '(', ';', '{')
                     del temp_tokens[-1]
                     temp_tokens.extend(new_temp)
 
