@@ -203,6 +203,14 @@ class WarningHunter(object):
 
         return included_files, forward_declarations
 
+    def _find_using_namespaces(self):
+        for node in self.ast_list:
+            if isinstance(node, ast.Using):
+                self._add_warning(
+                    "'using namespace ...' should not be used in a header file"
+                    ", ignoring rest of file",
+                    node)
+
     def _verify_include_files_used(self, file_uses, included_files):
         """Find all #include files that are unnecessary."""
         for include_file, use in file_uses.items():
@@ -433,8 +441,10 @@ class WarningHunter(object):
                 self._add_warning(msg, node)
 
     def _find_header_warnings(self):
-        included_files, forward_declarations = self._read_and_parse_includes()
-        self._find_unused_warnings(included_files, forward_declarations)
+        self._find_using_namespaces()
+        if(len(self.warnings) == 0):
+            included_files, forward_declarations = self._read_and_parse_includes()
+            self._find_unused_warnings(included_files, forward_declarations)
 
     def _find_public_function_warnings(self, node, name, primary_header,
                                        all_headers):
