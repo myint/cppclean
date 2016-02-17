@@ -11,3 +11,5 @@ htmlcov/
 *.egg*/
 .coverage
 .travis-solo/
+.project
+.pydevproject

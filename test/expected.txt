@@ -63,6 +63,7 @@ test/unused_static.cc:7: static data 'i'
 test/unused_static.cc:8: static data 'j'
 test/unused_static.cc:3: unused variable 'z'
 test/unused_static.cc:4: unused variable 'b'
+test/using.h:8: 'using namespace ...' should not be used in a header file, ignoring rest of file
 test/with_main.cc:2: 'include.h' already #included on line 1
 test/with_main.cc:3: 'include.h' already #included on line 1
 test/with_main.cc:9: 'Foo' forward declaration not expected in source file
