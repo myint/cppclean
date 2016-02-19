@@ -34,7 +34,7 @@ cppclean finds the following:
 - Unnecessary #includes in header files
     - No direct reference to anything in the header
     - Header is unnecessary if classes were forward declared instead
-- Inconsistent case in #includes
+- Inconsistent case in #includes (``foo.h`` versus ``Foo.h``)
 - (planned) Unnecessary #includes in source files
 - (planned) Source files that reference headers not directly #included,
   ie, files that rely on a transitive #include from another header
