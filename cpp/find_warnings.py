@@ -439,12 +439,13 @@ class WarningHunter(object):
                 candidates = os.listdir(os.path.dirname(filename))
             except OSError:
                 continue
-            if base_name not in candidates:
-                match = get_include_filename_match(base_name, candidates)
-                if match:
-                    self._add_warning(
-                        "'{}' should be '{}'".format(base_name, match),
-                        node_and_module[0])
+
+            correct_filename = get_correct_include_filename(base_name,
+                                                            candidates)
+            if correct_filename:
+                self._add_warning(
+                    "'{}' should be '{}'".format(base_name, correct_filename),
+                    node_and_module[0])
 
     def _find_header_warnings(self):
         included_files, forward_declarations = self._read_and_parse_includes()
@@ -575,10 +576,11 @@ def get_line_number(metrics_instance, node):
     return metrics_instance.get_line_number(node.start)
 
 
-def get_include_filename_match(bad_filename, candidate_filenames):
-    for candidate in candidate_filenames:
-        if bad_filename.lower() == candidate.lower():
-            return candidate
+def get_correct_include_filename(filename, candidate_filenames):
+    if filename not in candidate_filenames:
+        for candidate in candidate_filenames:
+            if filename.lower() == candidate.lower():
+                return candidate
     return None
 
 
