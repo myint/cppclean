@@ -434,12 +434,6 @@ class WarningHunter(object):
 
     def _find_incorrect_case(self, included_files):
         for (filename, node_and_module) in included_files.items():
-            # This is relevant on case insensitive file systems. This is on a
-            # per-file basis since files may be on different partitions, each
-            # of which could have different case sensitivity.
-            if not os.path.exists(filename.upper()):
-                continue
-
             base_name = os.path.basename(filename)
             try:
                 candidates = os.listdir(os.path.dirname(filename))
