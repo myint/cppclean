@@ -434,11 +434,10 @@ class WarningHunter(object):
 
     def _find_incorrect_case(self, included_files):
         for (filename, node_and_module) in included_files.items():
-            full_path = os.path.realpath(filename)
-            base_name = os.path.basename(full_path)
+            base_name = os.path.basename(filename)
             try:
-                candidates = os.listdir(os.path.dirname(full_path))
-            except IOError:
+                candidates = os.listdir(os.path.dirname(filename))
+            except OSError:
                 continue
             if base_name not in candidates:
                 match = get_include_filename_match(base_name, candidates)
