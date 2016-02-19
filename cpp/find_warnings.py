@@ -432,9 +432,25 @@ class WarningHunter(object):
                        "but already #included in '{}'".format(node.name, name))
                 self._add_warning(msg, node)
 
+    def _find_incorrect_case(self, included_files):
+        for (filename, node_and_module) in included_files.items():
+            full_path = os.path.realpath(filename)
+            base_name = os.path.basename(full_path)
+            try:
+                candidates = os.listdir(os.path.dirname(full_path))
+            except IOError:
+                continue
+            if base_name not in candidates:
+                match = get_include_filename_match(base_name, candidates)
+                if match:
+                    self._add_warning(
+                        "'{}' should be '{}'".format(base_name, match),
+                        node_and_module[0])
+
     def _find_header_warnings(self):
         included_files, forward_declarations = self._read_and_parse_includes()
         self._find_unused_warnings(included_files, forward_declarations)
+        self._find_incorrect_case(included_files)
 
     def _find_public_function_warnings(self, node, name, primary_header,
                                        all_headers):
@@ -518,6 +534,8 @@ class WarningHunter(object):
 
     def _find_source_warnings(self):
         included_files, forward_declarations = self._read_and_parse_includes()
+        self._find_incorrect_case(included_files)
+
         for node in forward_declarations.values():
             # TODO(nnorwitz): This really isn't a problem, but might
             # be something to warn against. I expect this will either
@@ -556,6 +574,13 @@ class WarningHunter(object):
 
 def get_line_number(metrics_instance, node):
     return metrics_instance.get_line_number(node.start)
+
+
+def get_include_filename_match(bad_filename, candidate_filenames):
+    for candidate in candidate_filenames:
+        if bad_filename.lower() == candidate.lower():
+            return candidate
+    return None
 
 
 def run(filename, source, entire_ast, include_paths, quiet):
