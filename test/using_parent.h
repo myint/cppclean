@@ -1,0 +1,4 @@
+namespace parent
+{
+   class Parent {};
+}

@@ -399,7 +399,8 @@ class WarningHunter(object):
                     ast_seq.append(node.body)
                 elif isinstance(node, ast.Class) and node.body is not None:
                     _add_declaration(node.name, node.namespace)
-                    _add_template_use('', node.bases, node.namespace)
+                    namespace = namespace_stack + node.namespace
+                    _add_template_use('', node.bases, namespace)
                     ast_seq.append(node.body)
                 elif isinstance(node, ast.Using):
                     if node.names[0].name == 'namespace':
