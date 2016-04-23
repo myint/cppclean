@@ -247,6 +247,7 @@ class WarningHunter(object):
                                              module)
 
         def _add_declaration(name, namespace):
+            assert name
             names = [n for n in namespace if n is not None]
             if names:
                 name = '::'.join(names) + '::' + name
