@@ -1431,6 +1431,8 @@ class ASTBuilder(object):
                 if len(attribute) > 1 or attribute[0].name != 'final':
                     name_tokens = attribute
             class_name = self.converter.to_type(name_tokens)[0].name
+            assert_parse(class_name, class_token)
+
         bases = None
         if token.token_type == tokenize.PREPROCESSOR:
             token = self._get_next_token()
