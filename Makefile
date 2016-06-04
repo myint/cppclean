@@ -23,7 +23,7 @@ check:
 		--disable=unused-argument \
 		--disable=too-few-public-methods \
 		cpp cppclean setup.py
-	pep8 cpp $(wildcard *.py)
+	pycodestyle cpp $(wildcard *.py)
 	check-manifest
 	python setup.py --long-description | rstcheck -
 
