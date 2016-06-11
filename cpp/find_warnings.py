@@ -247,7 +247,11 @@ class WarningHunter(object):
                                              module)
 
         def _add_declaration(name, namespace):
-            assert name
+            if not name:
+                # Ignore anonymous struct. It is not standard, but we might as
+                # well avoid crashing if it is easy.
+                return
+
             names = [n for n in namespace if n is not None]
             if names:
                 name = '::'.join(names) + '::' + name
