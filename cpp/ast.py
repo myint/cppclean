@@ -1383,23 +1383,16 @@ class ASTBuilder(object):
         while True:
             token = self._get_next_token()
             assert_parse(token.token_type == tokenize.NAME, token)
-            if token.name == 'virtual':
+            while token.name in ('public', 'protected', 'private', 'virtual'):
                 token = self._get_next_token()
-            # TODO(nnorwitz): store kind of inheritance...maybe.
-            if token.name not in ('public', 'protected', 'private'):
-                # If inheritance type is not specified, it is private.
-                # Just put the token back so we can form a name.
-                # TODO(nnorwitz): it would be good to warn about this.
-                self._add_back_token(token)
-            else:
-                # Check for virtual inheritance.
-                token = self._get_next_token()
-                if token.name != 'virtual':
-                    self._add_back_token(token)
+            self._add_back_token(token)
+
             base, next_token = self.get_name()
             bases_ast = self.converter.to_type(base)
             assert_parse(len(bases_ast) == 1, bases_ast)
             bases.append(bases_ast[0])
+            if next_token.name == ')':
+                next_token = self._get_next_token()
             if next_token.token_type == tokenize.PREPROCESSOR:
                 next_token = self._get_next_token()
             assert_parse(next_token.token_type == tokenize.SYNTAX, next_token)
