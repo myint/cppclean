@@ -6,4 +6,9 @@ inline int no_except_test() noexcept
     return 0;
 };
 
+inline int no_except_test() noexcept(false)
+{
+    return 0;
+};
+
 #endif

@@ -972,11 +972,17 @@ class ASTBuilder(object):
             if (
                 token.name == 'const' or
                 token.name == 'override' or
-                token.name == 'final' or
-                token.name == 'noexcept'
+                token.name == 'final'
             ):
                 modifiers |= FUNCTION_SPECIFIER
                 token = self._get_next_token()
+            elif token.name == 'noexcept':
+                modifiers |= FUNCTION_SPECIFIER
+                token = self._get_next_token()
+                if token.name == '(':
+                    # Consume everything between the parens.
+                    list(self._get_matching_char('(', ')'))
+                    token = self._get_next_token()
             elif token.name == '__attribute__':
                 # TODO(nnorwitz): handle more __attribute__ details.
                 modifiers |= FUNCTION_ATTRIBUTE
