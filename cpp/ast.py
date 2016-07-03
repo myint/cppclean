@@ -1036,30 +1036,32 @@ class ASTBuilder(object):
                     list(self._get_matching_char('{', '}'))
                 token = self._get_next_token()
 
-        # Handle pointer to functions that are really data but look
-        # like method declarations.
+        # Handle pointer to functions.
         if token.name == '(':
             # name contains the return type.
             return_type.append(name)
-            name = parameters.pop()
+            while parameters[-1].name in '()':
+                parameters.pop()
+            name = parameters[-1]
             # Already at the ( to open the parameter list.
-            function_parameters = list(self._get_matching_char('(', ')'))
-            del function_parameters[-1]  # Remove trailing ')'.
+            parameters = list(self._get_matching_char('(', ')'))
+            del parameters[-1]  # Remove trailing ')'.
             # TODO(nnorwitz): store the function_parameters.
             token = self._get_next_token()
 
-            default = []
-            if token.name == '=':
-                default.extend(self._get_tokens_up_to(';'))
+            if token.name != '{':
+                default = []
+                if token.name == '=':
+                    default.extend(self._get_tokens_up_to(';'))
 
-            return self._create_variable(
-                indices,
-                name.name,
-                indices.name,
-                [],
-                [t.name for t in return_type],
-                None,
-                ''.join([t.name for t in default]))
+                return self._create_variable(
+                    indices,
+                    name.name,
+                    indices.name,
+                    [],
+                    [t.name for t in return_type],
+                    None,
+                    ''.join([t.name for t in default]))
 
         if token.name == '{':
             body = list(self.get_scope())
