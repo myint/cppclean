@@ -1474,6 +1474,8 @@ class ASTBuilder(object):
                     assert_parse(token.token_type == tokenize.SYNTAX, token)
                     assert_parse(token.name == ';', token)
                 else:
+                    if keywords.is_builtin_type(token.name):
+                        token = self._get_next_token()
                     self._ignore_up_to(';')
                     new_class = class_type(class_token.start, class_token.end,
                                            class_name, bases, None,

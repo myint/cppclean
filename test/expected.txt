@@ -51,6 +51,7 @@ test/need-class.h:6: 'Bong' forward declared, but needs to be #included
 test/need-class.h:7: 'Bling' forward declared, but needs to be #included
 test/struct.h:1: static data 'prev'
 test/struct.h:1: static data 'next'
+test/struct.h:3: static data 'init'
 test/test.cc:2: 'bar.h' already #included in 'test/test.h'
 test/test.h:2: 'me.h' does not need to be #included
 test/typedef.h:1: 'Foo' forward declared, but needs to be #included
