@@ -242,7 +242,6 @@ def get_tokens(source):
                 # Handle #include "dir//foo.h" properly.
                 if source[i] == '"':
                     i = _find(source, '"', i + 1) + 1
-                    assert i > 0
                     continue
 
                 # Keep going if end of the line and the line ends with \.
