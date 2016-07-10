@@ -1403,7 +1403,7 @@ class ASTBuilder(object):
             bases.append(bases_ast[0])
             if next_token.name == ')':
                 next_token = self._get_next_token()
-            if next_token.token_type == tokenize.PREPROCESSOR:
+            while next_token.token_type == tokenize.PREPROCESSOR:
                 next_token = self._get_next_token()
             if next_token.name == '{':
                 token = next_token
