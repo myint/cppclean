@@ -1390,11 +1390,11 @@ class ASTBuilder(object):
         bases = []
         while True:
             token = self._get_next_token()
-            while (
+            if (
                 token.name in ('public', 'protected', 'private', 'virtual') or
                 token.token_type == tokenize.PREPROCESSOR
             ):
-                token = self._get_next_token()
+                continue
             self._add_back_token(token)
 
             base, next_token = self.get_name()
@@ -1405,7 +1405,6 @@ class ASTBuilder(object):
                 next_token = self._get_next_token()
             if next_token.token_type == tokenize.PREPROCESSOR:
                 next_token = self._get_next_token()
-            assert_parse(next_token.token_type == tokenize.SYNTAX, next_token)
             if next_token.name == '{':
                 token = next_token
                 break
