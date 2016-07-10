@@ -1362,7 +1362,8 @@ class ASTBuilder(object):
         templated_types = None
         if token.token_type == tokenize.SYNTAX and token.name == '<':
             templated_types = self._get_templated_types()
-            # TODO(nnorwitz): for now, just ignore the template params.
+            token = self._get_next_token()
+        while token.token_type == tokenize.PREPROCESSOR:
             token = self._get_next_token()
 
         if token.token_type == tokenize.NAME:
@@ -1412,8 +1413,8 @@ class ASTBuilder(object):
                 base.pop()
                 base.extend(base2)
             bases_ast = self.converter.to_type(base)
-            assert_parse(len(bases_ast) == 1, bases_ast)
-            bases.append(bases_ast[0])
+            if len(bases_ast) == 1:
+                bases.append(bases_ast[0])
             if next_token.name == ')':
                 next_token = self._get_next_token()
             while next_token.token_type == tokenize.PREPROCESSOR:
