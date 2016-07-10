@@ -1372,6 +1372,9 @@ class ASTBuilder(object):
             elif token.name == 'struct':
                 return self._get_class(Struct,
                                        templated_types)
+            elif token.name == 'union':
+                return self._get_class(Union,
+                                       templated_types)
             elif token.name == 'friend':
                 return self.handle_friend()
             elif token.name == 'template':
