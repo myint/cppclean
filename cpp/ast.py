@@ -1388,16 +1388,26 @@ class ASTBuilder(object):
     def _get_bases(self):
         # Get base classes.
         bases = []
+        specifier = ('public', 'protected', 'private', 'virtual')
         while True:
             token = self._get_next_token()
             if (
-                token.name in ('public', 'protected', 'private', 'virtual') or
+                token.name in specifier or
                 token.token_type == tokenize.PREPROCESSOR
             ):
                 continue
             self._add_back_token(token)
 
             base, next_token = self.get_name()
+            if (len(base) > 2 and
+                base[-2].name == '::' and
+                next_token.token_type == tokenize.NAME and
+                next_token.name not in specifier
+            ):
+                self._add_back_token(next_token)
+                base2, next_token = self.get_name()
+                base.pop()
+                base.extend(base2)
             bases_ast = self.converter.to_type(base)
             assert_parse(len(bases_ast) == 1, bases_ast)
             bases.append(bases_ast[0])
