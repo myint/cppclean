@@ -1403,7 +1403,8 @@ class ASTBuilder(object):
             self._add_back_token(token)
 
             base, next_token = self.get_name()
-            if (len(base) > 2 and
+            if (
+                len(base) > 2 and
                 base[-2].name == '::' and
                 next_token.token_type == tokenize.NAME and
                 next_token.name not in specifier
