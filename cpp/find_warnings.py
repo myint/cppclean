@@ -51,7 +51,7 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 HEADER_EXTENSIONS = frozenset(['.h', '.hh', '.hpp', '.h++', '.hxx', '.cuh'])
 CPP_EXTENSIONS = frozenset(['.cc', '.cpp', '.c++', '.cxx', '.cu'])
 
-# These enumerations are used to determine how an symbol/#include file is used.
+# These enumerations are used to determine how a symbol/#include file is used.
 UNUSED = 0
 USES_REFERENCE = 1
 USES_DECLARATION = 2
@@ -61,7 +61,7 @@ DECLARATION_TYPES = (ast.Class, ast.Struct, ast.Enum, ast.Union)
 
 class Module(object):
 
-    """Data container represting a single source file."""
+    """Data container representing a single source file."""
 
     def __init__(self, filename, ast_list):
         self.filename = filename
@@ -318,7 +318,7 @@ class WarningHunter(object):
                 node = p.type
                 if node.name not in templated_types:
                     if function.body and p.name:
-                        # Assume that if the the function has a body and a name
+                        # Assume that if the function has a body and a name
                         # the parameter type is really used.
                         # NOTE(nnorwitz): this is over-aggressive. It would be
                         # better to iterate through the body and determine
