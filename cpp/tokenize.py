@@ -32,7 +32,7 @@ HEX_DIGITS = frozenset('0123456789abcdefABCDEF')
 INT_OR_FLOAT_DIGITS = frozenset('01234567890eE-+')
 
 
-# C++0x string preffixes.
+# C++0x string prefixes.
 _STR_PREFIXES = frozenset(('R', 'u8', 'u8R', 'u', 'uR', 'U', 'UR', 'L', 'LR'))
 
 
