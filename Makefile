@@ -29,7 +29,7 @@ check:
 
 coverage:
 	@coverage erase
-	@PYTHON='coverage run --parallel-mode' ./test.bash
+	@PYTHON='coverage run --branch --parallel-mode' ./test.bash
 	@coverage combine
 	@coverage report
 
