@@ -71,6 +71,8 @@ def _install_equal_methods():
     _install_generic_equal(ast.Typedef, 'name alias namespace')
     _install_generic_equal(ast.VariableDeclaration,
                            'name type initial_value namespace')
+
+
 _install_equal_methods()
 
 
@@ -1139,6 +1141,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(
             Function('fn', list(get_tokens('void')), []),
             nodes[0])
+
 
 if __name__ == '__main__':
     unittest.main()

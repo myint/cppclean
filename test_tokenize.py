@@ -53,6 +53,7 @@ def __eq__(self, other):
             self.start == other.start and
             self.end == other.end)
 
+
 tokenize.Token.__eq__ = __eq__
 
 
