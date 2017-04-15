@@ -11,6 +11,7 @@ check:
 		--disable=no-else-return \
 		--disable=no-self-use \
 		--disable=too-many-arguments \
+		--disable=raising-bad-type \
 		--disable=redefined-variable-type \
 		--disable=simplifiable-if-statement \
 		--disable=too-few-public-methods \

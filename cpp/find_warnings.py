@@ -269,10 +269,7 @@ class WarningHunter(object):
                 decl_uses[name] |= USES_REFERENCE
             elif name in file_uses:
                 # enum and typedef can't be forward declared
-                if (
-                    isinstance(file_use_node[0], ast.Enum) or
-                    isinstance(file_use_node[0], ast.Typedef)
-                ):
+                if isinstance(file_use_node[0], (ast.Enum, ast.Typedef)):
                     file_uses[name] |= USES_DECLARATION
                 else:
                     file_uses[name] |= USES_REFERENCE

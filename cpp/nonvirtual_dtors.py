@@ -26,11 +26,11 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 def _find_warnings(filename, source, ast_list):
     count = 0
-    for node in ast_list:
-        if isinstance(node, ast.Class) and node.body:
-            class_node = node
+    for ast_node in ast_list:
+        if isinstance(ast_node, ast.Class) and ast_node.body:
+            class_node = ast_node
             has_virtuals = False
-            for node in node.body:
+            for node in ast_node.body:
                 if isinstance(node, ast.Class) and node.body:
                     _find_warnings(filename, source, [node])
                 elif (isinstance(node, ast.Function) and
