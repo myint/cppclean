@@ -6,11 +6,14 @@ check:
 		--disable=bad-continuation \
 		--disable=duplicate-code \
 		--disable=fixme \
-		--disable=missing-docstring \
-		--disable=too-many-arguments \
 		--disable=invalid-name \
+		--disable=missing-docstring \
+		--disable=no-else-return \
+		--disable=no-self-use \
+		--disable=too-many-arguments \
 		--disable=redefined-variable-type \
 		--disable=simplifiable-if-statement \
+		--disable=too-few-public-methods \
 		--disable=too-many-locals \
 		--disable=too-many-return-statements \
 		--disable=too-many-instance-attributes \
@@ -18,10 +21,8 @@ check:
 		--disable=too-many-branches \
 		--disable=too-many-lines \
 		--disable=too-many-statements \
-		--disable=no-self-use \
 		--disable=undefined-loop-variable \
 		--disable=unused-argument \
-		--disable=too-few-public-methods \
 		cpp cppclean setup.py
 	pycodestyle cpp $(wildcard *.py)
 	check-manifest
