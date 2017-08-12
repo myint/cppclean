@@ -1428,6 +1428,7 @@ class ASTBuilder(object):
     def _get_class(self, class_type, templated_types):
         class_name = None
         class_token = self._get_next_token()
+        name_tokens = []
         if class_token.token_type != tokenize.NAME:
             assert_parse(class_token.token_type == tokenize.SYNTAX,
                          class_token)
