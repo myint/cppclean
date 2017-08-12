@@ -644,7 +644,7 @@ class ASTBuilder(object):
                 self.namespaces.append(False)
                 continue
             if token.name == '}':
-                if self.namespaces.pop():
+                if self.namespaces and self.namespaces.pop():
                     self.namespace_stack.pop()
                 continue
 
