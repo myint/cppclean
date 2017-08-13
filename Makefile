@@ -1,3 +1,5 @@
+default: check test
+
 check:
 	pylint \
 		--reports=no \
@@ -41,3 +43,8 @@ open_coverage: coverage
 
 readme:
 	@restview --long-description --strict
+
+test:
+	./test.bash
+
+.PHONY: check coverage open_coverage readme test
