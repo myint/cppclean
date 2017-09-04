@@ -19,6 +19,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
+
 from . import keywords
 from . import tokenize
 
@@ -613,11 +615,14 @@ class TypeConverter(object):
 
 class ASTBuilder(object):
 
-    def __init__(self, token_stream, filename, in_class=None,
+    def __init__(self, token_stream, filename, system_includes=[],
+                 nonsystem_includes=[], in_class=None,
                  namespace_stack=None, quiet=False):
         if namespace_stack is None:
             namespace_stack = []
 
+        self.system_includes = system_includes
+        self.nonsystem_includes = nonsystem_includes
         self.tokens = token_stream
         self.filename = filename
         self.token_queue = []
@@ -742,13 +747,22 @@ class ASTBuilder(object):
                 if name.startswith('\\'):
                     name = name[1:].strip()
 
-                system = True
-                filename = name
-                if name[0] in '<"':
-                    assert_parse(name[-1] in '>"', token)
+                filename = name.strip('<>"')
+                def is_file(prefix):
+                    return os.path.isfile(os.path.join(prefix, filename))
 
-                    system = name[0] == '<'
-                    filename = name[1:-1]
+                if filter(is_file, self.system_includes):
+                    system = True
+                elif filter(is_file, self.nonsystem_includes):
+                    system = False
+                else:
+                    system = True
+                    filename = name
+
+                    if name[0] in '<"':
+                        assert_parse(name[-1] in '>"', token)
+
+                        system = name[0] == '<'
                 return Include(token.start, token.end, filename, system)
             if name.startswith('define'):
                 # Remove "define".
@@ -1481,7 +1495,9 @@ class ASTBuilder(object):
         body = None
         if token.token_type == tokenize.SYNTAX and token.name == '{':
             name = class_name or '__unamed__'
-            ast = ASTBuilder(self.get_scope(), self.filename, name,
+            ast = ASTBuilder(self.get_scope(), self.filename,
+                             self.system_includes, self.nonsystem_includes,
+                             name,
                              self.namespace_stack,
                              quiet=self.quiet)
             body = list(ast.generate())
@@ -1548,7 +1564,8 @@ class ASTBuilder(object):
         pass
 
 
-def builder_from_source(source, filename, quiet=False):
+def builder_from_source(source, filename, system_includes,
+                        nonsystem_includes, quiet=False):
     """Utility method that returns an ASTBuilder from source code.
 
     Args:
@@ -1561,6 +1578,8 @@ def builder_from_source(source, filename, quiet=False):
     """
     return ASTBuilder(tokenize.get_tokens(source),
                       filename,
+                      system_includes,
+                      nonsystem_includes,
                       quiet=quiet)
 
 

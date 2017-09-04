@@ -88,6 +88,17 @@ def main():
                         help='add a header include path; '
                              'specify this multiple times for multiple '
                              'include paths')
+    parser.add_argument('--include-path-system', '-is', '-Is', action='append',
+                        dest='include_system_paths', default=[],
+                        help=('same as --include-path but explicitly '
+                              'designates all header files found in these'
+                              'directories as "system" includes'))
+    parser.add_argument('--include-path-non-system', '-in', '-In',
+                        action='append', dest='include_nonsystem_paths',
+                        default=[],
+                        help=('same as --include-path but explicitly '
+                              'designates all header files found in these'
+                              'directories as "non-system" includes'))
     parser.add_argument('--verbose', action='store_true',
                         help='print verbose messages')
     parser.add_argument('--version', action='version',
@@ -100,6 +111,10 @@ def main():
     args.files = [filename.decode(sys.getfilesystemencoding())
                   if hasattr(filename, 'decode') else filename
                   for filename in args.files]
+
+    all_includes = list(set(
+        args.include_paths + args.include_system_paths +
+        args.include_nonsystem_paths))
 
     status = 0
     for filename in (
@@ -116,6 +131,8 @@ def main():
 
             builder = ast.builder_from_source(source,
                                               filename,
+                                              args.include_system_paths,
+                                              args.include_nonsystem_paths,
                                               quiet=args.quiet)
             entire_ast = list([_f for _f in builder.generate() if _f])
         except tokenize.TokenError as exception:
@@ -134,7 +151,9 @@ def main():
                        nonvirtual_dtors,
                        static_data]:
             if module.run(filename, source, entire_ast,
-                          include_paths=args.include_paths,
+                          include_paths=all_includes,
+                          system_include_paths=args.include_system_paths,
+                          nonsystem_include_paths=args.include_nonsystem_paths,
                           quiet=args.quiet):
                 status = 1
 
