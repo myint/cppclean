@@ -11,3 +11,4 @@ htmlcov/
 *.egg*/
 .coverage
 .travis-solo/
+tags

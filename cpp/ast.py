@@ -615,8 +615,8 @@ class TypeConverter(object):
 
 class ASTBuilder(object):
 
-    def __init__(self, token_stream, filename, system_includes=[],
-                 nonsystem_includes=[], in_class=None,
+    def __init__(self, token_stream, filename, system_includes=tuple(),
+                 nonsystem_includes=tuple(), in_class=None,
                  namespace_stack=None, quiet=False):
         if namespace_stack is None:
             namespace_stack = []
@@ -748,12 +748,13 @@ class ASTBuilder(object):
                     name = name[1:].strip()
 
                 filename = name.strip('<>"')
-                def is_file(prefix):
+
+                def _is_file(prefix):
                     return os.path.isfile(os.path.join(prefix, filename))
 
-                if filter(is_file, self.system_includes):
+                if any([d for d in self.system_includes if _is_file(d)]):
                     system = True
-                elif filter(is_file, self.nonsystem_includes):
+                elif any([d for d in self.nonsystem_includes if _is_file(d)]):
                     system = False
                 else:
                     system = True
@@ -761,8 +762,9 @@ class ASTBuilder(object):
 
                     if name[0] in '<"':
                         assert_parse(name[-1] in '>"', token)
-
                         system = name[0] == '<'
+                        filename = name[1:-1]
+
                 return Include(token.start, token.end, filename, system)
             if name.startswith('define'):
                 # Remove "define".
