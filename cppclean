@@ -88,16 +88,18 @@ def main():
                         help='add a header include path; '
                              'specify this multiple times for multiple '
                              'include paths')
-    parser.add_argument('--include-path-system', '-is', '-Is', action='append',
+    parser.add_argument('--include-path-system', '-Is', action='append',
                         dest='include_system_paths', default=[],
+                        metavar='sys_path',
                         help=('same as --include-path but explicitly '
-                              'designates all header files found in these'
+                              'designates all header files found in these '
                               'directories as "system" includes'))
-    parser.add_argument('--include-path-non-system', '-in', '-In',
+    parser.add_argument('--include-path-non-system', '-In',
                         action='append', dest='include_nonsystem_paths',
+                        metavar='nonsys_path',
                         default=[],
                         help=('same as --include-path but explicitly '
-                              'designates all header files found in these'
+                              'designates all header files found in these '
                               'directories as "non-system" includes'))
     parser.add_argument('--verbose', action='store_true',
                         help='print verbose messages')
