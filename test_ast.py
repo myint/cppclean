@@ -1061,7 +1061,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Include('vector', system=True), nodes[0])
 
-    def test_system_include(self):
+    def test_include_path_overrides(self):
         paths = [os.path.dirname(os.path.realpath(__file__))]
         fname = "test/include.h"
 
