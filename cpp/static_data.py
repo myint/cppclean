@@ -110,7 +110,8 @@ def _find_unused_static_warnings(filename, lines, ast_list):
     return count
 
 
-def run(filename, source, entire_ast, include_paths, quiet):
+def run(filename, source, entire_ast, include_paths,
+        system_include_paths, nonsystem_include_paths, quiet):
     lines = metrics.Metrics(source)
 
     return (

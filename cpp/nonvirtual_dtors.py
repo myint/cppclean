@@ -54,5 +54,6 @@ def _find_warnings(filename, source, ast_list):
     return count
 
 
-def run(filename, source, entire_ast, include_paths, quiet):
+def run(filename, source, entire_ast, include_paths,
+        system_include_paths, nonsystem_include_paths, quiet):
     return _find_warnings(filename, source, entire_ast)

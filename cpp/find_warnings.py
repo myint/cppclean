@@ -89,11 +89,15 @@ class WarningHunter(object):
     # Cache filename: ast_list
     _module_cache = {}
 
-    def __init__(self, filename, source, ast_list, include_paths, quiet=False):
+    def __init__(self, filename, source, ast_list, include_paths,
+                 system_include_paths, nonsystem_include_paths,
+                 quiet=False):
         self.filename = filename
         self.source = source
         self.ast_list = ast_list
         self.include_paths = include_paths[:]
+        self.system_include_paths = system_include_paths
+        self.nonsystem_include_paths = nonsystem_include_paths
         self.quiet = quiet
         self.symbol_table = symbols.SymbolTable()
 
@@ -147,6 +151,8 @@ class WarningHunter(object):
             ast_list = None
             try:
                 builder = ast.builder_from_source(source, filename,
+                                                  self.system_include_paths,
+                                                  self.nonsystem_include_paths,
                                                   quiet=self.quiet)
                 ast_list = [_f for _f in builder.generate() if _f]
             except tokenize.TokenError:
@@ -587,9 +593,12 @@ def get_correct_include_filename(filename, candidate_filenames):
     return None
 
 
-def run(filename, source, entire_ast, include_paths, quiet):
+def run(filename, source, entire_ast, include_paths,
+        system_include_paths, nonsystem_include_paths, quiet):
     hunter = WarningHunter(filename, source, entire_ast,
                            include_paths=include_paths,
+                           system_include_paths=system_include_paths,
+                           nonsystem_include_paths=nonsystem_include_paths,
                            quiet=quiet)
     hunter.find_warnings()
     hunter.show_warnings()

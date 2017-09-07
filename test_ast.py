@@ -20,6 +20,7 @@
 from __future__ import absolute_import
 
 import unittest
+import os
 
 from cpp import ast
 from cpp import tokenize
@@ -1060,6 +1061,35 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Include('vector', system=True), nodes[0])
 
+    def test_include_path_overrides(self):
+        paths = [os.path.dirname(os.path.realpath(__file__))]
+        fname = "test/include.h"
+
+        def _tokens():
+            tokens_quotes = get_tokens('#include "test/include.h"')
+            tokens_brackets = get_tokens('#include <test/include.h>')
+            return [tokens_quotes, tokens_brackets]
+
+        def _do_test(tokens, system_includes, nonsystem_includes, is_system):
+            nodes = list(ast.ASTBuilder(
+                tokens, '<test>', system_includes=system_includes,
+                nonsystem_includes=nonsystem_includes).generate())
+            self.assertEqual(1, len(nodes), repr(nodes))
+            self.assertEqual(Include(fname, system=is_system), nodes[0])
+
+        # forcing system
+        for tokens in _tokens():
+            _do_test(tokens, paths, [], True)
+
+        # forcing nonsystem
+        for tokens in _tokens():
+            _do_test(tokens, [], paths, False)
+
+        # let the system infer
+        tokens_quotes, tokens_brackets = _tokens()
+        _do_test(tokens_quotes, [], [], False)
+        _do_test(tokens_brackets, [], [], True)
+
     def test_operator_new_bracket(self):
         nodes = list(
             MakeBuilder('void* operator new[](std::size_t size);').generate())
@@ -1141,6 +1171,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(
             Function('fn', list(get_tokens('void')), []),
             nodes[0])
+
 
 
 if __name__ == '__main__':
