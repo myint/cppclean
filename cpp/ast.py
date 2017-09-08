@@ -1552,7 +1552,18 @@ class ASTBuilder(object):
     def handle_using(self):
         tokens = self._get_tokens_up_to(';')
         assert tokens
-        return Using(tokens[0].start, tokens[0].end, tokens)
+        new_type = self.converter.to_type(tokens)
+        if "namespace" in new_type[0].modifiers:
+            return Using(tokens[0].start, tokens[0].end, tokens)
+        else:
+            # aside from namespaces, "using" can be used just like a typedef
+            # e.g., the following lines are equivalent
+            # using Foo = Bar;
+            # typedef Bar Foo;
+            # There is already code written to handle the typedef case so
+            # we return a Typdef object
+            return Typedef(tokens[0].start, tokens[0].end, new_type[0].name,
+                           new_type, self.namespace_stack)
 
     def handle_explicit(self):
         assert self.in_class
