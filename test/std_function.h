@@ -1,5 +1,5 @@
 template <class T>
 std::function<void(T)>
 foo() {
-    return T();
+    return [&](T a) {return a.method();};
 }
