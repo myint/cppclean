@@ -13,7 +13,7 @@ rm -f '.tmp'
 $PYTHON ./cppclean \
     --include-path='test/external' \
     --exclude='ignore.cc' \
-    'test' | tr '\\' '/' > '.tmp' || true
+    'test' | tr '\\' '/' 2>&1 > '.tmp' || true
 diff --unified 'test/expected.txt' '.tmp'
 rm -f '.tmp'
 

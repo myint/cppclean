@@ -20,6 +20,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
+import collections
 
 from . import keywords
 from . import tokenize
@@ -802,6 +803,26 @@ class ASTBuilder(object):
         return self._get_var_tokens_up_to(False,
                                           expected_token)[0]
 
+    def _get_var_tokens_up_to_w_function(self, skip_bracket_content,
+                                         *expected_tokens):
+        # handle the std::function and boost::function case
+        tokens, last = self._get_var_tokens_up_to(False, *expected_tokens)
+        names = [token.name for token in tokens]
+        ctr = collections.Counter(names)
+        if ('(' in expected_tokens and
+           ctr['<'] != ctr['>'] and
+           ctr['function'] == 1 and
+           last.name == '('):
+
+            idx = names.index("function")
+            if idx + 1 < len(tokens) and tokens[idx + 1].name == "<":
+                new_tokens, new_last = \
+                    self._get_var_tokens_up_to(False, '(', ';')
+                tokens.append(last)
+                last = new_last
+                tokens += new_tokens
+        return tokens, last
+
     def _get_var_tokens_up_to(self, skip_bracket_content, *expected_tokens):
         last_token = self._get_next_token()
         tokens = []
@@ -899,7 +920,8 @@ class ASTBuilder(object):
         return tokens, next_token
 
     def get_method(self, modifiers, templated_types):
-        return_type_and_name = self._get_tokens_up_to('(')
+        return_type_and_name = \
+            self._get_var_tokens_up_to_w_function(False, '(')[0]
         assert len(return_type_and_name) >= 1
         return self._get_method(
             return_type_and_name, modifiers, templated_types,
@@ -1397,7 +1419,7 @@ class ASTBuilder(object):
             elif token.name == 'template':
                 return self.handle_template()
         self._add_back_token(token)
-        tokens, last = self._get_var_tokens_up_to(False, '(', ';')
+        tokens, last = self._get_var_tokens_up_to_w_function(False, "(", ";")
         tokens.append(last)
         self._add_back_tokens(tokens)
         if last.name == '(':
