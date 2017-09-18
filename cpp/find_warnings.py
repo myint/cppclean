@@ -252,6 +252,14 @@ class WarningHunter(object):
                 self.symbol_table.add_symbol(node.name, node.namespace, node,
                                              module)
 
+        def _do_lookup(name, namespace):
+            try:
+                file_use_node = symbol_table.lookup_symbol(name, namespace)
+            except symbols.Error:
+                return
+            name = file_use_node[1].filename
+            file_uses[name] = file_uses.get(name, 0) | USES_DECLARATION
+
         def _add_declaration(name, namespace):
             if not name:
                 # Ignore anonymous struct. It is not standard, but we might as
@@ -280,30 +288,49 @@ class WarningHunter(object):
                 else:
                     file_uses[name] |= USES_REFERENCE
 
-        def _add_use(name, namespace):
-            if isinstance(name, list):
+        def _add_use(node, namespace, name=''):
+            if isinstance(node, str):
+                name = node
+            elif isinstance(node, list):
                 # name contains a list of tokens.
                 name = '::'.join([n.name for n in name])
-            elif not isinstance(name, basestring):
+
+            # node is a Type so look for its symbol immediately.
+            if name:
+                _do_lookup(name, namespace)
+                return
+
+            # Try to search for the value of the variable declaration for any
+            # symbols, such as `#define` values or other variable names which
+            # may be included in other files.
+            obj = getattr(node, "initial_value", None)
+            if obj:
+                _do_lookup(obj, namespace)
+
+            # If node is a VariableDeclaration, check if the variable type is
+            # a symbol used in other includes.
+            obj = getattr(node, "type", None)
+            if obj and isinstance(obj.name, basestring):
+                _do_lookup(obj.name, namespace)
+
+            if not isinstance(node, basestring):
                 # Happens when variables are defined with inlined types, e.g.:
                 #   enum {...} variable;
                 return
-            try:
-                file_use_node = symbol_table.lookup_symbol(name, namespace)
-            except symbols.Error:
-                return
-
-            name = file_use_node[1].filename
-            file_uses[name] = file_uses.get(name, 0) | USES_DECLARATION
 
         def _add_variable(node, namespace, reference=False):
-            if node.reference or node.pointer or reference:
-                _add_reference(node.name, namespace)
+            obj = node.type if isinstance(node, ast.VariableDeclaration) else node
+
+            if obj.reference or obj.pointer or reference:
+                _add_reference(obj.name, namespace)
             else:
-                _add_use(node.name, namespace)
+                # Add a use for the variable declaration type as well as the
+                # variable value.
+                _add_use(obj.name, namespace)
+                _add_use(node, namespace)
             # This needs to recurse when the node is a templated type.
-            _add_template_use(node.name,
-                              node.templated_types,
+            _add_template_use(obj.name,
+                              obj.templated_types,
                               namespace,
                               reference)
 
@@ -387,7 +414,7 @@ class WarningHunter(object):
             for node in ast_seq.pop():
                 if isinstance(node, ast.VariableDeclaration):
                     namespace = namespace_stack + node.namespace
-                    _add_variable(node.type, namespace)
+                    _add_variable(node, namespace)
                 elif isinstance(node, ast.Function):
                     namespace = namespace_stack + node.namespace
                     _process_function(node, namespace)

@@ -97,10 +97,17 @@ class Define(Node):
         Node.__init__(self, start, end)
         self.name = name
         self.definition = definition
+        # TODO(christarazi):
+        # Defines aren't bound to namespaces, so this is just a stopgap
+        # solution.
+        self.namespace = []
 
     def __str__(self):
         value = '%s %s' % (self.name, self.definition)
         return self._string_helper(self.__class__.__name__, value)
+
+    def is_exportable(self):
+        return True
 
 
 class Include(Node):
