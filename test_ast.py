@@ -1001,7 +1001,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(exp_ctor.return_type, ctor.return_type)
         self.assertEqual(exp_ctor, ctor)
         self.assertEqual(exp_var, [arg1, arg2, arg3])
-        self.assertEqual(Class('Foo', body=[exp_ctor, *exp_var]), nodes[0])
+        self.assertEqual(Class('Foo', body=[exp_ctor] + exp_var), nodes[0])
 
     def test_class_ctor_initializer_list_cpp11(self):
         code = """
@@ -1032,7 +1032,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(exp_ctor.return_type, ctor.return_type)
         self.assertEqual(exp_ctor, ctor)
         self.assertEqual(exp_var, [arg1, arg2, arg3])
-        self.assertEqual(Class('Foo', body=[exp_ctor, *exp_var]), nodes[0])
+        self.assertEqual(Class('Foo', body=[exp_ctor] + exp_var), nodes[0])
 
     def test_function_parses_operator_bracket(self):
         code = """
