@@ -370,6 +370,9 @@ class WarningHunter(object):
                     # These are things like auto_ptr which do
                     # not require the class definition, only decl.
                     _add_reference(cls.name, namespace)
+                elif name.startswith('Q') and name.endswith("Pointer"):
+                    # Special case templated classes from the Qt framework.
+                    _add_reference(cls.name, namespace)
                 else:
                     _add_use(cls.name, namespace)
                 _add_template_use(cls.name, cls.templated_types,
