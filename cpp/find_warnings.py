@@ -289,7 +289,7 @@ class WarningHunter(object):
                     file_uses[name] |= USES_REFERENCE
 
         def _add_use(node, namespace, name=''):
-            if isinstance(node, str):
+            if isinstance(node, basestring):
                 name = node
             elif isinstance(node, list):
                 # name contains a list of tokens.
