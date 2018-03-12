@@ -249,8 +249,8 @@ class WarningHunter(object):
                 decl_uses[name] |= USES_REFERENCE
             except symbols.Error:
                 module = Module(name, None)
-                self.symbol_table.add_symbol(node.name, node.namespace, node,
-                                             module)
+                symbol_table.add_symbol(node.name, node.namespace, node,
+                                        module)
 
         def _do_lookup(name, namespace):
             try:
