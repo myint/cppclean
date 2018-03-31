@@ -8,6 +8,7 @@ do
 done
 
 $PYTHON ./cppclean test/c++11.h
+$PYTHON ./cppclean test/init_lists.h
 
 rm -f '.tmp'
 $PYTHON ./cppclean \

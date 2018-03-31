@@ -97,10 +97,17 @@ class Define(Node):
         Node.__init__(self, start, end)
         self.name = name
         self.definition = definition
+        # TODO(christarazi):
+        # Defines aren't bound to namespaces, so this is just a stopgap
+        # solution.
+        self.namespace = []
 
     def __str__(self):
         value = '%s %s' % (self.name, self.definition)
         return self._string_helper(self.__class__.__name__, value)
+
+    def is_exportable(self):
+        return True
 
 
 class Include(Node):
@@ -274,7 +281,10 @@ class Union(Class):
 class Function(_GenericDeclaration):
 
     def __init__(self, start, end, name, return_type, parameters,
-                 specializations, modifiers, templated_types, body, namespace):
+                 specializations, modifiers, templated_types, body, namespace,
+                 initializers=None):
+        if initializers is None:
+            initializers = {}
         _GenericDeclaration.__init__(self, start, end, name, namespace)
         converter = TypeConverter(namespace)
         self.return_type = converter.create_return_type(return_type)
@@ -283,6 +293,7 @@ class Function(_GenericDeclaration):
         self.modifiers = modifiers
         self.body = body
         self.templated_types = templated_types
+        self.initializers = initializers
 
     def is_declaration(self):
         return self.body is None
@@ -311,6 +322,14 @@ class Method(Function):
 
     def __init__(self, start, end, name, in_class, return_type, parameters,
                  specializations, modifiers, templated_types, body, namespace):
+        # TODO(christarazi):
+        # Add support for ctor initializers.
+        # For now, only inline defined ctors are supported because we would
+        # need to figure out how to keep state of which class is currently
+        # being processed in order to modify its body (var decls).
+        #
+        # Note: ctor initializers are inside Function because a inline defined
+        # class members are parsed as functions rather than methods.
         Function.__init__(self, start, end, name, return_type, parameters,
                           specializations, modifiers, templated_types,
                           body, namespace)
@@ -1065,13 +1084,18 @@ class ASTBuilder(object):
         assert_parse(token.token_type == tokenize.SYNTAX, token)
 
         # Handle ctor initializers.
+        # Supports C++11 method of direct initialization with braces.
+        initializers = {}
         if token.name == ':':
             while token.name != ';' and token.name != '{':
-                _, token = self.get_name()
-                if token.name == '(':
-                    list(self._get_matching_char('(', ')'))
-                elif token.name == '{':
-                    list(self._get_matching_char('{', '}'))
+                member, token = self.get_name()
+                member = member[0]
+                if token.name == '(' or token.name == '{':
+                    end = '}' if token.name == '{' else ')'
+                    initializers[member] = [x
+                            for x in list(self._get_matching_char(
+                                token.name, end))
+                            if x.name != ',' and x.name != end]
                 token = self._get_next_token()
 
         # Handle pointer to functions.
@@ -1138,7 +1162,8 @@ class ASTBuilder(object):
                           templated_types, body, self.namespace_stack)
         return Function(indices.start, indices.end, name.name, return_type,
                         parameters, specializations, modifiers,
-                        templated_types, body, self.namespace_stack)
+                        templated_types, body, self.namespace_stack,
+                        initializers)
 
     def _get_variable(self, tokens):
         name, type_name, templated_types, modifiers, default, _ = \
@@ -1525,6 +1550,27 @@ class ASTBuilder(object):
                              self.namespace_stack,
                              quiet=self.quiet)
             body = list(ast.generate())
+
+            ctor = None
+            for member in body:
+                if isinstance(member, Function) and member.name == class_name:
+                    ctor = member
+                    break
+
+            # Merge ctor initializers with class members.
+            if ctor:
+                initializers = body[body.index(ctor)].initializers
+                var_decls = [x for x in body
+                             if isinstance(x, VariableDeclaration)]
+                for var in var_decls:
+                    for key, val in initializers.items():
+                        # TODO: CT
+                        # In the future, support members that have ctors with
+                        # more than one parameter.
+                        if len(val) > 1:
+                            continue
+                        if len(val) == 1 and var.name == key.name:
+                            body[body.index(var)].initial_value = val[0].name
 
             if not self._handling_typedef:
                 token = self._get_next_token()

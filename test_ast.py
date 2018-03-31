@@ -972,6 +972,68 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
                                templated_types=types1,),
                          nodes[0])
 
+    def test_class_ctor_initializer_list(self):
+        code = """
+        class Foo {
+          public:
+            Foo() :
+              arg1(1),
+              arg2(2),
+              arg3(3)
+            {}
+          private:
+            int arg1;
+            int arg2;
+            int arg3;
+        };
+        """
+        nodes = list(MakeBuilder(code).generate())
+        ctor = nodes[0].body[0]
+        arg1 = nodes[0].body[1]
+        arg2 = nodes[0].body[2]
+        arg3 = nodes[0].body[3]
+
+        exp_ctor = Function('Foo', [], [], modifiers=ast.FUNCTION_CTOR, body=[])
+        exp_var = [VariableDeclaration('arg1', Type('int'), initial_value='1'),
+                   VariableDeclaration('arg2', Type('int'), initial_value='2'),
+                   VariableDeclaration('arg3', Type('int'), initial_value='3')]
+
+        self.assertEqual(exp_ctor.return_type, ctor.return_type)
+        self.assertEqual(exp_ctor, ctor)
+        self.assertEqual(exp_var, [arg1, arg2, arg3])
+        self.assertEqual(Class('Foo', body=[exp_ctor] + exp_var), nodes[0])
+
+    def test_class_ctor_initializer_list_cpp11(self):
+        code = """
+        class Foo {
+          public:
+            Foo() :
+              arg1{1},
+              arg2{2},
+              arg3{3}
+            {}
+          private:
+            int arg1;
+            int arg2;
+            int arg3;
+        };
+        """
+        nodes = list(MakeBuilder(code).generate())
+        ctor = nodes[0].body[0]
+        arg1 = nodes[0].body[1]
+        arg2 = nodes[0].body[2]
+        arg3 = nodes[0].body[3]
+
+        exp_ctor = Function('Foo', [], [], modifiers=ast.FUNCTION_CTOR, body=[])
+        exp_var = [VariableDeclaration('arg1', Type('int'), initial_value='1'),
+                   VariableDeclaration('arg2', Type('int'), initial_value='2'),
+                   VariableDeclaration('arg3', Type('int'), initial_value='3')]
+
+        self.assertEqual(exp_ctor.return_type, ctor.return_type)
+        self.assertEqual(exp_ctor, ctor)
+        self.assertEqual(exp_var, [arg1, arg2, arg3])
+        self.assertEqual(Class('Foo', body=[exp_ctor] + exp_var), nodes[0])
+
     def test_function_parses_operator_bracket(self):
         code = """
         class A {
