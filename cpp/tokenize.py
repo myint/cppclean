@@ -25,9 +25,10 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 # Add $ as a valid identifier char since so much code uses it.
 _letters = 'abcdefghijklmnopqrstuvwxyz'
-VALID_IDENTIFIER_CHARS = frozenset(_letters +
-                                   _letters.upper() +
-                                   '_0123456789$')
+_valid_identifier_first_char = _letters + _letters.upper() + '_$'
+_valid_identifier_char = _valid_identifier_first_char + '0123456789'
+VALID_IDENTIFIER_FIRST_CHARS = frozenset( _valid_identifier_first_char )
+VALID_IDENTIFIER_CHARS = frozenset(_valid_identifier_char)
 HEX_DIGITS = frozenset('0123456789abcdefABCDEF')
 INT_OR_FLOAT_DIGITS = frozenset('01234567890eE-+')
 
@@ -115,6 +116,7 @@ def get_tokens(source):
         source += '\n'
 
     # Cache various valid character sets for speed.
+    valid_identifier_first_chars = VALID_IDENTIFIER_FIRST_CHARS
     valid_identifier_chars = VALID_IDENTIFIER_CHARS
     hex_digits = HEX_DIGITS
     int_or_float_digits = INT_OR_FLOAT_DIGITS
@@ -135,7 +137,7 @@ def get_tokens(source):
         token_type = UNKNOWN
         start = i
         c = source[i]
-        if c.isalpha() or c == '_':              # Find a string token.
+        if c in valid_identifier_first_chars or c == '_':              # Find a string token.
             token_type = NAME
             while source[i] in valid_identifier_chars:
                 i += 1
