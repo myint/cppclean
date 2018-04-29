@@ -35,7 +35,6 @@ def _install_generic_equal(cls, attrs):
     Args:
       cls: Python class to add __eq__ method to
       attrs: string - space separated of attribute names to compare
-
     """
     attrs = attrs.split()
 
@@ -610,7 +609,6 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
     an integration test.
 
     It doesn't test any individual method. It tests whole code blocks.
-
     """
 
     def test_variable_array(self):
@@ -993,7 +991,8 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         arg2 = nodes[0].body[2]
         arg3 = nodes[0].body[3]
 
-        exp_ctor = Function('Foo', [], [], modifiers=ast.FUNCTION_CTOR, body=[])
+        exp_ctor = Function(
+            'Foo', [], [], modifiers=ast.FUNCTION_CTOR, body=[])
         exp_var = [VariableDeclaration('arg1', Type('int'), initial_value='1'),
                    VariableDeclaration('arg2', Type('int'), initial_value='2'),
                    VariableDeclaration('arg3', Type('int'), initial_value='3')]
@@ -1024,7 +1023,8 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         arg2 = nodes[0].body[2]
         arg3 = nodes[0].body[3]
 
-        exp_ctor = Function('Foo', [], [], modifiers=ast.FUNCTION_CTOR, body=[])
+        exp_ctor = Function(
+            'Foo', [], [], modifiers=ast.FUNCTION_CTOR, body=[])
         exp_var = [VariableDeclaration('arg1', Type('int'), initial_value='1'),
                    VariableDeclaration('arg2', Type('int'), initial_value='2'),
                    VariableDeclaration('arg3', Type('int'), initial_value='3')]
@@ -1125,7 +1125,7 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
 
     def test_include_path_overrides(self):
         paths = [os.path.dirname(os.path.realpath(__file__))]
-        fname = "test/include.h"
+        fname = 'test/include.h'
 
         def _tokens():
             tokens_quotes = get_tokens('#include "test/include.h"')
@@ -1233,7 +1233,6 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(
             Function('fn', list(get_tokens('void')), []),
             nodes[0])
-
 
 
 if __name__ == '__main__':

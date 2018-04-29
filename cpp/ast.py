@@ -350,7 +350,6 @@ class Type(_GenericDeclaration):
         templated_types: [Class (Type?)] template type info between <>
         modifiers: [str] type modifiers (keywords) eg, const, mutable, etc.
         reference, pointer, array: bools
-
         """
         _GenericDeclaration.__init__(self, start, end, name, [])
         self.templated_types = templated_types
@@ -414,7 +413,6 @@ class TypeConverter(object):
 
         Returns:
           [Class(...), ...]
-
         """
         result = []
         name_tokens = []
@@ -833,12 +831,12 @@ class ASTBuilder(object):
         names = [token.name for token in tokens]
         ctr = collections.Counter(names)
         if ('(' in expected_tokens and
-           ctr['<'] != ctr['>'] and
-           ctr['function'] == 1 and
-           last.name == '('):
+            ctr['<'] != ctr['>'] and
+            ctr['function'] == 1 and
+                last.name == '('):
 
-            idx = names.index("function")
-            if idx + 1 < len(tokens) and tokens[idx + 1].name == "<":
+            idx = names.index('function')
+            if idx + 1 < len(tokens) and tokens[idx + 1].name == '<':
                 new_tokens, new_last = \
                     self._get_var_tokens_up_to(False, '(', ';')
                 tokens.append(last)
@@ -1096,10 +1094,10 @@ class ASTBuilder(object):
                 member = member[0]
                 if token.name == '(' or token.name == '{':
                     end = '}' if token.name == '{' else ')'
-                    initializers[member] = [x
-                            for x in list(self._get_matching_char(
-                                token.name, end))
-                            if x.name != ',' and x.name != end]
+                    initializers[member] = [
+                        x for x in list(self._get_matching_char(token.name,
+                                                                end))
+                        if x.name != ',' and x.name != end]
                 token = self._get_next_token()
 
         # Handle pointer to functions.
@@ -1448,7 +1446,7 @@ class ASTBuilder(object):
             elif token.name == 'template':
                 return self.handle_template()
         self._add_back_token(token)
-        tokens, last = self._get_var_tokens_up_to_w_function(False, "(", ";")
+        tokens, last = self._get_var_tokens_up_to_w_function(False, '(', ';')
         tokens.append(last)
         self._add_back_tokens(tokens)
         if last.name == '(':
@@ -1625,7 +1623,7 @@ class ASTBuilder(object):
         tokens = self._get_tokens_up_to(';')
         assert tokens
         new_type = self.converter.to_type(tokens)
-        if "namespace" in new_type[0].modifiers:
+        if 'namespace' in new_type[0].modifiers:
             return Using(tokens[0].start, tokens[0].end, tokens)
         else:
             # aside from namespaces, "using" can be used just like a typedef
@@ -1659,7 +1657,6 @@ def builder_from_source(source, filename, system_includes,
 
     Returns:
       ASTBuilder
-
     """
     return ASTBuilder(tokenize.get_tokens(source),
                       filename,

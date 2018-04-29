@@ -27,7 +27,7 @@ __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 _letters = 'abcdefghijklmnopqrstuvwxyz'
 _valid_identifier_first_char = _letters + _letters.upper() + '_$'
 _valid_identifier_char = _valid_identifier_first_char + '0123456789'
-VALID_IDENTIFIER_FIRST_CHARS = frozenset( _valid_identifier_first_char )
+VALID_IDENTIFIER_FIRST_CHARS = frozenset(_valid_identifier_first_char)
 VALID_IDENTIFIER_CHARS = frozenset(_valid_identifier_char)
 HEX_DIGITS = frozenset('0123456789abcdefABCDEF')
 INT_OR_FLOAT_DIGITS = frozenset('01234567890eE-+')
@@ -59,7 +59,6 @@ class Token(object):
 
     start contains the index of the first char of the token in the source
     end contains the index of the last char of the token in the source
-
     """
 
     def __init__(self, token_type, name, start, end):
@@ -110,7 +109,6 @@ def get_tokens(source):
 
     Yields:
       Token that represents the next token in the source.
-
     """
     if not source.endswith('\n'):
         source += '\n'
@@ -137,7 +135,8 @@ def get_tokens(source):
         token_type = UNKNOWN
         start = i
         c = source[i]
-        if c in valid_identifier_first_chars or c == '_':              # Find a string token.
+        # Find a string token.
+        if c in valid_identifier_first_chars or c == '_':
             token_type = NAME
             while source[i] in valid_identifier_chars:
                 i += 1
@@ -291,7 +290,6 @@ def _find(string, sub_string, start_index):
     """Return index of sub_string in string.
 
     Raise TokenError if sub_string is not found.
-
     """
     result = string.find(sub_string, start_index)
     if result == -1:

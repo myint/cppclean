@@ -52,7 +52,6 @@ class SymbolTable(object):
         Args:
           symbol: Symbol
           namespace: pointer into self.namespaces
-
         """
         for namespace_part in symbol.parts:
             namespace = namespace.get(namespace_part)
@@ -67,7 +66,6 @@ class SymbolTable(object):
 
         Args:
           symbol: Symbol
-
         """
         assert symbol.parts
         namespace = self.namespaces
@@ -91,7 +89,6 @@ class SymbolTable(object):
 
         Args:
           symbol: Symbol
-
         """
         namespace = self.namespaces
         # Create a stack of namespaces.
@@ -123,7 +120,6 @@ class SymbolTable(object):
 
         Raises:
           Error if the symbol cannot be found.
-
         """
         # TODO(nnorwitz): a convenient API for this depends on the
         # representation of the name. e.g., does symbol_name contain
@@ -148,7 +144,6 @@ class SymbolTable(object):
         """Helper function for adding symbols.
 
         See add_symbol().
-
         """
         result = symbol_name in namespace
         namespace[symbol_name] = node, module
@@ -165,7 +160,6 @@ class SymbolTable(object):
 
         Returns:
           bool(if symbol was *not* already present)
-
         """
         # TODO(nnorwitz): verify symbol_name doesn't contain :: ?
         if namespace_stack:
@@ -185,7 +179,6 @@ class SymbolTable(object):
 
         Returns:
           ['names', 'that', 'are', 'namespaces', 'possibly', 'empty', 'list']
-
         """
         namespaces = self.namespaces
         result = []

@@ -20,7 +20,6 @@ be generated and which should be suppressed. Currently, all possible
 warnings will always be displayed. There is no way to suppress any.
 There also needs to be a way to use annotations in the source code to
 suppress warnings.
-
 """
 
 from __future__ import absolute_import
@@ -303,13 +302,13 @@ class WarningHunter(object):
             # Try to search for the value of the variable declaration for any
             # symbols, such as `#define` values or other variable names which
             # may be included in other files.
-            obj = getattr(node, "initial_value", None)
+            obj = getattr(node, 'initial_value', None)
             if obj:
                 _do_lookup(obj, namespace)
 
             # If node is a VariableDeclaration, check if the variable type is
             # a symbol used in other includes.
-            obj = getattr(node, "type", None)
+            obj = getattr(node, 'type', None)
             if obj and isinstance(obj.name, basestring):
                 _do_lookup(obj.name, namespace)
 
@@ -319,7 +318,8 @@ class WarningHunter(object):
                 return
 
         def _add_variable(node, namespace, reference=False):
-            obj = node.type if isinstance(node, ast.VariableDeclaration) else node
+            obj = node.type if isinstance(
+                node, ast.VariableDeclaration) else node
 
             if obj.reference or obj.pointer or reference:
                 _add_reference(obj.name, namespace)
@@ -397,7 +397,7 @@ class WarningHunter(object):
                     # These are things like auto_ptr which do
                     # not require the class definition, only decl.
                     _add_reference(cls.name, namespace)
-                elif name.startswith('Q') and name.endswith("Pointer"):
+                elif name.startswith('Q') and name.endswith('Pointer'):
                     # Special case templated classes from the Qt framework.
                     _add_reference(cls.name, namespace)
                 else:
