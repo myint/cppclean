@@ -673,9 +673,13 @@ class ASTBuilder(object):
                     self.namespace_stack.pop()
                 continue
 
-            result = self._generate_one(token)
-            if result:
-                yield result
+            try:
+                result = self._generate_one(token)
+            except StopIteration:
+                pass
+            else:
+                if result:
+                    yield result
 
     def _create_variable(self, pos_token, name, type_name, type_modifiers,
                          ref_pointer_name_seq, templated_types=None, value=''):
