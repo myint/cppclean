@@ -60,7 +60,7 @@ def _find_warnings(filename, lines, ast_list, static_is_optional):
                 'constexpr' not in node.type.modifiers
             )
 
-            if is_not_const and (static_is_optional or is_static):
+            if is_not_const and (static_is_optional or is_static) and (node.name is not None):
                 print_warning(node)
                 count += 1
         elif isinstance(node, ast.Function) and node.body:
