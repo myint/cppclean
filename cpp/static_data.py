@@ -17,6 +17,7 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import types
 import collections
 
 from . import ast
@@ -60,7 +61,9 @@ def _find_warnings(filename, lines, ast_list, static_is_optional):
                 'constexpr' not in node.type.modifiers
             )
 
-            if is_not_const and (static_is_optional or is_static) and (node.name is not None):
+            is_not_none_type = type(node.name) is not types.NoneType
+
+            if is_not_const and (static_is_optional or is_static) and is_not_none_type:
                 print_warning(node)
                 count += 1
         elif isinstance(node, ast.Function) and node.body:
