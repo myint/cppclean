@@ -1089,16 +1089,27 @@ class ASTBuilder(object):
         # Supports C++11 method of direct initialization with braces.
         initializers = {}
         if token.name == ':':
-            while token.name != ';' and token.name != '{':
-                member, token = self.get_name()
-                member = member[0]
-                if token.name == '(' or token.name == '{':
-                    end = '}' if token.name == '{' else ')'
-                    initializers[member] = [
-                        x for x in list(self._get_matching_char(token.name,
-                                                                end))
-                        if x.name != ',' and x.name != end]
+            openedstack = []
+            initializer = []
+            while True:
                 token = self._get_next_token()
+                if token.token_type == tokenize.PREPROCESSOR: continue
+                initializer.append(token)
+                if len(openedstack) == 0:
+                    if token.name == ';' or token.name == '{' : 
+                        initializers[member] = initializer[:-1]
+                        break
+                    elif token.token_type == tokenize.NAME:
+                        member = token
+                        initializer = []
+                    elif token.name == ',':
+                        initializers[member] = initializer[:-1]
+                    
+                if token.name == '(' or token.name == '{': 
+                    openedstack.append( '}' if token.name == '{' else ')' )
+                if (token.name == ')' or token.name == '}') and token.name == openedstack[-1]:
+                        openedstack = openedstack[:-1]
+                    
 
         # Handle pointer to functions.
         if token.name == '(':
