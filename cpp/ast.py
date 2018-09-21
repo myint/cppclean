@@ -1090,6 +1090,10 @@ class ASTBuilder(object):
         initializers = {}
         if token.name == ':':
             while token.name != ';' and token.name != '{':
+                # skip preprocesors macros
+                if token.name.startswith(('#if', '#elif',  '#else', '#endif')):
+                    token = self._get_next_token()
+                    continue
                 member, token = self.get_name()
                 member = member[0]
                 if token.name == '(' or token.name == '{':
