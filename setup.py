@@ -5,7 +5,7 @@
 from __future__ import absolute_import
 
 import ast
-from distutils import core
+from setuptools import setup
 import os
 
 
@@ -18,7 +18,7 @@ def version(filename):
 
 
 with open('README.rst') as readme:
-    core.setup(
+    setup(
         name='cppclean',
         version=version(os.path.join('cpp', '__init__.py')),
         description='Find problems in C++ source that slow development '
