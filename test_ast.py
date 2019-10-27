@@ -896,6 +896,12 @@ class ASTBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(1, len(nodes), repr(nodes))
         self.assertEqual(Class('Foo', bases=[Type('Bar')], body=[]), nodes[0])
 
+    def test_class_macro_final(self):
+        code = 'class EXPORT_MACRO Foo final {};'
+        nodes = list(MakeBuilder(code).generate())
+        self.assertEqual(1, len(nodes), repr(nodes))
+        self.assertEqual(Class('Foo', body=[]), nodes[0])
+
     def test_constructor(self):
         code = 'Foo::Foo() {}'
         nodes = list(MakeBuilder(code).generate())
