@@ -1521,6 +1521,9 @@ class ASTBuilder(object):
             assert_parse(class_name, class_token)
 
         bases = None
+        
+        if token.name == 'final':
+            token = self._get_next_token()
         if token.token_type == tokenize.PREPROCESSOR:
             token = self._get_next_token()
         if token.token_type == tokenize.SYNTAX:
