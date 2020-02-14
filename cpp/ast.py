@@ -1095,6 +1095,8 @@ class ASTBuilder(object):
                     token = self._get_next_token()
                     continue
                 member, token = self.get_name()
+                if not member:
+                    continue
                 member = member[0]
                 if token.name == '(' or token.name == '{':
                     end = '}' if token.name == '{' else ')'
