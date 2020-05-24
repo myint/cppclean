@@ -182,8 +182,7 @@ class WarningHunter(object):
                     module = self._get_module(node)
                     filename = module.filename
                     _, ext = os.path.splitext(filename)
-                    if ext.lower() != '.hxx':
-                        included_files[filename] = node, module
+                    included_files[filename] = node, module
                 if is_cpp_file(filename):
                     self._add_warning(
                         "should not #include C++ source file '{}'".format(

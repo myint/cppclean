@@ -1,3 +1,4 @@
+test/a.hxx:4: 'b.hxx' does not need to be #included
 test/baz.h:1: 'bar.h' does not need to be #included; use a forward declaration instead
 test/baz.h:2: 'bar_bis.h' does not need to be #included; use a forward declaration instead
 test/cxx.cxx:1: 'cxx' not found in any directly #included header
@@ -18,6 +19,7 @@ test/foo.h:87: 'string' already #included on line 3
 test/foo.h:113: 'not-used.h' does not need to be #included
 test/foo.h:150: 'AR' not used
 test/foo.h:221: unable to find 'dir//bar.h'
+test/foo.h:307: 'foo.hxx' does not need to be #included; use a forward declaration instead
 test/foo.h:234 'Colon' has virtual methods without a virtual dtor
 test/foo.h:20: static data 'd'
 test/foo.h:101: static data 'ptof'
