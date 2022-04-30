@@ -13,14 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Find warnings for C++ code.
-
-TODO(nnorwitz): provide a mechanism to configure which warnings should
-be generated and which should be suppressed. Currently, all possible
-warnings will always be displayed. There is no way to suppress any.
-There also needs to be a way to use annotations in the source code to
-suppress warnings.
-"""
+"""Find warnings for C++ code."""
 
 from __future__ import absolute_import
 from __future__ import print_function
@@ -36,6 +29,7 @@ from . import metrics
 from . import symbols
 from . import tokenize
 from . import utils
+from . import comments
 
 
 try:
@@ -113,7 +107,12 @@ class WarningHunter(object):
             filename = self.filename
             src_metrics = self.metrics
         line_number = get_line_number(src_metrics, node)
-        self.warnings.add((filename, line_number, msg))
+        
+        if not (
+            comments.file_disabled(filename)
+            or comments.line_disabled(filename, line_number)
+        ):
+            self.warnings.add((filename, line_number, msg))
 
     def show_warnings(self):
         for filename, line_num, msg in sorted(self.warnings):
