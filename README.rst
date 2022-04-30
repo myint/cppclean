@@ -66,6 +66,20 @@ Multiple include paths can be specified::
 
     $ cppclean --include-path=directory1 --include-path=directory2 <path>
 
+Disabling checks
+================
+
+To disable checking for a whole file:
+::
+
+    // cppclean-disable
+    # include "foo.h"
+
+To disable checking for a single line:
+::
+
+    // cppclean-disable-next-line
+    # include "foo.h"
 
 Current status
 ==============
