@@ -409,6 +409,8 @@ class WarningHunter(object):
             for node in nodes:
                 if isinstance(node, ast.Type):
                     _add_variable(node, namespace)
+                elif isinstance(node, ast.Struct):
+                    return node.body
 
         # Iterate through the source AST/tokens, marking each symbols use.
         ast_seq = [self.ast_list]
@@ -425,7 +427,9 @@ class WarningHunter(object):
                         _process_function_body(node, namespace)
                 elif isinstance(node, ast.Typedef):
                     namespace = namespace_stack + node.namespace
-                    _process_types(node.alias, namespace)
+                    b = _process_types(node.alias, namespace)
+                    if b is not None:
+                        ast_seq.append(b)
                 elif isinstance(node, ast.Friend):
                     expr = node.expr
                     namespace = namespace_stack + node.namespace
