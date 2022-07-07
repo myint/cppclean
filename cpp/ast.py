@@ -372,7 +372,7 @@ class Type(_GenericDeclaration):
             suffix += '&'
         if self.pointer:
             suffix += '*'
-        if self.array:
+        if self.array is not None:
             suffix += '[]'
         return self._type_string_helper(suffix)
 
@@ -416,7 +416,7 @@ class TypeConverter(object):
         """
         result = []
         name_tokens = []
-        reference = pointer = array = False
+        reference = pointer = False
         inside_array = False
         empty_array = True
         templated_tokens = []
@@ -438,7 +438,7 @@ class TypeConverter(object):
             templated_types = self.to_type(templated_tokens)
             result.append(Type(name_tokens[0].start, name_tokens[-1].end,
                                name, templated_types, modifiers,
-                               reference, pointer, array))
+                               reference, pointer, None))
             del name_tokens[:]
             del templated_tokens[:]
 
@@ -560,7 +560,7 @@ class TypeConverter(object):
             if type_name:
                 parameter_type = Type(first_token.start, first_token.end,
                                       type_name, templated_types, modifiers,
-                                      reference, pointer, False)
+                                      reference, pointer, None)
                 p = Parameter(first_token.start, end, name,
                               parameter_type, default)
                 result.append(p)
@@ -616,7 +616,10 @@ class TypeConverter(object):
         names = [n.name for n in other_tokens]
         reference = '&' in names
         pointer = '*' in names
-        array = '[' in names
+        if '[' in names:
+            array = True
+        else:
+            array = None
         return Type(start, end, name, templated_types, modifiers,
                     reference, pointer, array)
 
@@ -687,6 +690,11 @@ class ASTBuilder(object):
         reference = '&' in ref_pointer_name_seq
         pointer = '*' in ref_pointer_name_seq
         array = '[' in ref_pointer_name_seq
+        if '[' in ref_pointer_name_seq:
+            array = ref_pointer_name_seq[ref_pointer_name_seq.index('[')+1]
+        else:
+            array = None
+
         var_type = Type(pos_token.start, pos_token.end, type_name,
                         templated_types, type_modifiers,
                         reference, pointer, array)

@@ -328,6 +328,8 @@ class WarningHunter(object):
                 # variable value.
                 _add_use(obj.name, namespace)
                 _add_use(node, namespace)
+                if isinstance(obj.array, str):
+                    _add_use(obj.array, namespace)
             # This needs to recurse when the node is a templated type.
             _add_template_use(obj.name,
                               obj.templated_types,
