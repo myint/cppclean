@@ -364,7 +364,7 @@ class WarningHunter(object):
                         p.default[0].name != 'nullptr'
                     ):
                         _add_use(node.name, namespace)
-                    elif node.reference or node.pointer or reference:
+                    elif node.reference:
                         _add_reference(node.name, namespace)
                     else:
                         _add_use(node.name, namespace)
