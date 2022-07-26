@@ -337,6 +337,9 @@ class WarningHunter(object):
                               reference)
 
         def _process_function(function, namespace):
+            if function.modifiers & ast.FUNCTION_INSIDE_STRUCT_MACRO:
+                _add_use(function.name, namespace)
+                return
             reference = function.body is None
             if function.return_type:
                 return_type = function.return_type
@@ -431,6 +434,9 @@ class WarningHunter(object):
                     namespace = namespace_stack + node.namespace
                     b = _process_types(node.alias, namespace)
                     if b is not None:
+                        for e in b:
+                            if isinstance(e, ast.Function):
+                                e.modifiers |= ast.FUNCTION_INSIDE_STRUCT_MACRO
                         ast_seq.append(b)
                 elif isinstance(node, ast.Friend):
                     expr = node.expr
