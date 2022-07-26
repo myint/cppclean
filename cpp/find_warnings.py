@@ -70,7 +70,12 @@ class Module(object):
     def _get_exported_symbols(self):
         if not self.ast_list:
             return {}
-        return dict([(n.name, n) for n in self.ast_list if n.is_exportable()])
+        r = dict([(n.name, n) for n in self.ast_list if n.is_exportable()])
+        for n in self.ast_list:
+            if isinstance(n, ast.Enum):
+                for f in n.fields:
+                    r[f.name] = f
+        return r
 
 
 def is_header_file(filename):
@@ -328,6 +333,8 @@ class WarningHunter(object):
                 # variable value.
                 _add_use(obj.name, namespace)
                 _add_use(node, namespace)
+                if isinstance(obj.array, str):
+                    _add_use(obj.array, namespace)
             # This needs to recurse when the node is a templated type.
             _add_template_use(obj.name,
                               obj.templated_types,
@@ -335,6 +342,9 @@ class WarningHunter(object):
                               reference)
 
         def _process_function(function, namespace):
+            if function.modifiers & ast.FUNCTION_INSIDE_STRUCT_MACRO:
+                _add_use(function.name, namespace)
+                return
             reference = function.body is None
             if function.return_type:
                 return_type = function.return_type
@@ -362,7 +372,7 @@ class WarningHunter(object):
                         p.default[0].name != 'nullptr'
                     ):
                         _add_use(node.name, namespace)
-                    elif node.reference or node.pointer or reference:
+                    elif node.reference:
                         _add_reference(node.name, namespace)
                     else:
                         _add_use(node.name, namespace)
@@ -409,6 +419,8 @@ class WarningHunter(object):
             for node in nodes:
                 if isinstance(node, ast.Type):
                     _add_variable(node, namespace)
+                elif isinstance(node, ast.Struct):
+                    return node.body
 
         # Iterate through the source AST/tokens, marking each symbols use.
         ast_seq = [self.ast_list]
@@ -425,7 +437,12 @@ class WarningHunter(object):
                         _process_function_body(node, namespace)
                 elif isinstance(node, ast.Typedef):
                     namespace = namespace_stack + node.namespace
-                    _process_types(node.alias, namespace)
+                    b = _process_types(node.alias, namespace)
+                    if b is not None:
+                        for e in b:
+                            if isinstance(e, ast.Function):
+                                e.modifiers |= ast.FUNCTION_INSIDE_STRUCT_MACRO
+                        ast_seq.append(b)
                 elif isinstance(node, ast.Friend):
                     expr = node.expr
                     namespace = namespace_stack + node.namespace
