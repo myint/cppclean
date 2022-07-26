@@ -70,7 +70,12 @@ class Module(object):
     def _get_exported_symbols(self):
         if not self.ast_list:
             return {}
-        return dict([(n.name, n) for n in self.ast_list if n.is_exportable()])
+        r = dict([(n.name, n) for n in self.ast_list if n.is_exportable()])
+        for n in self.ast_list:
+            if isinstance(n, ast.Enum):
+                for f in n.fields:
+                    r[f.name] = f
+        return r
 
 
 def is_header_file(filename):

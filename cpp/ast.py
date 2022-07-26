@@ -231,7 +231,15 @@ class Enum(_GenericDeclaration):
 
     def __init__(self, start, end, name, fields, namespace):
         _GenericDeclaration.__init__(self, start, end, name, namespace)
-        self.fields = fields
+        field = True
+        self.fields = []
+        for f in fields:
+            if f.name == ",":
+                field = True
+            elif field and f.name[0] != '#':
+                self.fields.append(VariableDeclaration(f.start, f.end, f.name, name, None, namespace))
+                field = False
+            # else = 1 : skip
 
     def is_definition(self):
         return True
